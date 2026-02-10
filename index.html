@@ -3,189 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#D4AF37">
-    <title>DIPLOMATA GOLD V1250</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --gold: #D4AF37; --black: #000; --green: #00FF00; --red: #FF0000; --bg: #050505; }
-        body { background: var(--black); color: white; font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; }
-        
-        /* CAPA DIRETORIA */
-        #capa { position: fixed; width: 100%; height: 100%; background: #000; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s; }
-        .btn-acesso { padding: 15px 50px; border: 1px solid var(--gold); color: var(--gold); background: transparent; cursor: pointer; font-weight: bold; letter-spacing: 5px; text-transform: uppercase; }
+        :root { --gold: #B8860B; --black: #050505; --green: #00FF41; --red: #FF3131; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--black); color: #fff; overflow: hidden; }
 
         /* HEADER */
-        .header { padding: 15px; background: #080808; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; font-family: monospace; }
-        .status-pill { padding: 4px 10px; border-radius: 4px; font-size: 0.7em; font-weight: bold; }
+        .header { padding: 15px 20px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 0.7em; letter-spacing: 5px; color: var(--gold); font-weight: 900; text-transform: uppercase; }
 
-        /* NAV */
-        .nav-bar { display: flex; background: #080808; position: fixed; bottom: 0; width: 100%; height: 65px; border-top: 1px solid #222; }
-        .tab-btn { flex: 1; border: none; background: transparent; color: #444; font-weight: 900; font-size: 0.7em; letter-spacing: 1px; }
-        .tab-btn.active { color: var(--gold); border-bottom: 3px solid var(--gold); }
+        /* SELETOR DE MINUTOS/HORAS (TIME CONTROL) */
+        .time-selector { 
+            display: flex; 
+            justify-content: space-around; 
+            background: #080808; 
+            padding: 12px 5px; 
+            border-bottom: 1px solid #111;
+        }
+        .t-btn { 
+            background: none; 
+            border: none; 
+            color: #444; 
+            font-size: 0.6em; 
+            font-weight: 900; 
+            cursor: pointer; 
+            transition: 0.3s;
+            padding: 5px 10px;
+        }
+        .t-btn.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
 
-        .content { height: calc(100vh - 130px); overflow-y: auto; display: none; padding: 10px; box-sizing: border-box; }
-        .content.active { display: block; }
+        /* PAINEL DE PREÇO */
+        .display-area { height: calc(100vh - 190px); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #price-val { font-size: 3.8em; font-weight: 100; letter-spacing: -2px; margin-top: 20px; transition: 0.2s; }
+        #signal-text { font-size: 0.6em; letter-spacing: 4px; color: #222; font-weight: 800; margin-bottom: 30px; }
 
-        /* TABELA PROFISSIONAL 4 COLUNAS */
-        .table-pro { width: 100%; border-collapse: collapse; background: #080808; font-size: 0.75em; border-radius: 8px; overflow: hidden; }
-        .table-pro th { color: var(--gold); padding: 15px 5px; text-align: left; border-bottom: 2px solid #222; background: #111; }
-        .table-pro td { padding: 15px 5px; border-bottom: 1px solid #111; font-family: 'Roboto Mono', monospace; }
-
-        /* O GRÁFICO "BONITÃO" */
-        .chart-container { background: #080808; border: 1px solid #222; border-radius: 12px; padding: 15px; margin-top: 10px; height: 250px; position: relative; }
-        #liveChart { width: 100% !important; height: 100% !important; }
-
-        .price-big { font-size: 2.2em; font-weight: 900; color: var(--gold); margin: 10px 0; font-family: monospace; }
+        /* GRÁFICO STEALTH */
+        .chart-container { width: 100%; flex-grow: 1; position: relative; }
         
-        .legenda-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; }
-        .leg-item { font-size: 0.6em; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        /* FOOTER */
+        .footer { position: fixed; bottom: 0; width: 100%; height: 60px; display: flex; align-items: center; padding: 0 20px; border-top: 1px solid #111; font-size: 0.6em; color: #333; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
-    <div id="capa">
-        <div style="font-size: 4em; margin-bottom: 10px;">🔱</div>
-        <h1 style="color:var(--gold); letter-spacing: 10px; margin:0;">DIPLOMATA</h1>
-        <p style="color:#444; font-size: 0.7em; letter-spacing: 4px; margin-bottom: 30px;">TRADING TERMINAL V1250</p>
-        <button class="btn-acesso" onclick="entrar()">ENTRAR</button>
-    </div>
-
     <div class="header">
-        <span style="color:var(--gold); font-weight: bold;">S.I. // LIVE DATA</span>
-        <span id="nasa-clock" style="color:var(--gold)">00:00:00</span>
+        <div class="logo">Diplomata Gold // S.I.</div>
+        <div id="clock" style="color: #444; font-family: monospace;">00:00:00</div>
     </div>
 
-    <div id="moedas" class="content active">
-        <table class="table-pro">
-            <thead>
-                <tr>
-                    <th>ATIVO</th>
-                    <th>PREÇO (R$)</th>
-                    <th>VAR (24H)</th>
-                    <th>TIME</th>
-                </tr>
-            </thead>
-            <tbody id="lista-corpo">
-                </tbody>
-        </table>
+    <div class="time-selector">
+        <button class="t-btn" onclick="updateTime('15m', this)">15 MIN</button>
+        <button class="t-btn" onclick="updateTime('30m', this)">30 MIN</button>
+        <button class="t-btn active" onclick="updateTime('45m', this)">45 MIN</button>
+        <button class="t-btn" onclick="updateTime('1h', this)">1 HORA</button>
+        <button class="t-btn" onclick="updateTime('2h', this)">2 HORAS</button>
+        <button class="t-btn" onclick="updateTime('24h', this)">24 HORAS</button>
     </div>
 
-    <div id="graficos" class="content">
-        <div style="text-align: center;">
-            <div id="asset-name" style="font-size: 0.8em; color: #888; letter-spacing: 2px;">BITCOIN / BRL</div>
-            <div id="main-price" class="price-big">477.100,00</div>
-            <div id="price-status" class="status-pill" style="background: var(--green); color: black; display: inline-block;">MERCADO LIBERADO</div>
-        </div>
-
+    <div class="display-area">
+        <div id="price-val">477.100,00</div>
+        <div id="signal-text">AGUARDANDO SINAL</div>
+        
         <div class="chart-container">
-            <canvas id="liveChart"></canvas>
-        </div>
-
-        <div class="legenda-grid">
-            <div class="leg-item">🟢 ENTRA: ACIMA DO ALVO</div>
-            <div class="leg-item">🔴 PULA: ZONA DE VÁCUO</div>
-            <div class="leg-item">⚖️ AGUARDA: LATÊNCIA</div>
-            <div class="leg-item">⏱️ NASA: 0.004ms</div>
+            <canvas id="terminalChart"></canvas>
         </div>
     </div>
 
-    <div class="nav-bar">
-        <button class="tab-btn active" onclick="switchTab('moedas', this)">MARKET</button>
-        <button class="tab-btn" onclick="switchTab('graficos', this)">CHART PRO</button>
+    <div class="footer">
+        <span id="view-mode">MODE: REALTIME // BUFFER: 100ms</span>
     </div>
 
     <script>
-        function entrar() { document.getElementById('capa').style.transform = 'translateY(-100%)'; }
-        
-        function switchTab(id, btn) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            btn.classList.add('active');
-        }
+        const ctx = document.getElementById('terminalChart').getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 0, 300);
+        grad.addColorStop(0, 'rgba(184, 134, 11, 0.1)');
+        grad.addColorStop(1, 'transparent');
 
-        // DADOS DA TABELA
-        const ativos = [
-            {n:"BITCOIN", p:"477.100", v:"+2.45%", t:"09:30:01"},
-            {n:"SOLANA", p:"960,75", v:"+5.12%", t:"09:30:02"},
-            {n:"AVAX", p:"178,50", v:"+0.88%", t:"09:30:08"},
-            {n:"ETH", p:"14.250", v:"-1.05%", t:"09:30:10"}
-        ];
-
-        const corpo = document.getElementById('lista-corpo');
-        ativos.forEach(a => {
-            corpo.innerHTML += `<tr><td><b>${a.n}</b></td><td>${a.p}</td><td style="color:${a.v.includes('+')?'var(--green)':'var(--red)'}">${a.v}</td><td style="color:#444">${a.t}</td></tr>`;
-        });
-
-        // CONFIGURAÇÃO DO GRÁFICO "BONITÃO"
-        const ctx = document.getElementById('liveChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-        gradient.addColorStop(0, 'rgba(212, 175, 55, 0.4)');
-        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-
-        let dataPoints = Array(20).fill(477100);
-        let labels = Array(20).fill('');
-
-        const liveChart = new Chart(ctx, {
+        let points = Array(50).fill(477100);
+        const chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: Array(50).fill(''),
                 datasets: [{
-                    label: 'Preço Gold',
-                    data: dataPoints,
-                    borderColor: '#D4AF37',
-                    borderWidth: 3,
+                    data: points,
+                    borderColor: '#B8860B',
+                    borderWidth: 1.5,
                     pointRadius: 0,
                     fill: true,
-                    backgroundColor: gradient,
+                    backgroundColor: grad,
                     tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: { duration: 400 },
-                scales: {
-                    x: { display: false },
-                    y: { 
-                        grid: { color: '#111' },
-                        ticks: { color: '#444', font: { size: 10 } }
-                    }
-                },
+                animation: false,
+                scales: { x: { display: false }, y: { display: false } },
                 plugins: { legend: { display: false } }
             }
         });
 
-        // MOTOR DE MOVIMENTO (SINCRONIA NASA)
+        function updateTime(period, btn) {
+            document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('view-mode').innerText = `MODE: ${period.toUpperCase()} // PROTECTION: ACTIVE`;
+            // Aqui entra a lógica de mudar o zoom do gráfico futuramente
+        }
+
         setInterval(() => {
-            // Relógio
-            const d = new Date();
-            document.getElementById('nasa-clock').innerText = d.toLocaleTimeString();
-
-            // Simulação de Preço
-            const lastPrice = dataPoints[dataPoints.length - 1];
-            const change = (Math.random() - 0.5) * 500;
-            const newPrice = lastPrice + change;
-
-            dataPoints.push(newPrice);
-            dataPoints.shift();
-            liveChart.update('none');
-
-            // Atualiza Painel Principal
-            const mainP = document.getElementById('main-price');
-            mainP.innerText = newPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
             
-            const status = document.getElementById('price-status');
+            const last = points[points.length - 1];
+            const change = (Math.random() - 0.5) * 600;
+            const val = last + change;
+            
+            points.push(val);
+            points.shift();
+            chart.update('none');
+
+            const pDisplay = document.getElementById('price-val');
+            const sDisplay = document.getElementById('signal-text');
+            pDisplay.innerText = val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
             if(change > 0) {
-                mainP.style.color = "var(--green)";
-                status.innerText = "ENTRA (COMPRA GOLD)";
-                status.style.background = "var(--green)";
+                pDisplay.style.color = "var(--green)";
+                sDisplay.innerText = "ENTRA • ALVO POSITIVO";
+                sDisplay.style.color = "var(--green)";
+                chart.data.datasets[0].borderColor = "var(--green)";
             } else {
-                mainP.style.color = "var(--red)";
-                status.innerText = "PULA (ZONA VÁCUO)";
-                status.style.background = "var(--red)";
+                pDisplay.style.color = "var(--red)";
+                sDisplay.innerText = "PULA • VÁCUO DETECTADO";
+                sDisplay.style.color = "var(--red)";
+                chart.data.datasets[0].borderColor = "var(--red)";
             }
-        }, 800);
+        }, 500);
     </script>
 </body>
 </html>
