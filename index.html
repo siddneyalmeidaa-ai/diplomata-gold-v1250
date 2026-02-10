@@ -5,93 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --gold: #B8860B; --black: #050505; --green: #00FF41; --red: #FF3131; }
+        :root { --gold: #C5A059; --black: #000; --green: #00FF41; --red: #FF3131; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--black); color: #fff; overflow: hidden; }
 
-        /* HEADER */
-        .header { padding: 15px 20px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 0.7em; letter-spacing: 5px; color: var(--gold); font-weight: 900; text-transform: uppercase; }
+        /* HEADER DISCRETO */
+        .header { padding: 20px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 0.8em; letter-spacing: 5px; color: var(--gold); font-weight: 900; }
+        .clock { font-family: monospace; color: #333; font-size: 0.8em; }
 
-        /* SELETOR DE MINUTOS/HORAS (TIME CONTROL) */
-        .time-selector { 
+        /* SELETOR DE TEMPO TIPO "SLIDE" - MUITO MAIS BONITO */
+        .time-nav { 
             display: flex; 
-            justify-content: space-around; 
+            overflow-x: auto; 
+            padding: 15px; 
+            gap: 20px; 
             background: #080808; 
-            padding: 12px 5px; 
+            scrollbar-width: none;
             border-bottom: 1px solid #111;
         }
+        .time-nav::-webkit-scrollbar { display: none; }
         .t-btn { 
+            white-space: nowrap; 
             background: none; 
             border: none; 
             color: #444; 
-            font-size: 0.6em; 
+            font-size: 0.7em; 
             font-weight: 900; 
-            cursor: pointer; 
-            transition: 0.3s;
-            padding: 5px 10px;
+            letter-spacing: 1px;
+            cursor: pointer;
         }
         .t-btn.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
 
-        /* PAINEL DE PREÇO */
-        .display-area { height: calc(100vh - 190px); padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        #price-val { font-size: 3.8em; font-weight: 100; letter-spacing: -2px; margin-top: 20px; transition: 0.2s; }
-        #signal-text { font-size: 0.6em; letter-spacing: 4px; color: #222; font-weight: 800; margin-bottom: 30px; }
+        /* DISPLAY DE PREÇO MINIMALISTA */
+        .terminal { height: calc(100vh - 160px); overflow-y: auto; padding: 20px; }
+        .price-hero { text-align: center; margin: 20px 0; }
+        #price { font-size: 3.2em; font-weight: 100; letter-spacing: -2px; }
+        #badge { font-size: 0.6em; letter-spacing: 4px; font-weight: 900; margin-top: 10px; }
 
-        /* GRÁFICO STEALTH */
-        .chart-container { width: 100%; flex-grow: 1; position: relative; }
+        /* O GRÁFICO - AGORA ELE FLUTUA */
+        .chart-wrap { height: 200px; width: 100%; margin: 20px 0; }
+
+        /* TABELA DE 4 COLUNAS - PADRÃO NASA */
+        .table-pro { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        .table-pro th { text-align: left; font-size: 0.55em; color: #444; letter-spacing: 2px; padding: 10px 0; border-bottom: 1px solid #111; }
+        .table-pro td { padding: 15px 0; border-bottom: 1px solid #080808; font-size: 0.8em; font-family: monospace; }
         
-        /* FOOTER */
-        .footer { position: fixed; bottom: 0; width: 100%; height: 60px; display: flex; align-items: center; padding: 0 20px; border-top: 1px solid #111; font-size: 0.6em; color: #333; letter-spacing: 1px; }
+        /* NAV INFERIOR */
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; height: 60px; display: flex; border-top: 1px solid #111; background: #000; }
+        .nav-link { flex: 1; display: flex; align-items: center; justify-content: center; color: #333; font-size: 0.7em; font-weight: 900; text-transform: uppercase; border: none; background: none; }
+        .nav-link.active { color: var(--gold); }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div class="logo">Diplomata Gold // S.I.</div>
-        <div id="clock" style="color: #444; font-family: monospace;">00:00:00</div>
+        <div class="logo">🔱 DIPLOMATA</div>
+        <div id="clock" class="clock">09:41:00</div>
     </div>
 
-    <div class="time-selector">
-        <button class="t-btn" onclick="updateTime('15m', this)">15 MIN</button>
-        <button class="t-btn" onclick="updateTime('30m', this)">30 MIN</button>
-        <button class="t-btn active" onclick="updateTime('45m', this)">45 MIN</button>
-        <button class="t-btn" onclick="updateTime('1h', this)">1 HORA</button>
-        <button class="t-btn" onclick="updateTime('2h', this)">2 HORAS</button>
-        <button class="t-btn" onclick="updateTime('24h', this)">24 HORAS</button>
+    <div class="time-nav">
+        <button class="t-btn" onclick="set(this)">15 MIN</button>
+        <button class="t-btn" onclick="set(this)">30 MIN</button>
+        <button class="t-btn" onclick="set(this)">45 MIN</button>
+        <button class="t-btn active" onclick="set(this)">1 HORA</button>
+        <button class="t-btn" onclick="set(this)">2 HORAS</button>
+        <button class="t-btn" onclick="set(this)">24 HORAS</button>
     </div>
 
-    <div class="display-area">
-        <div id="price-val">477.100,00</div>
-        <div id="signal-text">AGUARDANDO SINAL</div>
-        
-        <div class="chart-container">
-            <canvas id="terminalChart"></canvas>
+    <div class="terminal">
+        <div class="price-hero">
+            <div id="price">477.611,00</div>
+            <div id="badge">MERCADO ATIVO</div>
         </div>
-    </div>
 
-    <div class="footer">
-        <span id="view-mode">MODE: REALTIME // BUFFER: 100ms</span>
+        <div class="chart-wrap">
+            <canvas id="liveChart"></canvas>
+        </div>
+
+        <table class="table-pro">
+            <thead>
+                <tr>
+                    <th>ATIVO</th>
+                    <th>PREÇO</th>
+                    <th>VAR (24H)</th>
+                    <th>SYNC</th>
+                </tr>
+            </thead>
+            <tbody id="lista"></tbody>
+        </table>
     </div>
 
     <script>
-        const ctx = document.getElementById('terminalChart').getContext('2d');
-        const grad = ctx.createLinearGradient(0, 0, 0, 300);
-        grad.addColorStop(0, 'rgba(184, 134, 11, 0.1)');
-        grad.addColorStop(1, 'transparent');
+        function set(btn) {
+            document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
 
-        let points = Array(50).fill(477100);
+        // MOTOR DE DADOS: 96 ATIVOS
+        const list = document.getElementById('lista');
+        for (let i = 1; i <= 96; i++) {
+            list.innerHTML += `
+                <tr>
+                    <td style="color:var(--gold); font-weight:bold;">ASSET-${i}</td>
+                    <td>${(Math.random()*500).toFixed(2)}</td>
+                    <td style="color:var(--green)">+1.2%</td>
+                    <td style="color:#222">0.0${i}ms</td>
+                </tr>
+            `;
+        }
+
+        const ctx = document.getElementById('liveChart').getContext('2d');
         const chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: Array(50).fill(''),
+                labels: Array(40).fill(''),
                 datasets: [{
-                    data: points,
-                    borderColor: '#B8860B',
-                    borderWidth: 1.5,
+                    data: Array(40).fill(477611),
+                    borderColor: '#C5A059',
+                    borderWidth: 1,
                     pointRadius: 0,
                     fill: true,
-                    backgroundColor: grad,
+                    backgroundColor: 'rgba(197, 160, 89, 0.05)',
                     tension: 0.4
                 }]
             },
@@ -104,40 +139,17 @@
             }
         });
 
-        function updateTime(period, btn) {
-            document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('view-mode').innerText = `MODE: ${period.toUpperCase()} // PROTECTION: ACTIVE`;
-            // Aqui entra a lógica de mudar o zoom do gráfico futuramente
-        }
-
         setInterval(() => {
             document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-            
-            const last = points[points.length - 1];
-            const change = (Math.random() - 0.5) * 600;
-            const val = last + change;
-            
-            points.push(val);
-            points.shift();
+            let val = 477611 + (Math.random() - 0.5) * 500;
+            chart.data.datasets[0].data.push(val);
+            chart.data.datasets[0].data.shift();
             chart.update('none');
-
-            const pDisplay = document.getElementById('price-val');
-            const sDisplay = document.getElementById('signal-text');
-            pDisplay.innerText = val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-
-            if(change > 0) {
-                pDisplay.style.color = "var(--green)";
-                sDisplay.innerText = "ENTRA • ALVO POSITIVO";
-                sDisplay.style.color = "var(--green)";
-                chart.data.datasets[0].borderColor = "var(--green)";
-            } else {
-                pDisplay.style.color = "var(--red)";
-                sDisplay.innerText = "PULA • VÁCUO DETECTADO";
-                sDisplay.style.color = "var(--red)";
-                chart.data.datasets[0].borderColor = "var(--red)";
-            }
-        }, 500);
+            
+            const p = document.getElementById('price');
+            p.innerText = val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            p.style.color = (Math.random() > 0.5) ? 'var(--green)' : 'var(--red)';
+        }, 800);
     </script>
 </body>
 </html>
