@@ -5,331 +5,136 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Paleta Dourada de Elite */
-        :root { 
-            --gold: #C5A059; 
-            --black: #080808; /* Um preto um pouco mais suave que o 000 */
-            --green: #00FF41; 
-            --red: #FF3131; 
-            --gray-text: #666; /* Texto auxiliar mais suave */
-            --dark-gray: #1a1a1a;
-            --light-border: #181818;
-        }
+        :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.03); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: var(--black); color: #fff; overflow: hidden; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--black); color: #fff; overflow: hidden; display: flex; flex-direction: column; }
+        .header { padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); }
+        .logo { font-size: 0.8em; letter-spacing: 6px; color: var(--gold); font-weight: 900; }
 
-        /* HEADER */
-        .header { 
-            padding: 15px 20px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid var(--light-border);
-            background: var(--black);
-        }
-        .logo { font-size: 0.8em; letter-spacing: 5px; color: var(--gold); font-weight: 900; text-transform: uppercase; }
-        .clock { font-family: 'Roboto Mono', monospace; color: var(--gray-text); font-size: 0.7em; }
+        /* SELETOR EM PÍLULAS */
+        .time-nav { display: flex; padding: 15px; gap: 10px; overflow-x: auto; scrollbar-width: none; }
+        .t-btn { background: #111; border: none; color: #555; padding: 8px 18px; border-radius: 20px; font-size: 0.65em; font-weight: 800; cursor: pointer; white-space: nowrap; }
+        .t-btn.active { background: var(--gold); color: #000; }
 
-        /* SELETOR DE TEMPO (PÍLULAS) */
-        .time-selector { 
-            display: flex; 
-            justify-content: flex-start; /* Alinhado à esquerda como na imagem */
-            overflow-x: auto; 
-            padding: 10px 15px; 
-            gap: 8px; /* Espaço entre as pílulas */
-            background: var(--black);
-            border-bottom: 1px solid var(--light-border);
-            scrollbar-width: none; /* Esconde scrollbar Firefox */
-        }
-        .time-selector::-webkit-scrollbar { display: none; /* Esconde scrollbar Chrome/Safari */ }
-        .t-btn { 
-            white-space: nowrap; 
-            background: var(--dark-gray); /* Fundo da pílula */
-            border: none; 
-            border-radius: 15px; /* Formato de pílula */
-            color: var(--gray-text); 
-            font-size: 0.65em; 
-            font-weight: 700; 
-            padding: 8px 15px; 
-            cursor: pointer; 
-            transition: all 0.2s ease;
-        }
-        .t-btn.active { 
-            background: var(--gold); 
-            color: var(--black); /* Texto preto na pílula dourada */
-            font-weight: 800;
-        }
+        .main { height: calc(100vh - 160px); overflow-y: auto; padding: 0 20px; }
+        
+        /* PREÇO LIMPO */
+        .price-hero { text-align: center; padding: 30px 0; }
+        #price { font-size: 3.5em; font-weight: 100; letter-spacing: -2px; }
+        #status { font-size: 0.6em; letter-spacing: 4px; color: #444; margin-top: 5px; }
 
-        /* ÁREA PRINCIPAL (SCROLLABLE) */
-        .main-content { 
-            flex-grow: 1; 
-            overflow-y: auto; 
-            padding: 0 15px; /* Padding lateral, top/bottom será dos elementos */
-            background: var(--black);
-        }
+        .chart-box { height: 180px; width: 100%; margin-bottom: 30px; }
 
-        /* PAINEL DE PREÇO GIGANTE */
-        .price-panel { text-align: center; padding: 25px 0 15px 0; }
-        #main-price { 
-            font-size: 3.5em; 
-            font-weight: 200; /* Leve como na imagem */
-            letter-spacing: -1px; 
-            transition: color 0.2s ease;
-        }
-        #signal-text { 
-            font-size: 0.65em; 
-            letter-spacing: 3px; 
-            font-weight: 600; 
-            color: var(--gray-text); /* Texto mais sutil */
-            margin-top: 5px;
-            text-transform: uppercase;
-        }
-
-        /* GRÁFICO (FLUTUANDO) */
-        .chart-wrap { 
-            height: 180px; /* Altura ajustada como na imagem */
-            width: 100%; 
-            position: relative; 
-            margin-top: 20px;
-            margin-bottom: 10px;
-        }
-        .chart-labels { 
-            display: flex; 
-            justify-content: space-around; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            padding: 5px 0;
-            font-size: 0.6em; 
-            color: var(--gray-text); 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-        }
-        .chart-labels div {
-             flex: 1; 
-             text-align: center;
-             line-height: 1.2; /* Ajuste para centralizar verticalmente */
-        }
-        #mainChart { z-index: 1; position: relative; }
-
-        /* TABELA DE ATIVOS (96 ITENS) */
-        .assets-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-top: 15px; 
-            margin-bottom: 20px; /* Espaço no final da tabela */
-        }
-        .assets-table th { 
-            text-align: left; 
-            font-size: 0.6em; 
-            color: var(--gray-text); 
-            letter-spacing: 1.5px; 
-            padding: 12px 0; 
-            border-bottom: 1px solid var(--light-border); 
-            text-transform: uppercase;
-        }
-        .assets-table td { 
-            padding: 14px 0; 
-            border-bottom: 1px solid var(--dark-gray); /* Linhas mais finas */
-            font-size: 0.8em; 
-            font-family: 'Roboto Mono', monospace; 
-            color: #ccc;
-        }
-        .assets-table td:first-child { color: #eee; font-weight: 500; } /* Nome do ativo mais claro */
-        .assets-table .positive { color: var(--green); font-weight: bold; }
-        .assets-table .negative { color: var(--red); font-weight: bold; }
-
-        /* FOOTER DE STATUS */
-        .footer-status { 
-            padding: 12px 15px; 
-            background: var(--black); 
-            border-top: 1px solid var(--light-border);
-            color: var(--gray-text); 
-            font-size: 0.65em; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-            text-align: center;
-            flex-shrink: 0; /* Não permite encolher */
-        }
+        /* TABELA SEM LINHAS PESADAS */
+        .table-elite { width: 100%; border-collapse: collapse; }
+        .table-elite th { text-align: left; font-size: 0.55em; color: #333; letter-spacing: 2px; padding-bottom: 15px; }
+        .table-elite td { padding: 18px 0; border-bottom: 1px solid var(--line); font-size: 0.85em; font-family: 'Roboto Mono', monospace; }
+        .coin-name { color: var(--gold); font-weight: bold; font-family: 'Inter', sans-serif; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="logo">🔱 DIPLOMATA</div>
-        <div id="clock" class="clock">09:41:00</div>
+        <div id="clock" style="color:#333; font-size: 0.8em;">09:55:00</div>
     </div>
 
-    <div class="time-selector" id="time-selector-buttons">
-        <button class="t-btn" data-time="15m" onclick="selectTime(this)">15 MIN</button>
-        <button class="t-btn" data-time="30m" onclick="selectTime(this)">30 MIN</button>
-        <button class="t-btn" data-time="45m" onclick="selectTime(this)">45 MIN</button>
-        <button class="t-btn active" data-time="1h" onclick="selectTime(this)">1 HORA</button>
-        <button class="t-btn" data-time="2h" onclick="selectTime(this)">2 HORAS</button>
-        <button class="t-btn" data-time="24h" onclick="selectTime(this)">24 HORAS</button>
+    <div class="time-nav">
+        <button class="t-btn" onclick="sel(this)">15 MIN</button>
+        <button class="t-btn" onclick="sel(this)">30 MIN</button>
+        <button class="t-btn" onclick="sel(this)">45 MIN</button>
+        <button class="t-btn active" onclick="sel(this)">1 HORA</button>
+        <button class="t-btn" onclick="sel(this)">2 HORAS</button>
+        <button class="t-btn" onclick="sel(this)">24 HORAS</button>
     </div>
 
-    <div class="main-content">
-        <div class="price-panel">
-            <div id="main-price">477.611,00</div>
-            <div id="signal-text">ENTRA • ALVO POSITIVO</div>
+    <div class="main">
+        <div class="price-hero">
+            <div id="price">479.519,30</div>
+            <div id="status">PULA • VÁCUO DETECTADO</div>
         </div>
 
-        <div class="chart-wrap">
-            <div class="chart-labels">
-                <div>ATIVO</div>
-                <div>PREÇO</div>
-                <div>VAR (24H)</div>
-                <div>SYNC</div>
-            </div>
+        <div class="chart-box">
             <canvas id="mainChart"></canvas>
         </div>
 
-        <table class="assets-table">
+        <table class="table-elite">
             <thead>
-                <tr>
-                    <th>ATIVO</th>
-                    <th>PREÇO</th>
-                    <th>VAR (24H)</th>
-                    <th>SYNC</th>
-                </tr>
+                <tr><th>ATIVO</th><th>PREÇO (R$)</th><th>VAR (24H)</th><th>SYNC</th></tr>
             </thead>
-            <tbody id="assets-list">
-                </tbody>
+            <tbody id="coin-list"></tbody>
         </table>
     </div>
 
-    <div class="footer-status">
-        <span id="mode-status">MODE: 1 HORA // PROTECTION: ACTIVE</span>
-    </div>
-
     <script>
-        // Funções para a seleção de tempo
-        let currentInterval = 800; // Intervalo de atualização do gráfico
-        let currentVolatility = 500; // Nível de "barulho" na mudança de preço
-        let currentTimeframe = '1h';
-
-        function selectTime(btn) {
-            document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentTimeframe = btn.dataset.time;
-            document.getElementById('mode-status').innerText = `MODE: ${currentTimeframe.toUpperCase()} // PROTECTION: ACTIVE`;
-
-            // Ajusta o comportamento do gráfico baseado no tempo selecionado
-            switch(currentTimeframe) {
-                case '15m': currentInterval = 400; currentVolatility = 100; break;
-                case '30m': currentInterval = 600; currentVolatility = 250; break;
-                case '45m': currentInterval = 800; currentVolatility = 400; break;
-                case '1h': currentInterval = 1000; currentVolatility = 500; break; // Padrão
-                case '2h': currentInterval = 1500; currentVolatility = 800; break;
-                case '24h': currentInterval = 2500; currentVolatility = 1500; break;
-                default: currentInterval = 1000; currentVolatility = 500;
-            }
-            
-            // Reinicia o gráfico com novos pontos para simular o "zoom"
-            points = Array(40).fill(parseFloat(document.getElementById('main-price').innerText.replace('.', '').replace(',', '.')));
-            mainChart.data.datasets[0].data = points;
-            mainChart.update('none');
+        function sel(b) {
+            document.querySelectorAll('.t-btn').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
         }
 
-        // Simulação de Dados para 96 Ativos
-        const baseAssets = [
-            { name: "BITCOIN", price: 477100 }, { name: "SOLANA", price: 960.75 }, { name: "AVAX", price: 178.50 },
-            { name: "ETHEREUM", price: 14250 }, { name: "CARDANO", price: 2.45 }, { name: "POLKADOT", price: 35.10 },
-            { name: "LITECOIN", price: 450.20 }, { name: "CHAINLINK", price: 92.30 }, { name: "MATIC", price: 4.15 },
-            { name: "XRP", price: 3.10 }, { name: "DOGECOIN", price: 0.85 }, { name: "SHIBA INU", price: 0.00012 }
+        // NOMES REAIS DAS MOEDAS EM ORDEM
+        const moedasPredefinidas = [
+            {n:"BITCOIN", p:"479.519", v:"+1.2%"},
+            {n:"ETHEREUM", p:"14.820", v:"+0.8%"},
+            {n:"SOLANA", p:"965,40", v:"+5.4%"},
+            {n:"BINANCE COIN", p:"3.120", v:"-1.1%"},
+            {n:"CARDANO", p:"2,45", v:"+2.1%"},
+            {n:"XRP", p:"3,10", v:"+0.5%"},
+            {n:"POLKADOT", p:"35,15", v:"-0.9%"},
+            {n:"DOGECOIN", p:"0,85", v:"+12.4%"}
         ];
 
-        const assetsList = document.getElementById('assets-list');
-        function generateAssetsTable() {
-            assetsList.innerHTML = ''; // Limpa a lista antes de gerar
-            for (let i = 0; i < 96; i++) {
-                const base = baseAssets[i % baseAssets.length];
-                const currentPrice = base.price * (1 + (Math.random() - 0.5) * 0.02); // Variação de 2%
-                const var24h = (Math.random() * 10 - 5).toFixed(2); // Variação de -5% a +5%
-                const sync = (Math.random() * 0.9).toFixed(1);
-
-                const varClass = var24h >= 0 ? 'positive' : 'negative';
-                const varSign = var24h >= 0 ? '+' : '';
-
-                assetsList.innerHTML += `
-                    <tr>
-                        <td>ASSET-${String(i+1).padStart(2, '0')}</td>
-                        <td>${currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                        <td class="${varClass}">${varSign}${var24h}%</td>
-                        <td>${sync}ms</td>
-                    </tr>
-                `;
-            }
+        const list = document.getElementById('coin-list');
+        // Gera as primeiras moedas reais e depois preenche até 96
+        for (let i = 0; i < 96; i++) {
+            const m = moedasPredefinidas[i % moedasPredefinidas.length];
+            const isPos = m.v.includes('+');
+            list.innerHTML += `
+                <tr>
+                    <td class="coin-name">${m.n} ${i > 7 ? i : ''}</td>
+                    <td>${m.p}</td>
+                    <td style="color:${isPos ? 'var(--green)' : 'var(--red)'}">${m.v}</td>
+                    <td style="color:#222">0.00${i}ms</td>
+                </tr>
+            `;
         }
-        generateAssetsTable(); // Gera a tabela inicial
 
-        // Configuração do Gráfico
         const ctx = document.getElementById('mainChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 180); // Altura do gráfico
-        gradient.addColorStop(0, 'rgba(197, 160, 89, 0.1)'); // Cor mais suave
-        gradient.addColorStop(1, 'transparent');
-
-        let points = Array(40).fill(477611); // Pontos iniciais
-        const mainChart = new Chart(ctx, {
+        const chart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: Array(40).fill(''),
                 datasets: [{
-                    data: points,
-                    borderColor: 'var(--gold)',
+                    data: Array(40).fill(479519),
+                    borderColor: '#C5A059',
                     borderWidth: 1.5,
                     pointRadius: 0,
                     fill: true,
-                    backgroundColor: gradient,
-                    tension: 0.45 // Curva da linha
+                    backgroundColor: 'rgba(197, 160, 89, 0.03)',
+                    tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: false, // Desativa animação para updates rápidos
+                animation: false,
                 scales: { x: { display: false }, y: { display: false } },
                 plugins: { legend: { display: false } }
             }
         });
 
-        // Motor de Sincronização NASA
         setInterval(() => {
             document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-
-            const lastPrice = points[points.length - 1];
-            const change = (Math.random() - 0.5) * currentVolatility;
-            let newPrice = lastPrice + change;
-
-            points.push(newPrice);
-            points.shift();
-            mainChart.update('none'); // Atualização sem transição
-
-            const priceDisplay = document.getElementById('main-price');
-            const signalDisplay = document.getElementById('signal-text');
-            priceDisplay.innerText = newPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-
-            if (change > 0) {
-                priceDisplay.style.color = 'var(--green)';
-                signalDisplay.innerText = 'ENTRA • ALVO POSITIVO';
-                signalDisplay.style.color = 'var(--green)';
-                mainChart.data.datasets[0].borderColor = 'var(--green)';
-                mainChart.data.datasets[0].backgroundColor = `rgba(0, 255, 65, 0.1)`;
-            } else {
-                priceDisplay.style.color = 'var(--red)';
-                signalDisplay.innerText = 'PULA • VÁCUO DETECTADO';
-                signalDisplay.style.color = 'var(--red)';
-                mainChart.data.datasets[0].borderColor = 'var(--red)';
-                mainChart.data.datasets[0].backgroundColor = `rgba(255, 49, 49, 0.1)`;
-            }
-
-            // Atualiza a tabela de ativos dinamicamente (simulado)
-            generateAssetsTable();
-
-        }, currentInterval); // Usa o intervalo definido pelo seletor de tempo
+            let val = 479519 + (Math.random() - 0.5) * 400;
+            chart.data.datasets[0].data.push(val);
+            chart.data.datasets[0].data.shift();
+            chart.update('none');
+            
+            const p = document.getElementById('price');
+            p.innerText = val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            p.style.color = (Math.random() > 0.5) ? 'var(--green)' : 'var(--red)';
+        }, 1000);
     </script>
 </body>
 </html>
