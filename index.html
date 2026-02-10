@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#D4AF37">
+    <title>DIPLOMATA GOLD V1250</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root { --gold: #D4AF37; --black: #000; --green: #00FF00; --red: #FF0000; }
+        body { background: var(--black); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
+        
+        /* CAPA */
+        #capa { position: fixed; width: 100%; height: 100%; background: var(--black); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s; }
+        #capa h1 { color: var(--gold); font-size: 2.2em; letter-spacing: 5px; margin: 0; }
+        .btn-acesso { margin-top: 30px; padding: 15px 40px; border: 2px solid var(--gold); color: var(--gold); background: transparent; border-radius: 50px; cursor: pointer; font-weight: bold; }
+
+        /* NAVEGAÇÃO */
+        .nav-bar { display: flex; background: #0a0a0a; border-top: 1px solid var(--gold); position: fixed; bottom: 0; width: 100%; height: 60px; z-index: 100; }
+        .tab-btn { flex: 1; border: none; background: transparent; color: #555; font-size: 0.8em; font-weight: bold; }
+        .tab-btn.active { color: var(--gold); border-top: 3px solid var(--gold); }
+
+        .content { height: calc(100vh - 60px); overflow-y: auto; display: none; padding: 20px; box-sizing: border-box; }
+        .content.active { display: block; }
+
+        /* RADAR GOLD */
+        .gauge-container { position: relative; width: 220px; height: 110px; margin: 20px auto; overflow: hidden; }
+        .gauge-bg { width: 220px; height: 220px; border: 15px solid #1a1a1a; border-radius: 50%; border-bottom-color: transparent; border-left-color: transparent; transform: rotate(-45deg); position: absolute; }
+        .gauge-fill { width: 220px; height: 220px; border: 15px solid var(--green); border-radius: 50%; border-bottom-color: transparent; border-left-color: transparent; transform: rotate(-45deg); position: absolute; transition: 0.4s; }
+        .needle { width: 3px; height: 90px; background: #fff; position: absolute; left: 50%; bottom: 0; transform-origin: bottom center; transition: 0.4s; }
+        
+        .scanner { display: flex; height: 25px; background: #111; border-radius: 5px; margin: 20px 0; overflow: hidden; border: 1px solid #333; }
+        .legenda { font-size: 0.7em; color: #888; margin-top: 15px; border-top: 1px solid #222; padding-top: 10px; }
+
+        /* TABELA */
+        table { width: 100%; border-collapse: collapse; }
+        th { color: var(--gold); text-align: left; border-bottom: 1px solid var(--gold); padding: 10px; font-size: 0.8em; }
+        td { padding: 15px 10px; border-bottom: 1px solid #111; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <div id="capa">
+        <h1 style="font-size: 4em;">🔱</h1>
+        <h1>DIPLOMATA</h1>
+        <p style="color:#555; letter-spacing: 2px;">V1250 GOLD EDITION</p>
+        <button class="btn-acesso" onclick="entrar()">ACESSAR TERMINAL</button>
+    </div>
+
+    <div id="moedas" class="content active">
+        <h3 style="color:var(--gold);">🛰️ TERMINAL DE ATIVOS</h3>
+        <table>
+            <thead>
+                <tr><th>ATIVO</th><th>PREÇO (R$)</th><th>ALVO (-50%)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>BITCOIN</td><td>477.100</td><td style="color:var(--green)">485.926</td></tr>
+                <tr><td>SOLANA</td><td>960,75</td><td style="color:var(--green)">1.003,02</td></tr>
+                <tr><td>AVAX</td><td>178,50</td><td style="color:var(--green)">185,28</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="graficos" class="content">
+        <h3 style="color:var(--gold); text-align:center;">📊 RADAR DE POLARIDADE</h3>
+        <div class="gauge-container">
+            <div class="gauge-bg"></div>
+            <div id="fill" class="gauge-fill"></div>
+            <div id="needle" class="needle"></div>
+        </div>
+        <div id="status-txt" style="text-align:center; font-weight:bold; color:var(--green); font-size: 1.2em;">IGNEÇÃO GOLD</div>
+
+        <div class="scanner">
+            <div id="bar-buy" style="width: 70%; background: var(--green);"></div>
+            <div id="bar-sell" style="width: 30%; background: var(--red);"></div>
+        </div>
+
+        <div class="legenda">
+            <strong>LEGENDA DIRETORIA:</strong><br>
+            🟢 <strong>VELOCÍMETRO:</strong> Força de rompimento do Alvo.<br>
+            📊 <strong>SCANNER LATERAL:</strong> Pressão de Compra vs Vácuo.<br>
+            🔱 <strong>STATUS:</strong> Verde (Entra) | Vermelho (Pula).
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <button class="tab-btn active" onclick="switchTab('moedas', this)">ATIVOS</button>
+        <button class="tab-btn" onclick="switchTab('graficos', this)">RADAR GOLD</button>
+    </div>
+
+    <script>
+        function entrar() {
+            document.getElementById('capa').style.opacity = '0';
+            setTimeout(() => { document.getElementById('capa').style.display = 'none'; }, 800);
+        }
+
+        function switchTab(id, btn) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        setInterval(() => {
+            const power = Math.floor(Math.random() * 100);
+            const needleRot = (power * 1.8) - 90;
+            document.getElementById('needle').style.transform = `rotate(${needleRot}deg)`;
+            document.getElementById('fill').style.transform = `rotate(${(power * 1.8) - 45}deg)`;
+            document.getElementById('bar-buy').style.width = power + "%";
+            document.getElementById('bar-sell').style.width = (100 - power) + "%";
+            
+            const txt = document.getElementById('status-txt');
+            const fill = document.getElementById('fill');
+            if(power > 50) {
+                txt.innerText = "IGNEÇÃO GOLD 🚀"; txt.style.color = "var(--green)"; fill.style.borderColor = "var(--green)";
+            } else {
+                txt.innerText = "ALERTA VÁCUO 🔴"; txt.style.color = "var(--red)"; fill.style.borderColor = "var(--red)";
+            }
+        }, 800);
+    </script>
+</body>
+</html>
