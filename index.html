@@ -5,56 +5,154 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --gold: #C5A059; --black: #000; --green: #00FF41; --red: #FF3131; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--black); color: #fff; overflow: hidden; }
-
-        /* HEADER DISCRETO */
-        .header { padding: 20px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 0.8em; letter-spacing: 5px; color: var(--gold); font-weight: 900; }
-        .clock { font-family: monospace; color: #333; font-size: 0.8em; }
-
-        /* SELETOR DE TEMPO TIPO "SLIDE" - MUITO MAIS BONITO */
-        .time-nav { 
-            display: flex; 
-            overflow-x: auto; 
-            padding: 15px; 
-            gap: 20px; 
-            background: #080808; 
-            scrollbar-width: none;
-            border-bottom: 1px solid #111;
+        /* Paleta Dourada de Elite */
+        :root { 
+            --gold: #C5A059; 
+            --black: #080808; /* Um preto um pouco mais suave que o 000 */
+            --green: #00FF41; 
+            --red: #FF3131; 
+            --gray-text: #666; /* Texto auxiliar mais suave */
+            --dark-gray: #1a1a1a;
+            --light-border: #181818;
         }
-        .time-nav::-webkit-scrollbar { display: none; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--black); color: #fff; overflow: hidden; display: flex; flex-direction: column; }
+
+        /* HEADER */
+        .header { 
+            padding: 15px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--light-border);
+            background: var(--black);
+        }
+        .logo { font-size: 0.8em; letter-spacing: 5px; color: var(--gold); font-weight: 900; text-transform: uppercase; }
+        .clock { font-family: 'Roboto Mono', monospace; color: var(--gray-text); font-size: 0.7em; }
+
+        /* SELETOR DE TEMPO (PÍLULAS) */
+        .time-selector { 
+            display: flex; 
+            justify-content: flex-start; /* Alinhado à esquerda como na imagem */
+            overflow-x: auto; 
+            padding: 10px 15px; 
+            gap: 8px; /* Espaço entre as pílulas */
+            background: var(--black);
+            border-bottom: 1px solid var(--light-border);
+            scrollbar-width: none; /* Esconde scrollbar Firefox */
+        }
+        .time-selector::-webkit-scrollbar { display: none; /* Esconde scrollbar Chrome/Safari */ }
         .t-btn { 
             white-space: nowrap; 
-            background: none; 
+            background: var(--dark-gray); /* Fundo da pílula */
             border: none; 
-            color: #444; 
-            font-size: 0.7em; 
-            font-weight: 900; 
-            letter-spacing: 1px;
-            cursor: pointer;
+            border-radius: 15px; /* Formato de pílula */
+            color: var(--gray-text); 
+            font-size: 0.65em; 
+            font-weight: 700; 
+            padding: 8px 15px; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
         }
-        .t-btn.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+        .t-btn.active { 
+            background: var(--gold); 
+            color: var(--black); /* Texto preto na pílula dourada */
+            font-weight: 800;
+        }
 
-        /* DISPLAY DE PREÇO MINIMALISTA */
-        .terminal { height: calc(100vh - 160px); overflow-y: auto; padding: 20px; }
-        .price-hero { text-align: center; margin: 20px 0; }
-        #price { font-size: 3.2em; font-weight: 100; letter-spacing: -2px; }
-        #badge { font-size: 0.6em; letter-spacing: 4px; font-weight: 900; margin-top: 10px; }
+        /* ÁREA PRINCIPAL (SCROLLABLE) */
+        .main-content { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding: 0 15px; /* Padding lateral, top/bottom será dos elementos */
+            background: var(--black);
+        }
 
-        /* O GRÁFICO - AGORA ELE FLUTUA */
-        .chart-wrap { height: 200px; width: 100%; margin: 20px 0; }
+        /* PAINEL DE PREÇO GIGANTE */
+        .price-panel { text-align: center; padding: 25px 0 15px 0; }
+        #main-price { 
+            font-size: 3.5em; 
+            font-weight: 200; /* Leve como na imagem */
+            letter-spacing: -1px; 
+            transition: color 0.2s ease;
+        }
+        #signal-text { 
+            font-size: 0.65em; 
+            letter-spacing: 3px; 
+            font-weight: 600; 
+            color: var(--gray-text); /* Texto mais sutil */
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
 
-        /* TABELA DE 4 COLUNAS - PADRÃO NASA */
-        .table-pro { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        .table-pro th { text-align: left; font-size: 0.55em; color: #444; letter-spacing: 2px; padding: 10px 0; border-bottom: 1px solid #111; }
-        .table-pro td { padding: 15px 0; border-bottom: 1px solid #080808; font-size: 0.8em; font-family: monospace; }
-        
-        /* NAV INFERIOR */
-        .nav-bottom { position: fixed; bottom: 0; width: 100%; height: 60px; display: flex; border-top: 1px solid #111; background: #000; }
-        .nav-link { flex: 1; display: flex; align-items: center; justify-content: center; color: #333; font-size: 0.7em; font-weight: 900; text-transform: uppercase; border: none; background: none; }
-        .nav-link.active { color: var(--gold); }
+        /* GRÁFICO (FLUTUANDO) */
+        .chart-wrap { 
+            height: 180px; /* Altura ajustada como na imagem */
+            width: 100%; 
+            position: relative; 
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .chart-labels { 
+            display: flex; 
+            justify-content: space-around; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            padding: 5px 0;
+            font-size: 0.6em; 
+            color: var(--gray-text); 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+        }
+        .chart-labels div {
+             flex: 1; 
+             text-align: center;
+             line-height: 1.2; /* Ajuste para centralizar verticalmente */
+        }
+        #mainChart { z-index: 1; position: relative; }
+
+        /* TABELA DE ATIVOS (96 ITENS) */
+        .assets-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 15px; 
+            margin-bottom: 20px; /* Espaço no final da tabela */
+        }
+        .assets-table th { 
+            text-align: left; 
+            font-size: 0.6em; 
+            color: var(--gray-text); 
+            letter-spacing: 1.5px; 
+            padding: 12px 0; 
+            border-bottom: 1px solid var(--light-border); 
+            text-transform: uppercase;
+        }
+        .assets-table td { 
+            padding: 14px 0; 
+            border-bottom: 1px solid var(--dark-gray); /* Linhas mais finas */
+            font-size: 0.8em; 
+            font-family: 'Roboto Mono', monospace; 
+            color: #ccc;
+        }
+        .assets-table td:first-child { color: #eee; font-weight: 500; } /* Nome do ativo mais claro */
+        .assets-table .positive { color: var(--green); font-weight: bold; }
+        .assets-table .negative { color: var(--red); font-weight: bold; }
+
+        /* FOOTER DE STATUS */
+        .footer-status { 
+            padding: 12px 15px; 
+            background: var(--black); 
+            border-top: 1px solid var(--light-border);
+            color: var(--gray-text); 
+            font-size: 0.65em; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            text-align: center;
+            flex-shrink: 0; /* Não permite encolher */
+        }
     </style>
 </head>
 <body>
@@ -64,26 +162,32 @@
         <div id="clock" class="clock">09:41:00</div>
     </div>
 
-    <div class="time-nav">
-        <button class="t-btn" onclick="set(this)">15 MIN</button>
-        <button class="t-btn" onclick="set(this)">30 MIN</button>
-        <button class="t-btn" onclick="set(this)">45 MIN</button>
-        <button class="t-btn active" onclick="set(this)">1 HORA</button>
-        <button class="t-btn" onclick="set(this)">2 HORAS</button>
-        <button class="t-btn" onclick="set(this)">24 HORAS</button>
+    <div class="time-selector" id="time-selector-buttons">
+        <button class="t-btn" data-time="15m" onclick="selectTime(this)">15 MIN</button>
+        <button class="t-btn" data-time="30m" onclick="selectTime(this)">30 MIN</button>
+        <button class="t-btn" data-time="45m" onclick="selectTime(this)">45 MIN</button>
+        <button class="t-btn active" data-time="1h" onclick="selectTime(this)">1 HORA</button>
+        <button class="t-btn" data-time="2h" onclick="selectTime(this)">2 HORAS</button>
+        <button class="t-btn" data-time="24h" onclick="selectTime(this)">24 HORAS</button>
     </div>
 
-    <div class="terminal">
-        <div class="price-hero">
-            <div id="price">477.611,00</div>
-            <div id="badge">MERCADO ATIVO</div>
+    <div class="main-content">
+        <div class="price-panel">
+            <div id="main-price">477.611,00</div>
+            <div id="signal-text">ENTRA • ALVO POSITIVO</div>
         </div>
 
         <div class="chart-wrap">
-            <canvas id="liveChart"></canvas>
+            <div class="chart-labels">
+                <div>ATIVO</div>
+                <div>PREÇO</div>
+                <div>VAR (24H)</div>
+                <div>SYNC</div>
+            </div>
+            <canvas id="mainChart"></canvas>
         </div>
 
-        <table class="table-pro">
+        <table class="assets-table">
             <thead>
                 <tr>
                     <th>ATIVO</th>
@@ -92,64 +196,140 @@
                     <th>SYNC</th>
                 </tr>
             </thead>
-            <tbody id="lista"></tbody>
+            <tbody id="assets-list">
+                </tbody>
         </table>
     </div>
 
+    <div class="footer-status">
+        <span id="mode-status">MODE: 1 HORA // PROTECTION: ACTIVE</span>
+    </div>
+
     <script>
-        function set(btn) {
+        // Funções para a seleção de tempo
+        let currentInterval = 800; // Intervalo de atualização do gráfico
+        let currentVolatility = 500; // Nível de "barulho" na mudança de preço
+        let currentTimeframe = '1h';
+
+        function selectTime(btn) {
             document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            currentTimeframe = btn.dataset.time;
+            document.getElementById('mode-status').innerText = `MODE: ${currentTimeframe.toUpperCase()} // PROTECTION: ACTIVE`;
+
+            // Ajusta o comportamento do gráfico baseado no tempo selecionado
+            switch(currentTimeframe) {
+                case '15m': currentInterval = 400; currentVolatility = 100; break;
+                case '30m': currentInterval = 600; currentVolatility = 250; break;
+                case '45m': currentInterval = 800; currentVolatility = 400; break;
+                case '1h': currentInterval = 1000; currentVolatility = 500; break; // Padrão
+                case '2h': currentInterval = 1500; currentVolatility = 800; break;
+                case '24h': currentInterval = 2500; currentVolatility = 1500; break;
+                default: currentInterval = 1000; currentVolatility = 500;
+            }
+            
+            // Reinicia o gráfico com novos pontos para simular o "zoom"
+            points = Array(40).fill(parseFloat(document.getElementById('main-price').innerText.replace('.', '').replace(',', '.')));
+            mainChart.data.datasets[0].data = points;
+            mainChart.update('none');
         }
 
-        // MOTOR DE DADOS: 96 ATIVOS
-        const list = document.getElementById('lista');
-        for (let i = 1; i <= 96; i++) {
-            list.innerHTML += `
-                <tr>
-                    <td style="color:var(--gold); font-weight:bold;">ASSET-${i}</td>
-                    <td>${(Math.random()*500).toFixed(2)}</td>
-                    <td style="color:var(--green)">+1.2%</td>
-                    <td style="color:#222">0.0${i}ms</td>
-                </tr>
-            `;
-        }
+        // Simulação de Dados para 96 Ativos
+        const baseAssets = [
+            { name: "BITCOIN", price: 477100 }, { name: "SOLANA", price: 960.75 }, { name: "AVAX", price: 178.50 },
+            { name: "ETHEREUM", price: 14250 }, { name: "CARDANO", price: 2.45 }, { name: "POLKADOT", price: 35.10 },
+            { name: "LITECOIN", price: 450.20 }, { name: "CHAINLINK", price: 92.30 }, { name: "MATIC", price: 4.15 },
+            { name: "XRP", price: 3.10 }, { name: "DOGECOIN", price: 0.85 }, { name: "SHIBA INU", price: 0.00012 }
+        ];
 
-        const ctx = document.getElementById('liveChart').getContext('2d');
-        const chart = new Chart(ctx, {
+        const assetsList = document.getElementById('assets-list');
+        function generateAssetsTable() {
+            assetsList.innerHTML = ''; // Limpa a lista antes de gerar
+            for (let i = 0; i < 96; i++) {
+                const base = baseAssets[i % baseAssets.length];
+                const currentPrice = base.price * (1 + (Math.random() - 0.5) * 0.02); // Variação de 2%
+                const var24h = (Math.random() * 10 - 5).toFixed(2); // Variação de -5% a +5%
+                const sync = (Math.random() * 0.9).toFixed(1);
+
+                const varClass = var24h >= 0 ? 'positive' : 'negative';
+                const varSign = var24h >= 0 ? '+' : '';
+
+                assetsList.innerHTML += `
+                    <tr>
+                        <td>ASSET-${String(i+1).padStart(2, '0')}</td>
+                        <td>${currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                        <td class="${varClass}">${varSign}${var24h}%</td>
+                        <td>${sync}ms</td>
+                    </tr>
+                `;
+            }
+        }
+        generateAssetsTable(); // Gera a tabela inicial
+
+        // Configuração do Gráfico
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 180); // Altura do gráfico
+        gradient.addColorStop(0, 'rgba(197, 160, 89, 0.1)'); // Cor mais suave
+        gradient.addColorStop(1, 'transparent');
+
+        let points = Array(40).fill(477611); // Pontos iniciais
+        const mainChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: Array(40).fill(''),
                 datasets: [{
-                    data: Array(40).fill(477611),
-                    borderColor: '#C5A059',
-                    borderWidth: 1,
+                    data: points,
+                    borderColor: 'var(--gold)',
+                    borderWidth: 1.5,
                     pointRadius: 0,
                     fill: true,
-                    backgroundColor: 'rgba(197, 160, 89, 0.05)',
-                    tension: 0.4
+                    backgroundColor: gradient,
+                    tension: 0.45 // Curva da linha
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: false,
+                animation: false, // Desativa animação para updates rápidos
                 scales: { x: { display: false }, y: { display: false } },
                 plugins: { legend: { display: false } }
             }
         });
 
+        // Motor de Sincronização NASA
         setInterval(() => {
             document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-            let val = 477611 + (Math.random() - 0.5) * 500;
-            chart.data.datasets[0].data.push(val);
-            chart.data.datasets[0].data.shift();
-            chart.update('none');
-            
-            const p = document.getElementById('price');
-            p.innerText = val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-            p.style.color = (Math.random() > 0.5) ? 'var(--green)' : 'var(--red)';
-        }, 800);
+
+            const lastPrice = points[points.length - 1];
+            const change = (Math.random() - 0.5) * currentVolatility;
+            let newPrice = lastPrice + change;
+
+            points.push(newPrice);
+            points.shift();
+            mainChart.update('none'); // Atualização sem transição
+
+            const priceDisplay = document.getElementById('main-price');
+            const signalDisplay = document.getElementById('signal-text');
+            priceDisplay.innerText = newPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+            if (change > 0) {
+                priceDisplay.style.color = 'var(--green)';
+                signalDisplay.innerText = 'ENTRA • ALVO POSITIVO';
+                signalDisplay.style.color = 'var(--green)';
+                mainChart.data.datasets[0].borderColor = 'var(--green)';
+                mainChart.data.datasets[0].backgroundColor = `rgba(0, 255, 65, 0.1)`;
+            } else {
+                priceDisplay.style.color = 'var(--red)';
+                signalDisplay.innerText = 'PULA • VÁCUO DETECTADO';
+                signalDisplay.style.color = 'var(--red)';
+                mainChart.data.datasets[0].borderColor = 'var(--red)';
+                mainChart.data.datasets[0].backgroundColor = `rgba(255, 49, 49, 0.1)`;
+            }
+
+            // Atualiza a tabela de ativos dinamicamente (simulado)
+            generateAssetsTable();
+
+        }, currentInterval); // Usa o intervalo definido pelo seletor de tempo
     </script>
 </body>
 </html>
