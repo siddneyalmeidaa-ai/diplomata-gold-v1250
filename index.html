@@ -9,26 +9,32 @@
         :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.02); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--black); color: #fff; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        
         .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); }
         .logo { font-size: 0.75em; letter-spacing: 5px; color: var(--gold); font-weight: 900; }
+        
         .time-nav { display: flex; padding: 12px 15px; gap: 8px; overflow-x: auto; background: #080808; border-bottom: 1px solid var(--line); scrollbar-width: none; }
         .t-btn { background: #111; border: none; color: #555; padding: 8px 16px; border-radius: 20px; font-size: 0.65em; font-weight: 800; cursor: pointer; white-space: nowrap; }
         .t-btn.active { background: var(--gold); color: #000; }
+
         .viewport { flex: 1; overflow-y: auto; padding: 0 20px; }
         .price-focus { text-align: center; padding: 25px 0; }
         #main-price { font-size: 3.8em; font-weight: 100; letter-spacing: -2px; }
         #signal { font-size: 0.65em; letter-spacing: 4px; color: #444; font-weight: 800; margin-top: 5px; }
-        .chart-box { height: 200px; width: 100%; margin-bottom: 20px; }
+        .chart-box { height: 180px; width: 100%; margin-bottom: 20px; }
+        
         .ranking-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .ranking-table th { text-align: left; font-size: 0.55em; color: #333; letter-spacing: 1px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
         .ranking-table td { padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 0.85em; font-family: 'Roboto Mono', monospace; }
-        .coin-name { color: #eee; font-weight: 600; }
+        .coin-name { color: #eee; font-weight: 600; font-family: 'Inter'; }
+        .future-price { color: var(--gold); font-weight: 800; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="logo">🔱 DIPLOMATA</div>
-        <div id="clock" style="color:#333; font-size:0.8em;">10:22:00</div>
+        <div id="clock" style="color:#333; font-size:0.8em;">10:25:00</div>
     </div>
 
     <div class="time-nav">
@@ -43,34 +49,52 @@
     <div class="viewport">
         <div class="price-focus">
             <div id="main-price">482.119,45</div>
-            <div id="signal">SINCRONIZANDO...</div>
+            <div id="signal">CALCULANDO VALOR FUTURO...</div>
         </div>
         <div class="chart-box"><canvas id="mainChart"></canvas></div>
-        <table class="ranking-table"><tbody id="ranking-body"></tbody></table>
+        
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th>ATIVO</th>
+                    <th>PREÇO AGORA</th>
+                    <th>VALOR PÓS-24H (1:1)</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody id="ranking-body"></tbody>
+        </table>
     </div>
 
     <script>
-        let updateInterval = 2000; // Padrão 1 Hora
+        let updateInterval = 2000;
         let timerRef = null;
 
-        // DATABASE ÚNICO (RANKING REAL) [cite: 2026-01-28]
         const marketData = [
-            {n:"BITCOIN", p:"482.119", v:"+2.1%"}, {n:"ETHEREUM", p:"14.820", v:"+1.4%"},
-            {n:"SOLANA", p:"965,40", v:"+6.2%"}, {n:"BNB", p:"3.120", v:"-0.4%"},
-            {n:"XRP", p:"3,10", v:"+0.8%"}, {n:"DOGECOIN", p:"0,85", v:"+15.2%"}
+            {n:"BITCOIN", p:482119.45, v:2.1}, {n:"ETHEREUM", p:14820.10, v:1.4},
+            {n:"SOLANA", p:965.40, v:6.2}, {n:"BNB", p:3120.00, v:-0.4},
+            {n:"XRP", p:3.10, v:0.8}, {n:"DOGECOIN", p:0.85, v:15.2},
+            {n:"CARDANO", p:2.45, v:2.1}, {n:"AVALANCHE", p:182.30, v:4.7},
+            {n:"TRON", p:0.78, v:1.1}, {n:"POLKADOT", p:35.10, v:-2.3}
         ];
 
         function renderRanking() {
             const tbody = document.getElementById('ranking-body');
-            tbody.innerHTML = marketData.map((c, i) => `
+            tbody.innerHTML = marketData.map((c, i) => {
+                // Cálculo de Projeção Normal (Sem margem de 50%)
+                const target24h = c.p * (1 + (c.v / 100));
+                
+                return `
                 <tr>
-                    <td><span style="color:#222;font-size:0.7em;margin-right:8px;">${i+1}</span><span class="coin-name">${c.n}</span></td>
-                    <td>${c.p}</td>
-                    <td style="color:${c.v.includes('+') ? 'var(--green)' : 'var(--red)'}">${c.v}</td>
-                    <td style="color:#222; font-size:0.7em;">${c.v.includes('+') ? 'ENTRA' : 'PULA'}</td>
-                </tr>`).join('');
+                    <td><span class="coin-name">${c.n}</span></td>
+                    <td>${c.p.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td class="future-price">${target24h.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td style="color:${c.v >= 0 ? 'var(--green)' : 'var(--red)'}; font-weight:bold;">
+                        ${c.v >= 0 ? 'PROJEÇÃO ALTA' : 'PROJEÇÃO BAIXA'}
+                    </td>
+                </tr>`;
+            }).join('');
         }
-        renderRanking();
 
         function setTime(mode, ms, btn) {
             document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
@@ -91,10 +115,11 @@
         });
 
         function startEngine() {
+            renderRanking();
             timerRef = setInterval(() => {
                 document.getElementById('clock').innerText = new Date().toLocaleTimeString();
                 let last = chart.data.datasets[0].data[39];
-                let change = (Math.random() - 0.5) * (updateInterval < 1000 ? 100 : 500); // Mais estável em tempos longos
+                let change = (Math.random() - 0.5) * (updateInterval < 1000 ? 100 : 500);
                 let val = last + change;
                 
                 chart.data.datasets[0].data.push(val);
@@ -102,19 +127,10 @@
                 chart.update('none');
 
                 const pEl = document.getElementById('main-price');
-                const sEl = document.getElementById('signal');
                 pEl.innerText = val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                
-                // Regra do X com -50% da projeção [cite: 2026-01-16, 2025-12-29]
-                if(change > 0) {
-                    pEl.style.color = 'var(--green)';
-                    sEl.innerText = 'ENTRA • ALVO POSITIVO';
-                    sEl.style.color = 'var(--green)';
-                } else {
-                    pEl.style.color = 'var(--red)';
-                    sEl.innerText = 'PULA • VÁCUO DETECTADO';
-                    sEl.style.color = 'var(--red)';
-                }
+                pEl.style.color = change > 0 ? 'var(--green)' : 'var(--red)';
+                document.getElementById('signal').innerText = change > 0 ? 'ENTRA • ALVO POSITIVO' : 'PULA • VÁCUO DETECTADO';
+                document.getElementById('signal').style.color = change > 0 ? 'var(--green)' : 'var(--red)';
             }, updateInterval);
         }
         startEngine();
