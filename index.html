@@ -10,43 +10,46 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto Mono', monospace; }
         body { background: var(--black); color: #fff; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
-        /* CABEÇALHO DO SISTEMA */
-        .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); }
+        /* CABEÇALHO */
+        .header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); flex-shrink: 0; }
         .logo { font-size: 0.75em; letter-spacing: 5px; color: var(--gold); font-weight: 900; font-family: 'Inter'; }
         #clock { color: #333; font-size: 0.8em; }
 
-        /* ABAS */
-        .tab-bar { display: flex; border-top: 1px solid var(--line); background: #080808; position: fixed; bottom: 0; width: 100%; height: 65px; }
+        /* NAVEGAÇÃO */
+        .tab-bar { display: flex; border-top: 1px solid var(--line); background: #080808; position: fixed; bottom: 0; width: 100%; height: 65px; z-index: 100; }
         .tab-item { flex: 1; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.7em; font-weight: 800; cursor: pointer; text-transform: uppercase; font-family: 'Inter'; }
         .tab-item.active { color: var(--gold); background: rgba(197, 160, 89, 0.05); border-top: 2px solid var(--gold); }
 
-        .content-area { flex: 1; overflow-y: auto; padding-bottom: 70px; display: none; }
+        /* CONTEÚDO */
+        .content-area { flex: 1; overflow-y: auto; padding-bottom: 75px; display: none; }
         .content-area.active { display: block; }
 
         /* GRÁFICO */
         .price-focus { text-align: center; padding: 30px 20px; }
         #main-price { font-size: 3.5em; font-weight: 100; letter-spacing: -2px; }
-        .chart-container { height: 320px; width: 100%; padding: 10px; }
+        .chart-container { height: 350px; width: 100%; padding: 10px; }
 
-        /* TABELA DATA-ONLY */
-        .ranking-table { width: 100%; border-collapse: collapse; }
-        .ranking-table th { position: sticky; top: 0; background: #080808; text-align: right; font-size: 0.55em; color: #333; padding: 15px 10px; border-bottom: 1px solid var(--line); font-family: 'Inter'; }
-        .ranking-table th:first-child { text-align: left; }
-        .ranking-table td { padding: 18px 10px; border-bottom: 1px solid var(--line); font-size: 0.9em; text-align: right; font-weight: 500; }
-        .ranking-table td:first-child { text-align: left; color: var(--gold); }
+        /* TABELA BLINDADA (LARGURA FIXA %) */
+        .ranking-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .ranking-table th { position: sticky; top: 0; background: #080808; text-align: right; font-size: 0.55em; color: #333; padding: 15px 10px; border-bottom: 1px solid var(--line); font-family: 'Inter'; z-index: 5; }
+        .ranking-table th:nth-child(1) { width: 15%; text-align: left; }
+        .ranking-table th:nth-child(2) { width: 30%; }
+        .ranking-table th:nth-child(3) { width: 20%; }
+        .ranking-table th:nth-child(4) { width: 35%; }
+        
+        .ranking-table td { padding: 18px 10px; border-bottom: 1px solid var(--line); font-size: 0.8em; text-align: right; overflow: hidden; white-space: nowrap; }
+        .ranking-table td:nth-child(1) { text-align: left; color: var(--gold); font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="logo">🔱 DIPLOMATA</div>
-        <div id="clock">10:36:00</div>
+        <div id="clock">10:45:00</div>
     </div>
 
     <div id="tab-chart" class="content-area active">
-        <div class="price-focus">
-            <div id="main-price">482.119,45</div>
-        </div>
+        <div class="price-focus"><div id="main-price">0,00</div></div>
         <div class="chart-container"><canvas id="proChart"></canvas></div>
     </div>
 
@@ -54,9 +57,9 @@
         <table class="ranking-table">
             <thead>
                 <tr>
-                    <th># RANKING</th>
+                    <th>#</th>
                     <th>ATUAL</th>
-                    <th>% (24H)</th>
+                    <th>%</th>
                     <th>PROJ. 24H</th>
                 </tr>
             </thead>
@@ -70,19 +73,15 @@
     </div>
 
     <script>
-        let updateInterval = 2000;
-        let timerRef = null;
-
-        // Ativos reais em ordem de Ranking (BTC, ETH, SOL, ADA...)
+        // LISTA EXPANDIDA - TOP 30 ATIVOS (SÓ NÚMEROS NO CORPO)
         const rawData = [
-            {p:482119.45, v:2.1}, {p:14820.10, v:1.4},
-            {p:965.40, v:6.2}, {p:2.45, v:2.1},
-            {p:3120.00, v:-0.4}, {p:3.10, v:0.8},
-            {p:0.85, v:15.2}, {p:182.30, v:4.7},
-            {p:0.78, v:1.1}, {p:35.10, v:-2.3},
-            {p:92.30, v:3.1}, {p:12.45, v:12.4},
-            {p:0.00005, v:25.1}, {p:24.15, v:4.2},
-            {p:35.20, v:9.1}, {p:410.00, v:1.2}
+            {p:482119.45, v:2.11}, {p:14820.10, v:1.45}, {p:965.40, v:6.22}, {p:2.45, v:2.10}, // #4 é ADA
+            {p:3120.00, v:-0.42}, {p:3.10, v:0.88}, {p:0.85, v:15.20}, {p:182.30, v:4.71},
+            {p:0.78, v:1.15}, {p:35.10, v:-2.30}, {p:92.30, v:3.12}, {p:12.45, v:12.44},
+            {p:52.30, v:3.88}, {p:145.00, v:5.32}, {p:0.00012, v:8.55}, {p:410.00, v:1.22},
+            {p:15.40, v:4.10}, {p:2.15, v:-1.45}, {p:0.45, v:10.20}, {p:120.30, v:3.71},
+            {p:1.78, v:1.15}, {p:5.10, v:-2.30}, {p:22.30, v:3.12}, {p:6.45, v:12.44},
+            {p:42.30, v:3.88}, {p:15.00, v:5.32}, {p:0.0512, v:8.55}, {p:10.00, v:1.22}
         ];
 
         function switchTab(tabId, el) {
@@ -99,7 +98,7 @@
                 return `<tr>
                     <td>${i + 1}</td>
                     <td>${c.p.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                    <td style="color:${c.v >= 0 ? 'var(--green)' : 'var(--red)'}">${c.v >= 0 ? '' : ''}${c.v}</td>
+                    <td style="color:${c.v >= 0 ? 'var(--green)' : 'var(--red)'}">${c.v.toFixed(2)}</td>
                     <td style="color:var(--gold)">${target.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                 </tr>`;
             }).join('');
@@ -115,21 +114,20 @@
             options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
         });
 
-        function startEngine() {
-            renderMarket();
-            timerRef = setInterval(() => {
-                document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-                let last = chart.data.datasets[0].data[49];
-                let change = (Math.random() - 0.5) * 200;
-                let val = last + change;
-                chart.data.datasets[0].data.push(val);
-                chart.data.datasets[0].data.shift();
-                chart.update('none');
-                document.getElementById('main-price').innerText = val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                document.getElementById('main-price').style.color = change > 0 ? 'var(--green)' : 'var(--red)';
-            }, 2000);
-        }
-        startEngine();
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+            let last = chart.data.datasets[0].data[49];
+            let change = (Math.random() - 0.5) * 200;
+            let val = last + change;
+            chart.data.datasets[0].data.push(val);
+            chart.data.datasets[0].data.shift();
+            chart.update('none');
+            const pEl = document.getElementById('main-price');
+            pEl.innerText = val.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            pEl.style.color = change > 0 ? 'var(--green)' : 'var(--red)';
+        }, 2000);
+
+        renderMarket();
     </script>
 </body>
 </html>
