@@ -3,48 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD V3.2 // FOCO TOTAL</title>
+    <title>DIPLOMATA GOLD V3.3 // SENTINELA ATIVO</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.05); --select: rgba(197, 160, 89, 0.2); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--black); color: #fff; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
+        /* PROTEÇÃO IPI */
         #lock-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .login-box { text-align: center; border: 1px solid var(--gold); padding: 40px; border-radius: 8px; background: #080808; }
         .login-box input { background: #111; border: 1px solid #333; color: var(--gold); padding: 10px; text-align: center; outline: none; margin-top: 20px; font-family: 'Roboto Mono'; }
         
         .header { padding: 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
-        .logo { color: var(--gold); font-weight: 900; letter-spacing: 2px; font-size: 0.75em; }
+        .logo { color: var(--gold); font-weight: 900; letter-spacing: 2px; font-size: 0.75em; cursor: pointer; }
         
-        .decision-panel { background: #080808; padding: 12px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--line); transition: 0.5s; }
+        .decision-panel { background: #080808; padding: 12px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--line); transition: 0.5s; position: relative; }
         .stat-box { text-align: center; }
         .stat-label { font-size: 0.5em; color: #666; text-transform: uppercase; }
         .stat-value { font-family: 'Roboto Mono'; font-weight: bold; font-size: 0.85em; }
 
-        .viewport { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-        .price-container { text-align: center; padding: 10px; }
+        .viewport { flex: 1; overflow: hidden; display: flex; flex-direction: column; position: relative; }
         
-        /* CORREÇÃO DE VISIBILIDADE AQUI */
+        /* MARCA D'ÁGUA MODO LINKEDIN */
+        #watermark { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(197, 160, 89, 0.15); font-size: 2em; font-weight: 900; z-index: 1; pointer-events: none; text-align: center; }
+
+        .price-container { text-align: center; padding: 10px; z-index: 2; }
         #active-asset { font-size: 0.65em; letter-spacing: 3px; color: #FFFFFF; font-weight: 900; margin-bottom: 5px; text-shadow: 0 0 10px rgba(197, 160, 89, 0.3); }
-        
         #main-price { font-size: 2.8em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; }
         
-        .chart-wrapper { height: 160px; padding: 0 10px; }
-        .table-container { flex: 1; overflow-y: auto; background: #050505; border-top: 1px solid var(--line); scrollbar-width: none; }
-        .table-container::-webkit-scrollbar { display: none; }
+        .chart-wrapper { height: 160px; padding: 0 10px; z-index: 2; }
+        .table-container { flex: 1; overflow-y: auto; background: #050505; border-top: 1px solid var(--line); scrollbar-width: none; z-index: 2; }
 
         .asset-list { width: 100%; border-collapse: collapse; }
         .asset-list tr { border-bottom: 1px solid var(--line); cursor: pointer; transition: 0.2s; }
         .asset-list tr.selected { background: var(--select); border-left: 4px solid var(--gold); }
         .asset-list td { padding: 12px 10px; font-size: 0.7em; }
         .asset-name { font-weight: bold; color: var(--gold); text-transform: uppercase; font-size: 0.6em; }
-        .price-col { font-family: 'Roboto Mono'; text-align: right; }
-        .var-col { text-align: right; font-family: 'Roboto Mono'; font-weight: bold; width: 90px; }
         
-        .trend-up { color: var(--green); } .trend-down { color: var(--red); }
         .liberada-icon { color: var(--green); font-weight: bold; margin-left: 5px; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        
+        /* BOTÃO DE SNAPSHOT */
+        .btn-snapshot { position: fixed; bottom: 20px; right: 20px; background: var(--gold); color: #000; border: none; padding: 10px; border-radius: 50%; cursor: pointer; z-index: 100; font-size: 1.2em; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(197,160,89,0.5); }
     </style>
 </head>
 <body>
@@ -57,20 +58,21 @@
 </div>
 
 <div class="header">
-    <div class="logo">🔱 DIPLOMATA GOLD V3.2</div>
+    <div class="logo" onclick="toggleLinkedinMode()">🔱 DIPLOMATA GOLD V3.3</div>
     <div id="clock" style="font-family:'Roboto Mono'; font-size:0.7em; color:#333;">00:00:00</div>
 </div>
 
 <div id="sa-panel" class="decision-panel">
     <div class="stat-box"><div class="stat-label">Ciclo</div><div class="stat-value" style="color:var(--gold)">24H</div></div>
     <div class="stat-box"><div class="stat-label">Sentinela</div><div id="sa-decision" class="stat-value">---</div></div>
-    <div class="stat-box"><div class="stat-label">Proj. (-50%)</div><div id="sa-proj" class="stat-value">---</div></div>
+    <div class="stat-box"><div class="stat-label">Proj. (-50%)</div><div id="sa-proj" class="stat-value" class="sensitive">---</div></div>
 </div>
 
 <div class="viewport">
+    <div id="watermark">S.A. SOBERANIA DIGITAL</div>
     <div class="price-container">
         <div id="active-asset">BITCOIN / BRL</div>
-        <div id="main-price">0,00</div>
+        <div id="main-price" class="sensitive">0,00</div>
     </div>
     <div class="chart-wrapper"><canvas id="mainChart"></canvas></div>
     <div class="table-container">
@@ -78,9 +80,25 @@
     </div>
 </div>
 
+<button class="btn-snapshot" onclick="toggleLinkedinMode()" title="Modo LinkedIn">🛡️</button>
+
 <script>
+    let linkedinMode = false;
+    let lastStatus = "";
+
     function checkPass(e) { if(e.key === 'Enter' && document.getElementById('pass-field').value === '1234') document.getElementById('lock-screen').style.display='none'; }
 
+    function toggleLinkedinMode() {
+        linkedinMode = !linkedinMode;
+        document.getElementById('watermark').style.display = linkedinMode ? 'block' : 'none';
+        const sensitives = document.querySelectorAll('.sensitive');
+        sensitives.forEach(el => {
+            if(linkedinMode) el.dataset.val = el.innerText;
+            el.innerText = linkedinMode ? '****' : (el.dataset.val || el.innerText);
+        });
+    }
+
+    // LISTA DE 30 ATIVOS MANTIDA
     const assets = [
         { id: 'BTC', name: 'Bitcoin', price: 482150.00, base: 472000, vol: 90, color: '#C5A059' },
         { id: 'ETH', name: 'Ethereum', price: 14850.20, base: 14610, vol: 75, color: '#627EEA' },
@@ -135,25 +153,33 @@
         const proj = current.price * (1 + (v * 0.5 / 100));
         const dec = document.getElementById('sa-decision');
         const panel = document.getElementById('sa-panel');
-        
+        let status = "AGUARDAR";
+
         if(current.vol > 80 && v > 1) {
-            dec.innerText = "LIBERADA: ENTRA"; dec.style.color = "var(--green)"; panel.style.background = "#080808";
+            status = "LIBERADA: ENTRA"; dec.style.color = "var(--green)"; panel.style.background = "#080808";
+            if(lastStatus !== status) { try { new Audio('https://assets.mixkit.co/sfx/preview/mixkit-bright-notificiation-2895.mp3').play(); } catch(e){} }
         } else if(v < 0) {
-            dec.innerText = "PULA (VÁCUO)"; dec.style.color = "var(--red)"; panel.style.background = "#1a0505";
+            status = "PULA (VÁCUO)"; dec.style.color = "var(--red)"; panel.style.background = "#1a0505";
         } else {
-            dec.innerText = "AGUARDAR"; dec.style.color = "var(--gold)"; panel.style.background = "#080808";
+            dec.style.color = "var(--gold)"; panel.style.background = "#080808";
         }
-        document.getElementById('sa-proj').innerText = proj.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
+        lastStatus = status;
+        dec.innerText = status;
+        const projEl = document.getElementById('sa-proj');
+        const valStr = proj.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if(linkedinMode) { projEl.dataset.val = valStr; projEl.innerText = "****"; } else { projEl.innerText = valStr; }
     }
 
     function renderTable() {
         document.getElementById('assets-body').innerHTML = assets.map(a => {
             const v = ((a.price - a.base) / a.base) * 100;
             const isLib = a.vol > 80 && v > 1;
+            const priceStr = linkedinMode ? '****' : a.price.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             return `
                 <tr onclick="select('${a.id}')" class="${current.id === a.id ? 'selected' : ''}">
                     <td class="asset-name">${a.name} ${isLib ? '<span class="liberada-icon">🔱</span>' : ''}</td>
-                    <td class="price-col">${a.price.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="price-col">${priceStr}</td>
                     <td class="var-col ${v >= 0 ? 'trend-up' : 'trend-down'}">${v >= 0 ? '▲' : '▼'} ${Math.abs(v).toFixed(2)}%</td>
                 </tr>
             `;
@@ -165,7 +191,9 @@
         assets.forEach(a => { a.price += (Math.random() - 0.5) * (a.price * 0.001); });
         chart.data.datasets[0].data.push(current.price); chart.data.datasets[0].data.shift();
         chart.update('none');
-        document.getElementById('main-price').innerText = current.price.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const mainP = document.getElementById('main-price');
+        const pStr = current.price.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if(linkedinMode) { mainP.dataset.val = pStr; mainP.innerText = "****"; } else { mainP.innerText = pStr; }
         renderTable();
         updateDecision();
     }, 1500);
