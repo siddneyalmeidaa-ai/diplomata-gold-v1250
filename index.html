@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD // SOBERANIA TOTAL</title>
+    <title>DIPLOMATA GOLD // PROJEÇÃO 24H</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.05); }
@@ -13,7 +13,6 @@
         .header { padding: 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: #000; }
         .logo { color: var(--gold); font-weight: 900; letter-spacing: 2px; font-size: 0.75em; }
         
-        /* PAINEL DE DECISÃO */
         .decision-panel { background: #080808; padding: 12px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--line); }
         .stat-box { text-align: center; }
         .stat-label { font-size: 0.5em; color: #444; text-transform: uppercase; margin-bottom: 3px; }
@@ -23,20 +22,17 @@
         .price-container { text-align: center; padding: 20px 10px; flex-shrink: 0; }
         #main-price { font-size: 3.2em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; }
         
-        /* GRÁFICO */
-        .chart-wrapper { height: 250px; padding: 0 10px; position: relative; flex-shrink: 0; }
+        .chart-wrapper { height: 230px; padding: 0 10px; position: relative; flex-shrink: 0; }
 
-        /* TABELA ROLÁVEL (ECOSSISTEMA VIVO) */
         .table-container { flex: 1; overflow-y: auto; background: #050505; scrollbar-width: none; border-top: 1px solid var(--line); }
         .table-container::-webkit-scrollbar { display: none; }
 
         .asset-list { width: 100%; border-collapse: collapse; }
         .asset-list tr { border-bottom: 1px solid var(--line); cursor: pointer; }
-        .asset-list tr:active { background: #111; }
-        .asset-list td { padding: 16px 12px; font-size: 0.8em; transition: all 0.3s; }
+        .asset-list td { padding: 16px 12px; font-size: 0.8em; }
         .asset-name { font-weight: bold; color: var(--gold); font-size: 0.7em; text-transform: uppercase; }
         .price-col { font-family: 'Roboto Mono'; text-align: right; }
-        .var-col { text-align: right; width: 60px; font-weight: bold; }
+        .var-col { text-align: right; width: 85px; font-family: 'Roboto Mono'; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -48,15 +44,15 @@
 
     <div class="decision-panel">
         <div class="stat-box">
-            <div class="stat-label">Status Sentinela</div>
-            <div id="sa-status" class="stat-value" style="color: var(--gold);">START</div>
+            <div class="stat-label">Ciclo Operacional</div>
+            <div id="sa-status" class="stat-value" style="color: var(--gold);">24 HORAS</div>
         </div>
         <div class="stat-box">
-            <div class="stat-label">Stake</div>
+            <div class="stat-label">Stake (24h)</div>
             <div id="sa-stake" class="stat-value">---</div>
         </div>
         <div class="stat-box">
-            <div class="stat-label">Projeção (-50%)</div>
+            <div id="proj-label" class="stat-label">Proj. 24h (-50%)</div>
             <div id="sa-proj" class="stat-value">---</div>
         </div>
     </div>
@@ -80,13 +76,13 @@
 
     <script>
         const assets = [
-            { id: 'BTC', name: 'Bitcoin', price: 482119.45, var: 2.1, vol: 85, color: '#C5A059' },
-            { id: 'ETH', name: 'Ethereum', price: 14820.10, var: 1.4, vol: 70, color: '#627EEA' },
-            { id: 'SOL', name: 'Solana', price: 965.40, var: 6.2, vol: 92, color: '#14F195' },
-            { id: 'BNB', name: 'Binance', price: 3120.00, var: -0.4, vol: 60, color: '#F3BA2F' },
-            { id: 'LINK', name: 'Chainlink', price: 92.30, var: 3.1, vol: 75, color: '#2A5ADA' },
-            { id: 'AVAX', name: 'Avalanche', price: 182.30, var: 4.7, vol: 82, color: '#E84142' },
-            { id: 'NEAR', name: 'Near', price: 25.10, var: 4.2, vol: 45, color: '#FFFFFF' }
+            { id: 'BTC', name: 'Bitcoin', price: 482119.45, basePrice: 472000, var: 2.15, vol: 88, color: '#C5A059' },
+            { id: 'ETH', name: 'Ethereum', price: 14820.10, basePrice: 14610, var: 1.42, vol: 72, color: '#627EEA' },
+            { id: 'SOL', name: 'Solana', price: 965.40, basePrice: 908, var: 6.31, vol: 95, color: '#14F195' },
+            { id: 'BNB', name: 'Binance', price: 3120.00, basePrice: 3135, var: -0.48, vol: 62, color: '#F3BA2F' },
+            { id: 'LINK', name: 'Chainlink', price: 92.30, basePrice: 89.20, var: 3.47, vol: 78, color: '#2A5ADA' },
+            { id: 'AVAX', name: 'Avalanche', price: 182.30, basePrice: 173.50, var: 5.07, vol: 85, color: '#E84142' },
+            { id: 'NEAR', name: 'Near', price: 25.10, basePrice: 24.05, var: 4.36, vol: 48, color: '#FFFFFF' }
         ];
 
         let current = assets[0];
@@ -115,18 +111,27 @@
         }
 
         function updateDecision() {
-            const margem = current.var * 0.5;
-            const projFinal = current.price * (1 + (margem / 100));
+            // REGRA S.A.: Projeção de 24h com -50% da variação acumulada
+            const margem24h = current.var * 0.5;
+            const projFinal = current.price * (1 + (margem24h / 100));
+            
             const statusEl = document.getElementById('sa-status');
             const stakeEl = document.getElementById('sa-stake');
             
-            if(current.vol > 80 && margem > 0.5) {
-                statusEl.innerText = "ENTRA"; statusEl.style.color = "var(--green)"; stakeEl.innerText = "R$ 1,00";
-            } else if (current.vol < 50) {
-                statusEl.innerText = "PULA"; statusEl.style.color = "var(--red)"; stakeEl.innerText = "0,00";
+            if(current.vol > 80 && margem24h > 0) {
+                statusEl.innerText = "ENTRA (24H)";
+                statusEl.style.color = "var(--green)";
+                stakeEl.innerText = "R$ 1,00";
+            } else if (current.vol < 50 || margem24h < 0) {
+                statusEl.innerText = "PULA (VÁCUO)";
+                statusEl.style.color = "var(--red)";
+                stakeEl.innerText = "0,00";
             } else {
-                statusEl.innerText = "PENDENTE"; statusEl.style.color = "var(--gold)"; stakeEl.innerText = "0,20";
+                statusEl.innerText = "AGUARDAR";
+                statusEl.style.color = "var(--gold)";
+                stakeEl.innerText = "0,20";
             }
+            
             document.getElementById('sa-proj').innerText = projFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
         }
 
@@ -135,7 +140,7 @@
                 <tr onclick="select('${a.id}')">
                     <td class="asset-name">${a.name}</td>
                     <td id="p-${a.id}" class="price-col">${a.price.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                    <td class="var-col" style="color:${a.var > 0 ? 'var(--green)' : 'var(--red)'}">${a.var.toFixed(2)}%</td>
+                    <td id="v-${a.id}" class="var-col">${a.var.toFixed(2)}%</td>
                 </tr>
             `).join('');
         }
@@ -143,15 +148,30 @@
         setInterval(() => {
             document.getElementById('clock').innerText = new Date().toLocaleTimeString();
             assets.forEach(a => {
-                let diff = (Math.random() - 0.5) * (a.price * 0.001);
-                a.price += diff;
-                let el = document.getElementById(`p-${a.id}`);
-                if(el) {
-                    el.innerText = a.price.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-                    el.style.color = diff > 0 ? 'var(--green)' : 'var(--red)';
-                    setTimeout(() => el.style.color = '#fff', 400);
+                let oscilacao = (Math.random() - 0.5) * (a.price * 0.0008);
+                a.price += oscilacao;
+                
+                // Recalcula variação com base no preço de abertura (24h)
+                a.var = ((a.price - a.basePrice) / a.basePrice) * 100;
+                
+                let elPrice = document.getElementById(`p-${a.id}`);
+                let elVar = document.getElementById(`v-${a.id}`);
+                
+                if(elPrice && elVar) {
+                    elPrice.innerText = a.price.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                    elVar.innerText = (a.var > 0 ? '+' : '') + a.var.toFixed(2) + '%';
+                    
+                    const cor = oscilacao > 0 ? 'var(--green)' : 'var(--red)';
+                    elPrice.style.color = cor;
+                    elVar.style.color = cor;
+                    
+                    setTimeout(() => {
+                        elPrice.style.color = '#fff';
+                        elVar.style.color = a.var > 0 ? 'var(--green)' : 'var(--red)';
+                    }, 400);
                 }
             });
+
             chart.data.datasets[0].data.push(current.price);
             chart.data.datasets[0].data.shift();
             chart.data.datasets[1].data.push(Math.random() * 120);
