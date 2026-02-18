@@ -3,52 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD // SOBERANIA</title>
+    <title>DIPLOMATA GOLD // SOBERANIA TOTAL</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.05); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--black); color: #fff; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
-        /* HEADER PROFISSIONAL */
-        .header { padding: 15px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
-        .logo { color: var(--gold); font-weight: 900; letter-spacing: 2px; font-size: 0.8em; }
+        .header { padding: 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: #000; }
+        .logo { color: var(--gold); font-weight: 900; letter-spacing: 2px; font-size: 0.75em; }
         
-        /* PAINEL DE DECISÃO (CENTRAL S.A.) */
-        .decision-panel { background: #0a0a0a; padding: 15px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--line); }
+        /* PAINEL DE DECISÃO */
+        .decision-panel { background: #080808; padding: 12px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--line); }
         .stat-box { text-align: center; }
-        .stat-label { font-size: 0.5em; color: #555; text-transform: uppercase; margin-bottom: 5px; }
-        .stat-value { font-family: 'Roboto Mono'; font-weight: bold; font-size: 0.9em; }
+        .stat-label { font-size: 0.5em; color: #444; text-transform: uppercase; margin-bottom: 3px; }
+        .stat-value { font-family: 'Roboto Mono'; font-weight: bold; font-size: 0.85em; }
 
-        .viewport { flex: 1; overflow-y: auto; padding-bottom: 70px; }
-        .price-container { text-align: center; padding: 30px 10px; }
-        #main-price { font-size: 3.5em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; }
+        .viewport { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+        .price-container { text-align: center; padding: 20px 10px; flex-shrink: 0; }
+        #main-price { font-size: 3.2em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; }
         
         /* GRÁFICO */
-        .chart-wrapper { height: 350px; padding: 0 10px; position: relative; }
+        .chart-wrapper { height: 250px; padding: 0 10px; position: relative; flex-shrink: 0; }
 
-        /* TABELA DE ATIVOS */
-        .asset-list { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .asset-list tr { border-bottom: 1px solid var(--line); cursor: pointer; transition: 0.3s; }
-        .asset-list tr:hover { background: rgba(197, 160, 89, 0.05); }
-        .asset-list td { padding: 15px 10px; font-size: 0.8em; }
-        .asset-name { font-weight: bold; color: var(--gold); }
+        /* TABELA ROLÁVEL (ECOSSISTEMA VIVO) */
+        .table-container { flex: 1; overflow-y: auto; background: #050505; scrollbar-width: none; border-top: 1px solid var(--line); }
+        .table-container::-webkit-scrollbar { display: none; }
+
+        .asset-list { width: 100%; border-collapse: collapse; }
+        .asset-list tr { border-bottom: 1px solid var(--line); cursor: pointer; }
+        .asset-list tr:active { background: #111; }
+        .asset-list td { padding: 16px 12px; font-size: 0.8em; transition: all 0.3s; }
+        .asset-name { font-weight: bold; color: var(--gold); font-size: 0.7em; text-transform: uppercase; }
+        .price-col { font-family: 'Roboto Mono'; text-align: right; }
+        .var-col { text-align: right; width: 60px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="logo">🔱 DIPLOMATA GOLD</div>
-        <div id="clock" style="font-family: 'Roboto Mono'; color: var(--gold); font-size: 0.7em;">00:00:00</div>
+        <div id="clock" style="font-family: 'Roboto Mono'; color: #333; font-size: 0.7em;">00:00:00</div>
     </div>
 
     <div class="decision-panel">
         <div class="stat-box">
             <div class="stat-label">Status Sentinela</div>
-            <div id="sa-status" class="stat-value" style="color: var(--gold);">CALIBRANDO...</div>
+            <div id="sa-status" class="stat-value" style="color: var(--gold);">START</div>
         </div>
         <div class="stat-box">
-            <div class="stat-label">Stake Sugerida</div>
+            <div class="stat-label">Stake</div>
             <div id="sa-stake" class="stat-value">---</div>
         </div>
         <div class="stat-box">
@@ -59,7 +63,7 @@
 
     <div class="viewport">
         <div class="price-container">
-            <div id="active-asset" style="font-size: 0.6em; letter-spacing: 3px; color: #444;">BITCOIN / BRL</div>
+            <div id="active-asset" style="font-size: 0.55em; letter-spacing: 3px; color: #444;">BITCOIN / BRL</div>
             <div id="main-price">0,00</div>
         </div>
 
@@ -67,39 +71,38 @@
             <canvas id="mainChart"></canvas>
         </div>
 
-        <table class="asset-list">
-            <tbody id="assets-body">
-                </tbody>
-        </table>
+        <div class="table-container">
+            <table class="asset-list">
+                <tbody id="assets-body"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         const assets = [
-            { id: 'BTC', name: 'Bitcoin', price: 482119, var: 2.1, vol: 85, color: '#C5A059' },
-            { id: 'ETH', name: 'Ethereum', price: 14820, var: 1.4, vol: 70, color: '#627EEA' },
+            { id: 'BTC', name: 'Bitcoin', price: 482119.45, var: 2.1, vol: 85, color: '#C5A059' },
+            { id: 'ETH', name: 'Ethereum', price: 14820.10, var: 1.4, vol: 70, color: '#627EEA' },
             { id: 'SOL', name: 'Solana', price: 965.40, var: 6.2, vol: 92, color: '#14F195' },
-            { id: 'NEAR', name: 'Near', price: 25.10, var: 4.2, vol: 40, color: '#000000' }
+            { id: 'BNB', name: 'Binance', price: 3120.00, var: -0.4, vol: 60, color: '#F3BA2F' },
+            { id: 'LINK', name: 'Chainlink', price: 92.30, var: 3.1, vol: 75, color: '#2A5ADA' },
+            { id: 'AVAX', name: 'Avalanche', price: 182.30, var: 4.7, vol: 82, color: '#E84142' },
+            { id: 'NEAR', name: 'Near', price: 25.10, var: 4.2, vol: 45, color: '#FFFFFF' }
         ];
 
         let current = assets[0];
 
-        // Inicialização do Gráfico Combo (Linha + Coluna)
         const ctx = document.getElementById('mainChart').getContext('2d');
         const chart = new Chart(ctx, {
             data: {
                 labels: Array(30).fill(''),
                 datasets: [
                     { type: 'line', data: Array(30).fill(current.price), borderColor: current.color, borderWidth: 3, pointRadius: 0, tension: 0.4, yAxisID: 'y' },
-                    { type: 'bar', data: Array(30).fill(0).map(() => Math.random() * 100), backgroundColor: 'rgba(255,255,255,0.05)', yAxisID: 'y1' }
+                    { type: 'bar', data: Array(30).fill(0).map(() => Math.random() * 100), backgroundColor: 'rgba(255,255,255,0.03)', yAxisID: 'y1' }
                 ]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: { 
-                    x: { display: false }, 
-                    y: { display: false, position: 'right' },
-                    y1: { display: false, max: 250 } 
-                },
+                responsive: true, maintainAspectRatio: false, animation: false,
+                scales: { x: { display: false }, y: { display: false }, y1: { display: false, max: 200 } },
                 plugins: { legend: { display: false } }
             }
         });
@@ -112,50 +115,53 @@
         }
 
         function updateDecision() {
-            const margem = current.var * 0.5; // Sua regra de -50%
+            const margem = current.var * 0.5;
             const projFinal = current.price * (1 + (margem / 100));
-            
             const statusEl = document.getElementById('sa-status');
             const stakeEl = document.getElementById('sa-stake');
             
             if(current.vol > 80 && margem > 0.5) {
-                statusEl.innerText = "LIBERADO: ENTRA";
-                statusEl.style.color = "var(--green)";
-                stakeEl.innerText = "1 REAL";
+                statusEl.innerText = "ENTRA"; statusEl.style.color = "var(--green)"; stakeEl.innerText = "R$ 1,00";
             } else if (current.vol < 50) {
-                statusEl.innerText = "RISCO: PULA";
-                statusEl.style.color = "var(--red)";
-                stakeEl.innerText = "0.00";
+                statusEl.innerText = "PULA"; statusEl.style.color = "var(--red)"; stakeEl.innerText = "0,00";
             } else {
-                statusEl.innerText = "PENDENTE";
-                statusEl.style.color = "var(--gold)";
-                stakeEl.innerText = "20 CENTAVOS";
+                statusEl.innerText = "PENDENTE"; statusEl.style.color = "var(--gold)"; stakeEl.innerText = "0,20";
             }
-            
-            document.getElementById('sa-proj').innerText = projFinal.toLocaleString('pt-BR');
+            document.getElementById('sa-proj').innerText = projFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
         }
 
-        // Simulação Real-time
+        function renderTable() {
+            document.getElementById('assets-body').innerHTML = assets.map(a => `
+                <tr onclick="select('${a.id}')">
+                    <td class="asset-name">${a.name}</td>
+                    <td id="p-${a.id}" class="price-col">${a.price.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td class="var-col" style="color:${a.var > 0 ? 'var(--green)' : 'var(--red)'}">${a.var.toFixed(2)}%</td>
+                </tr>
+            `).join('');
+        }
+
         setInterval(() => {
             document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-            let val = current.price + (Math.random() - 0.5) * (current.price * 0.001);
-            chart.data.datasets[0].data.push(val);
+            assets.forEach(a => {
+                let diff = (Math.random() - 0.5) * (a.price * 0.001);
+                a.price += diff;
+                let el = document.getElementById(`p-${a.id}`);
+                if(el) {
+                    el.innerText = a.price.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+                    el.style.color = diff > 0 ? 'var(--green)' : 'var(--red)';
+                    setTimeout(() => el.style.color = '#fff', 400);
+                }
+            });
+            chart.data.datasets[0].data.push(current.price);
             chart.data.datasets[0].data.shift();
-            chart.data.datasets[1].data.push(Math.random() * 150);
+            chart.data.datasets[1].data.push(Math.random() * 120);
             chart.data.datasets[1].data.shift();
             chart.update('none');
-            document.getElementById('main-price').innerText = val.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-        }, 1500);
+            document.getElementById('main-price').innerText = current.price.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            updateDecision();
+        }, 1200);
 
-        // Render Tabela
-        document.getElementById('assets-body').innerHTML = assets.map(a => `
-            <tr onclick="select('${a.id}')">
-                <td class="asset-name">${a.name}</td>
-                <td style="font-family:'Roboto Mono'">${a.price.toLocaleString('pt-BR')}</td>
-                <td style="color:${a.var > 0 ? 'var(--green)' : 'var(--red)'}">${a.var}%</td>
-            </tr>
-        `).join('');
-
+        renderTable();
         updateDecision();
     </script>
 </body>
