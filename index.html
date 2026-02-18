@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD V3.2 // 30 ATIVOS BLINDADOS</title>
+    <title>DIPLOMATA GOLD V3.2 // FOCO TOTAL</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.05); --select: rgba(197, 160, 89, 0.2); }
@@ -19,11 +19,15 @@
         
         .decision-panel { background: #080808; padding: 12px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--line); transition: 0.5s; }
         .stat-box { text-align: center; }
-        .stat-label { font-size: 0.5em; color: #444; text-transform: uppercase; }
+        .stat-label { font-size: 0.5em; color: #666; text-transform: uppercase; }
         .stat-value { font-family: 'Roboto Mono'; font-weight: bold; font-size: 0.85em; }
 
         .viewport { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
         .price-container { text-align: center; padding: 10px; }
+        
+        /* CORREÇÃO DE VISIBILIDADE AQUI */
+        #active-asset { font-size: 0.65em; letter-spacing: 3px; color: #FFFFFF; font-weight: 900; margin-bottom: 5px; text-shadow: 0 0 10px rgba(197, 160, 89, 0.3); }
+        
         #main-price { font-size: 2.8em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; }
         
         .chart-wrapper { height: 160px; padding: 0 10px; }
@@ -65,7 +69,7 @@
 
 <div class="viewport">
     <div class="price-container">
-        <div id="active-asset" style="font-size:0.5em; letter-spacing:3px; color:#444;">BITCOIN / BRL</div>
+        <div id="active-asset">BITCOIN / BRL</div>
         <div id="main-price">0,00</div>
     </div>
     <div class="chart-wrapper"><canvas id="mainChart"></canvas></div>
