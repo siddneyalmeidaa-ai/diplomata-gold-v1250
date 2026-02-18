@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD // SOBERANIA 3.0</title>
+    <title>DIPLOMATA GOLD // 30 ATIVOS BLINDADOS</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.05); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--black); color: #fff; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
-        /* TELA DE LOGIN (PROTEÇÃO IPI) */
-        #lock-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
+        #lock-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .login-box { text-align: center; border: 1px solid var(--gold); padding: 40px; border-radius: 8px; background: #080808; }
         .login-box h2 { color: var(--gold); margin-bottom: 20px; font-size: 0.8em; letter-spacing: 4px; }
         .login-box input { background: #111; border: 1px solid #333; color: var(--gold); padding: 10px; text-align: center; outline: none; margin-bottom: 20px; font-family: 'Roboto Mono'; }
@@ -26,21 +25,22 @@
 
         .viewport { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
         .price-container { text-align: center; padding: 15px 10px; flex-shrink: 0; }
-        #main-price { font-size: 3em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; }
+        #main-price { font-size: 2.8em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; }
         
-        .chart-wrapper { height: 200px; padding: 0 10px; position: relative; flex-shrink: 0; }
-        .table-container { flex: 1; overflow-y: auto; background: #050505; scrollbar-width: none; border-top: 1px solid var(--line); }
+        .chart-wrapper { height: 180px; padding: 0 10px; position: relative; flex-shrink: 0; }
+        .table-container { flex: 1; overflow-y: auto; background: #050505; border-top: 1px solid var(--line); }
         .table-container::-webkit-scrollbar { display: none; }
 
         .asset-list { width: 100%; border-collapse: collapse; }
-        .asset-list tr { border-bottom: 1px solid var(--line); cursor: pointer; transition: 0.2s; }
-        .asset-list td { padding: 14px 12px; font-size: 0.75em; }
-        .asset-name { font-weight: bold; color: var(--gold); font-size: 0.65em; text-transform: uppercase; }
+        .asset-list tr { border-bottom: 1px solid var(--line); cursor: pointer; }
+        .asset-list td { padding: 14px 12px; font-size: 0.72em; }
+        .asset-name { font-weight: bold; color: var(--gold); font-size: 0.62em; text-transform: uppercase; }
         .price-col { font-family: 'Roboto Mono'; text-align: right; }
         .var-col { text-align: right; width: 90px; font-family: 'Roboto Mono'; font-weight: bold; }
         
         .trend-up { color: var(--green); font-size: 0.7em; margin-right: 4px; }
         .trend-down { color: var(--red); font-size: 0.7em; margin-right: 4px; }
+        .liberada { color: var(--green); font-weight: 900; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -53,7 +53,7 @@
     </div>
 
     <div class="header">
-        <div class="logo">🔱 DIPLOMATA GOLD V3</div>
+        <div class="logo">🔱 DIPLOMATA GOLD V3.1</div>
         <div id="clock" style="font-family: 'Roboto Mono'; color: #333; font-size: 0.7em;">00:00:00</div>
     </div>
 
@@ -84,17 +84,39 @@
     </div>
 
     <script>
-        function checkPass(e) { if(e.key === 'Enter') { if(document.getElementById('pass-field').value === '1234') { document.getElementById('lock-screen').style.opacity = '0'; setTimeout(() => document.getElementById('lock-screen').remove(), 500); } } }
+        function checkPass(e) { if(e.key === 'Enter') { if(document.getElementById('pass-field').value === '1234') { document.getElementById('lock-screen').style.display = 'none'; } } }
 
         const assets = [
-            { id: 'BTC', name: 'Bitcoin', price: 481034.95, basePrice: 472000, var: 1.91, vol: 88, color: '#C5A059' },
-            { id: 'ETH', name: 'Ethereum', price: 14838.72, basePrice: 14610, var: 1.57, vol: 72, color: '#627EEA' },
-            { id: 'SOL', name: 'Solana', price: 966.12, basePrice: 908, var: 6.40, vol: 95, color: '#14F195' },
-            { id: 'FET', name: 'Fetch.ai', price: 12.50, basePrice: 10, var: 25.0, vol: 94, color: '#14F195' },
-            { id: 'RNDR', name: 'Render', price: 55.40, basePrice: 50, var: 10.8, vol: 82, color: '#FFFFFF' },
-            { id: 'BNB', name: 'Binance', price: 3117.93, basePrice: 3135, var: -0.54, vol: 62, color: '#F3BA2F' },
-            { id: 'NEAR', name: 'Near', price: 25.10, basePrice: 24.05, var: 4.39, vol: 48, color: '#FFFFFF' },
-            { id: 'AVAX', name: 'Avalanche', price: 181.75, basePrice: 173.50, var: 4.76, vol: 85, color: '#E84142' }
+            { id: 'BTC', name: 'Bitcoin', price: 481347.57, basePrice: 472000, var: 1.98, vol: 88, color: '#C5A059' },
+            { id: 'ETH', name: 'Ethereum', price: 14817.87, basePrice: 14610, var: 1.42, vol: 75, color: '#627EEA' },
+            { id: 'SOL', name: 'Solana', price: 964.96, basePrice: 908, var: 6.27, vol: 92, color: '#14F195' },
+            { id: 'FET', name: 'Fetch.ai', price: 12.48, basePrice: 10, var: 24.8, vol: 95, color: '#14F195' },
+            { id: 'RNDR', name: 'Render', price: 55.39, basePrice: 50, var: 10.78, vol: 85, color: '#FFFFFF' },
+            { id: 'BNB', name: 'Binance', price: 3121.58, basePrice: 3105, var: 0.43, vol: 60, color: '#F3BA2F' },
+            { id: 'NEAR', name: 'Near', price: 25.10, basePrice: 24.05, var: 4.38, vol: 50, color: '#FFFFFF' },
+            { id: 'AVAX', name: 'Avalanche', price: 181.61, basePrice: 173.50, var: 4.68, vol: 80, color: '#E84142' },
+            { id: 'ADA', name: 'Cardano', price: 2.15, basePrice: 2.10, var: 2.38, vol: 40, color: '#0033AD' },
+            { id: 'XRP', name: 'XRP', price: 3.10, basePrice: 3.15, var: -1.58, vol: 55, color: '#23292F' },
+            { id: 'DOT', name: 'Polkadot', price: 35.20, basePrice: 34.00, var: 3.52, vol: 50, color: '#E6007A' },
+            { id: 'DOGE', name: 'Dogecoin', price: 0.85, basePrice: 0.80, var: 6.25, vol: 90, color: '#C2A633' },
+            { id: 'MATIC', name: 'Polygon', price: 2.85, basePrice: 2.70, var: 5.55, vol: 65, color: '#8247E5' },
+            { id: 'LINK', name: 'Chainlink', price: 92.40, basePrice: 89, var: 3.82, vol: 70, color: '#2A5ADA' },
+            { id: 'SHIB', name: 'Shiba Inu', price: 0.0001, basePrice: 0.00009, var: 11.1, vol: 80, color: '#FFA500' },
+            { id: 'LTC', name: 'Litecoin', price: 420.50, basePrice: 410, var: 2.56, vol: 60, color: '#345D9D' },
+            { id: 'TRX', name: 'Tron', price: 0.65, basePrice: 0.60, var: 8.33, vol: 70, color: '#FF0013' },
+            { id: 'UNI', name: 'Uniswap', price: 45.30, basePrice: 42, var: 7.85, vol: 68, color: '#FF007A' },
+            { id: 'AAVE', name: 'Aave', price: 450.20, basePrice: 440, var: 2.31, vol: 58, color: '#B6509E' },
+            { id: 'ALGO', name: 'Algorand', price: 0.95, basePrice: 0.90, var: 5.55, vol: 45, color: '#FFFFFF' },
+            { id: 'ARB', name: 'Arbitrum', price: 5.12, basePrice: 4.90, var: 4.48, vol: 62, color: '#28A0F0' },
+            { id: 'OP', name: 'Optimism', price: 15.40, basePrice: 14.80, var: 4.05, vol: 58, color: '#FF0420' },
+            { id: 'ICP', name: 'Internet Comp.', price: 65.20, basePrice: 62, var: 5.16, vol: 45, color: '#F15A24' },
+            { id: 'STX', name: 'Stacks', price: 10.15, basePrice: 9.80, var: 3.57, vol: 72, color: '#5546FF' },
+            { id: 'PEPE', name: 'Pepe', price: 0.00004, basePrice: 0.00003, var: 33.3, vol: 98, color: '#00FF41' },
+            { id: 'TIA', name: 'Celestia', price: 32.40, basePrice: 30, var: 8.0, vol: 88, color: '#7D26CD' },
+            { id: 'INJ', name: 'Injective', price: 145.20, basePrice: 140, var: 3.71, vol: 70, color: '#00A3FF' },
+            { id: 'SEI', name: 'Sei', price: 3.45, basePrice: 3.10, var: 11.2, vol: 84, color: '#FF3131' },
+            { id: 'KAS', name: 'Kaspa', price: 0.75, basePrice: 0.70, var: 7.14, vol: 78, color: '#70C7BA' },
+            { id: 'BONK', name: 'Bonk', price: 0.00012, basePrice: 0.0001, var: 20.0, vol: 85, color: '#FFA500' }
         ];
 
         let current = assets[0];
@@ -136,7 +158,7 @@
         function renderTable() {
             document.getElementById('assets-body').innerHTML = assets.map(a => `
                 <tr onclick="select('${a.id}')">
-                    <td class="asset-name">${a.name}</td>
+                    <td class="asset-name">${a.name} ${a.vol > 80 && a.var > 1 ? '<span class="liberada">🔱</span>' : ''}</td>
                     <td id="p-${a.id}" class="price-col">${a.price.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td id="v-${a.id}" class="var-col">${a.var.toFixed(2)}%</td>
                 </tr>
