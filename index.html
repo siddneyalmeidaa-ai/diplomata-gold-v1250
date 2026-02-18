@@ -3,151 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD // S.I.</title>
+    <title>DIPLOMATA GOLD // SOBERANIA</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.05); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--black); color: #fff; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
-        /* CABEÇALHO CONGELADO */
-        .fixed-header { flex-shrink: 0; background: #000; border-bottom: 1px solid var(--line); z-index: 1000; position: sticky; top: 0; }
-        .top-row { padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 0.65em; letter-spacing: 3px; color: var(--gold); font-weight: 900; }
-        .time-nav { display: flex; padding: 0 10px 10px; gap: 6px; overflow-x: auto; scrollbar-width: none; }
-        .t-btn { background: #0a0a0a; border: 1px solid #111; color: #444; padding: 6px 12px; border-radius: 4px; font-size: 0.55em; font-weight: 800; cursor: pointer; white-space: nowrap; }
-        .t-btn.active { background: var(--gold); color: #000; }
-
-        .viewport { flex: 1; overflow-y: auto; padding-bottom: 60px; }
-        .section { display: none; width: 100%; }
-        .section.active { display: block; }
-
-        /* TABELA ALTA DENSIDADE COM STICKY HEADER */
-        .ranking-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .ranking-table thead th { 
-            position: sticky; top: 0; background: #080808; text-align: right; 
-            font-size: 0.52em; color: #555; padding: 15px 8px; 
-            border-bottom: 2px solid var(--line); z-index: 50;
-        }
-        .ranking-table td { padding: 12px 8px; border-bottom: 1px solid var(--line); font-size: 0.78em; text-align: right; font-family: 'Roboto Mono'; }
+        /* HEADER PROFISSIONAL */
+        .header { padding: 15px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+        .logo { color: var(--gold); font-weight: 900; letter-spacing: 2px; font-size: 0.8em; }
         
-        .col-rank { width: 35px; text-align: left !important; color: var(--gold); font-weight: bold; }
-        .col-name { width: 95px; text-align: left !important; color: #eee; font-weight: 700; text-transform: uppercase; font-size: 0.65em; }
+        /* PAINEL DE DECISÃO (CENTRAL S.A.) */
+        .decision-panel { background: #0a0a0a; padding: 15px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--line); }
+        .stat-box { text-align: center; }
+        .stat-label { font-size: 0.5em; color: #555; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-value { font-family: 'Roboto Mono'; font-weight: bold; font-size: 0.9em; }
 
-        .tab-bar { display: flex; border-top: 1px solid var(--line); background: #080808; position: fixed; bottom: 0; width: 100%; height: 55px; z-index: 1000; }
-        .tab-item { flex: 1; display: flex; align-items: center; justify-content: center; color: #333; font-size: 0.65em; font-weight: 800; cursor: pointer; }
-        .tab-item.active { color: var(--gold); border-top: 2px solid var(--gold); }
+        .viewport { flex: 1; overflow-y: auto; padding-bottom: 70px; }
+        .price-container { text-align: center; padding: 30px 10px; }
+        #main-price { font-size: 3.5em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; }
+        
+        /* GRÁFICO */
+        .chart-wrapper { height: 350px; padding: 0 10px; position: relative; }
+
+        /* TABELA DE ATIVOS */
+        .asset-list { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .asset-list tr { border-bottom: 1px solid var(--line); cursor: pointer; transition: 0.3s; }
+        .asset-list tr:hover { background: rgba(197, 160, 89, 0.05); }
+        .asset-list td { padding: 15px 10px; font-size: 0.8em; }
+        .asset-name { font-weight: bold; color: var(--gold); }
     </style>
 </head>
 <body>
 
-    <div class="fixed-header">
-        <div class="top-row">
-            <div class="logo">🔱 DIPLOMATA</div>
-            <div id="clock" style="font-size: 0.6em; color: #222; font-family: 'Roboto Mono';">11:20:00</div>
+    <div class="header">
+        <div class="logo">🔱 DIPLOMATA GOLD</div>
+        <div id="clock" style="font-family: 'Roboto Mono'; color: var(--gold); font-size: 0.7em;">00:00:00</div>
+    </div>
+
+    <div class="decision-panel">
+        <div class="stat-box">
+            <div class="stat-label">Status Sentinela</div>
+            <div id="sa-status" class="stat-value" style="color: var(--gold);">CALIBRANDO...</div>
         </div>
-        <div class="time-nav">
-            <button class="t-btn" onclick="updateTime('15M', this)">15 MIN</button>
-            <button class="t-btn active" onclick="updateTime('1H', this)">1 HORA</button>
-            <button class="t-btn" onclick="updateTime('24H', this)">24 HORAS</button>
+        <div class="stat-box">
+            <div class="stat-label">Stake Sugerida</div>
+            <div id="sa-stake" class="stat-value">---</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Projeção (-50%)</div>
+            <div id="sa-proj" class="stat-value">---</div>
         </div>
     </div>
 
     <div class="viewport">
-        <div id="tab-graf" class="section active">
-            <div style="text-align: center; padding: 25px 10px;">
-                <div id="main-price" style="font-size: 3.2em; font-weight: 100; letter-spacing: -2px; font-family: 'Roboto Mono';">0,00</div>
-                <div id="status-label" style="font-size: 0.55em; letter-spacing: 2px; font-weight: 800;">CALIBRADO</div>
-            </div>
-            <div style="height: 320px; width: 100%; padding: 0 10px;"><canvas id="proChart"></canvas></div>
+        <div class="price-container">
+            <div id="active-asset" style="font-size: 0.6em; letter-spacing: 3px; color: #444;">BITCOIN / BRL</div>
+            <div id="main-price">0,00</div>
         </div>
 
-        <div id="tab-data" class="section">
-            <table class="ranking-table">
-                <thead>
-                    <tr>
-                        <th class="col-rank">#</th>
-                        <th class="col-name">ATIVO</th>
-                        <th>ATUAL</th>
-                        <th style="width: 55px;">%</th>
-                        <th>PROJETADO</th>
-                    </tr>
-                </thead>
-                <tbody id="market-list"></tbody>
-            </table>
+        <div class="chart-wrapper">
+            <canvas id="mainChart"></canvas>
         </div>
-    </div>
 
-    <div class="tab-bar">
-        <div class="tab-item active" onclick="nav('tab-graf', this)">GRAF</div>
-        <div class="tab-item" onclick="nav('tab-data', this)">DATA</div>
+        <table class="asset-list">
+            <tbody id="assets-body">
+                </tbody>
+        </table>
     </div>
 
     <script>
-        let multiplier = 1;
-        const baseData = [
-            {n:"Bitcoin", p:482119.45, v:2.1}, {n:"Ethereum", p:14820.10, v:1.4}, {n:"Solana", p:965.40, v:6.2},
-            {n:"Cardano", p:2.45, v:2.1}, {n:"BNB", p:3120.00, v:-0.4}, {n:"XRP", p:3.10, v:0.8},
-            {n:"Dogecoin", p:0.85, v:15.2}, {n:"Avalanche", p:182.30, v:4.7}, {n:"TRON", p:0.78, v:1.1},
-            {n:"Polkadot", p:35.10, v:-2.3}, {n:"Chainlink", p:92.30, v:3.1}, {n:"Polygon", p:2.80, v:1.5},
-            {n:"Shiba Inu", p:0.00002, v:8.5}, {n:"Litecoin", p:450.00, v:0.5}, {n:"Near", p:25.00, v:4.2}
+        const assets = [
+            { id: 'BTC', name: 'Bitcoin', price: 482119, var: 2.1, vol: 85, color: '#C5A059' },
+            { id: 'ETH', name: 'Ethereum', price: 14820, var: 1.4, vol: 70, color: '#627EEA' },
+            { id: 'SOL', name: 'Solana', price: 965.40, var: 6.2, vol: 92, color: '#14F195' },
+            { id: 'NEAR', name: 'Near', price: 25.10, var: 4.2, vol: 40, color: '#000000' }
         ];
 
-        function updateTime(period, btn) {
-            document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            // Resetamos o multiplicador para evitar o erro de 50%
-            if(period === '15M') multiplier = 0.25;
-            else if(period === '24H') multiplier = 1.0; // Valor nominal de 24h
-            else multiplier = 1;
-            drawList();
-        }
+        let current = assets[0];
 
-        function nav(id, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            el.classList.add('active');
-            if(id === 'tab-data') drawList();
-        }
-
-        function drawList() {
-            const b = document.getElementById('market-list');
-            b.innerHTML = baseData.map((c, i) => {
-                const adjV = c.v * multiplier;
-                const proj = c.p * (1 + (adjV / 100));
-                return `<tr>
-                    <td class="col-rank">${i+1}</td>
-                    <td class="col-name">${c.n}</td>
-                    <td>${c.p.toLocaleString('pt-BR')}</td>
-                    <td style="color:${adjV >= 0 ? 'var(--green)' : 'var(--red)'}">${adjV.toFixed(2)}%</td>
-                    <td style="color:var(--gold)">${proj.toLocaleString('pt-BR', {maximumFractionDigits: 2})}</td>
-                </tr>`;
-            }).join('');
-        }
-
-        // Gráfico e Relógio
-        const ctx = document.getElementById('proChart').getContext('2d');
+        // Inicialização do Gráfico Combo (Linha + Coluna)
+        const ctx = document.getElementById('mainChart').getContext('2d');
         const chart = new Chart(ctx, {
-            type: 'line',
             data: {
-                labels: Array(40).fill(''),
-                datasets: [{ data: Array(40).fill(481000), borderColor: '#C5A059', borderWidth: 2.5, pointRadius: 0, fill: true, backgroundColor: 'rgba(197, 160, 89, 0.1)', tension: 0.4 }]
+                labels: Array(30).fill(''),
+                datasets: [
+                    { type: 'line', data: Array(30).fill(current.price), borderColor: current.color, borderWidth: 3, pointRadius: 0, tension: 0.4, yAxisID: 'y' },
+                    { type: 'bar', data: Array(30).fill(0).map(() => Math.random() * 100), backgroundColor: 'rgba(255,255,255,0.05)', yAxisID: 'y1' }
+                ]
             },
-            options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { 
+                    x: { display: false }, 
+                    y: { display: false, position: 'right' },
+                    y1: { display: false, max: 250 } 
+                },
+                plugins: { legend: { display: false } }
+            }
         });
 
+        function select(id) {
+            current = assets.find(a => a.id === id);
+            document.getElementById('active-asset').innerText = `${current.name.toUpperCase()} / BRL`;
+            chart.data.datasets[0].borderColor = current.color;
+            updateDecision();
+        }
+
+        function updateDecision() {
+            const margem = current.var * 0.5; // Sua regra de -50%
+            const projFinal = current.price * (1 + (margem / 100));
+            
+            const statusEl = document.getElementById('sa-status');
+            const stakeEl = document.getElementById('sa-stake');
+            
+            if(current.vol > 80 && margem > 0.5) {
+                statusEl.innerText = "LIBERADO: ENTRA";
+                statusEl.style.color = "var(--green)";
+                stakeEl.innerText = "1 REAL";
+            } else if (current.vol < 50) {
+                statusEl.innerText = "RISCO: PULA";
+                statusEl.style.color = "var(--red)";
+                stakeEl.innerText = "0.00";
+            } else {
+                statusEl.innerText = "PENDENTE";
+                statusEl.style.color = "var(--gold)";
+                stakeEl.innerText = "20 CENTAVOS";
+            }
+            
+            document.getElementById('sa-proj').innerText = projFinal.toLocaleString('pt-BR');
+        }
+
+        // Simulação Real-time
         setInterval(() => {
             document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-            let last = chart.data.datasets[0].data[39];
-            let val = last + (Math.random() - 0.5) * 400;
+            let val = current.price + (Math.random() - 0.5) * (current.price * 0.001);
             chart.data.datasets[0].data.push(val);
             chart.data.datasets[0].data.shift();
+            chart.data.datasets[1].data.push(Math.random() * 150);
+            chart.data.datasets[1].data.shift();
             chart.update('none');
             document.getElementById('main-price').innerText = val.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-        }, 2000);
+        }, 1500);
 
-        drawList();
+        // Render Tabela
+        document.getElementById('assets-body').innerHTML = assets.map(a => `
+            <tr onclick="select('${a.id}')">
+                <td class="asset-name">${a.name}</td>
+                <td style="font-family:'Roboto Mono'">${a.price.toLocaleString('pt-BR')}</td>
+                <td style="color:${a.var > 0 ? 'var(--green)' : 'var(--red)'}">${a.var}%</td>
+            </tr>
+        `).join('');
+
+        updateDecision();
     </script>
 </body>
 </html>
