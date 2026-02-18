@@ -2,71 +2,75 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINELA S.A. V3.7 // AUTONOMIA TOTAL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>S.A. SENTINELA SOBERANO V4.0</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.05); --select: rgba(197, 160, 89, 0.2); }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.08); --select: rgba(197, 160, 89, 0.25); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--black); color: #fff; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
-        /* BLOQUEIO IPI */
+        /* LOCK SCREEN IPI */
         #lock-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .login-box { text-align: center; border: 1px solid var(--gold); padding: 40px; border-radius: 8px; background: #080808; }
-        .login-box input { background: #111; border: 1px solid #333; color: var(--gold); padding: 10px; text-align: center; outline: none; margin-top: 20px; font-family: 'Roboto Mono'; }
+        .login-box { text-align: center; border: 1px solid var(--gold); padding: 40px; border-radius: 12px; background: #080808; box-shadow: 0 0 30px rgba(197,160,89,0.1); }
+        .login-box input { background: #111; border: 1px solid #333; color: var(--gold); padding: 12px; text-align: center; outline: none; margin-top: 20px; font-family: 'Roboto Mono'; border-radius: 4px; }
         
-        .header { padding: 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
-        .logo { color: var(--gold); font-weight: 900; letter-spacing: 2px; font-size: 0.75em; cursor: pointer; }
+        /* HEADER & DASHBOARD */
+        .header { padding: 15px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: #080808; }
+        .logo { color: var(--gold); font-weight: 900; letter-spacing: 3px; font-size: 0.8em; cursor: pointer; text-transform: uppercase; }
         
-        .decision-panel { background: #080808; padding: 12px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--line); transition: 0.5s; position: relative; }
+        .decision-panel { background: #0a0a0a; padding: 15px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--line); position: relative; }
         .stat-box { text-align: center; }
-        .stat-label { font-size: 0.5em; color: #666; text-transform: uppercase; }
-        .stat-value { font-family: 'Roboto Mono'; font-weight: bold; font-size: 0.85em; }
+        .stat-label { font-size: 0.55em; color: #666; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px; }
+        .stat-value { font-family: 'Roboto Mono'; font-weight: bold; font-size: 0.9em; color: #eee; }
 
+        /* VIEWPORT & WATERMARK */
         .viewport { flex: 1; overflow: hidden; display: flex; flex-direction: column; position: relative; }
-        #watermark { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(197, 160, 89, 0.15); font-size: 1.5em; font-weight: 900; z-index: 1; pointer-events: none; text-align: center; }
+        #watermark { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); color: rgba(197, 160, 89, 0.1); font-size: 2.5em; font-weight: 900; z-index: 1; pointer-events: none; text-align: center; white-space: nowrap; }
 
-        .price-container { text-align: center; padding: 10px; z-index: 2; }
-        #active-asset { font-size: 0.65em; letter-spacing: 3px; color: #FFFFFF; font-weight: 900; margin-bottom: 5px; text-shadow: 0 0 10px rgba(197, 160, 89, 0.3); }
-        #main-price { font-size: 2.8em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; }
+        .price-container { text-align: center; padding: 15px 0 5px 0; z-index: 2; }
+        #active-asset { font-size: 0.7em; letter-spacing: 4px; color: #fff; font-weight: 900; margin-bottom: 8px; opacity: 0.8; }
+        #main-price { font-size: 3.2em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; color: #fff; }
         
-        .chart-wrapper { height: 160px; padding: 0 10px; z-index: 2; }
-        .table-container { flex: 1; overflow-y: auto; background: #050505; border-top: 1px solid var(--line); scrollbar-width: none; }
+        .chart-wrapper { height: 180px; padding: 0 10px; z-index: 2; }
+        
+        /* ASSET LIST */
+        .table-container { flex: 1; overflow-y: auto; background: #050505; border-top: 1px solid var(--line); }
         .table-container::-webkit-scrollbar { display: none; }
-
         .asset-list { width: 100%; border-collapse: collapse; }
-        .asset-list tr { border-bottom: 1px solid var(--line); cursor: pointer; transition: 0.2s; }
-        .asset-list tr.selected { background: var(--select); border-left: 4px solid var(--gold); }
-        .asset-list td { padding: 12px 10px; font-size: 0.7em; }
+        .asset-list tr { border-bottom: 1px solid var(--line); cursor: pointer; height: 60px; }
+        .asset-list tr.selected { background: var(--select); border-left: 5px solid var(--gold); }
+        .asset-list td { padding: 0 15px; font-size: 0.75em; }
         
-        .trend-up { color: var(--green) !important; font-weight: bold; }
-        .trend-down { color: var(--red) !important; font-weight: bold; }
+        .trend-up { color: var(--green) !important; text-shadow: 0 0 10px rgba(0,255,65,0.2); }
+        .trend-down { color: var(--red) !important; }
         
-        .asset-name { font-weight: bold; color: var(--gold); text-transform: uppercase; font-size: 0.6em; }
-        .vacuo-counter { font-size: 0.85em; color: #444; margin-left: 5px; font-family: 'Roboto Mono'; }
+        .asset-name { font-weight: 800; color: var(--gold); text-transform: uppercase; font-size: 0.65em; letter-spacing: 1px; }
+        .vacuo-counter { font-size: 0.8em; color: #444; margin-left: 8px; font-family: 'Roboto Mono'; font-weight: normal; }
         
-        .btn-snapshot { position: fixed; bottom: 20px; right: 20px; background: var(--gold); color: #000; border: none; padding: 10px; border-radius: 50%; cursor: pointer; z-index: 100; font-size: 1.2em; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(197,160,89,0.5); }
+        /* FLOATING ACTION */
+        .btn-snapshot { position: fixed; bottom: 25px; right: 25px; background: var(--gold); color: #000; border: none; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; z-index: 100; font-size: 1.5em; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(197,160,89,0.4); }
     </style>
 </head>
 <body>
 
 <div id="lock-screen">
     <div class="login-box">
-        <h2 style="color:var(--gold); font-size:0.7em; letter-spacing:3px;">S.A. ACCESS ONLY</h2>
-        <input type="password" id="pass-field" placeholder="DIGITE O IPI" onkeypress="checkPass(event)">
-        <p style="color:#333; font-size:0.5em; margin-top:10px;">DNA: 16 -> 8 REGULATION ACTIVE</p>
+        <h2 style="color:var(--gold); font-size:0.8em; letter-spacing:4px; margin-bottom:5px;">S.A. SENTINELA</h2>
+        <div style="font-size: 0.5em; color: #444; letter-spacing: 2px;">AUTONOMY PROTOCOL V4.0</div>
+        <input type="password" id="pass-field" placeholder="DIGITE O IPI" onkeypress="handleLogin(event)">
     </div>
 </div>
 
 <div class="header">
-    <div class="logo" onclick="toggleLinkedinMode()">🔱 DIPLOMATA GOLD V3.7</div>
-    <div id="clock" style="font-family:'Roboto Mono'; font-size:0.7em; color:#333;">00:00:00</div>
+    <div class="logo" onclick="toggleBlindagem()">🔱 DIPLOMATA GOLD</div>
+    <div id="clock" style="font-family:'Roboto Mono'; font-size:0.75em; color:#444;">00:00:00</div>
 </div>
 
 <div id="sa-panel" class="decision-panel">
-    <div class="stat-box"><div class="stat-label">Ciclo</div><div class="stat-value" style="color:var(--gold)">24H</div></div>
-    <div class="stat-box"><div class="stat-label">Sentinela</div><div id="sa-decision" class="stat-value">---</div></div>
-    <div class="stat-box"><div class="stat-label">Estabilidade</div><div id="sa-stability" class="stat-value" style="color:var(--green)">0s</div></div>
+    <div class="stat-box"><div class="stat-label">Ciclo</div><div class="stat-value" style="color:var(--gold)">LIVE</div></div>
+    <div class="stat-box"><div class="stat-label">IA-Sentinela</div><div id="sa-decision" class="stat-value">CARREGANDO</div></div>
+    <div class="stat-box"><div class="stat-label">Estabilidade</div><div id="sa-stability" class="stat-value">0s</div></div>
     <div class="stat-box"><div class="stat-label">Proj. (-50%)</div><div id="sa-proj" class="stat-value">---</div></div>
 </div>
 
@@ -82,64 +86,66 @@
     </div>
 </div>
 
-<button class="btn-snapshot" onclick="toggleLinkedinMode()" title="Modo LinkedIn">🛡️</button>
+<button class="btn-snapshot" onclick="toggleBlindagem()" title="Ativar Blindagem">🛡️</button>
 
 <script>
     let linkedinMode = false;
     let lastStatus = "";
-
-    function checkPass(e) { 
+    
+    // LOGIN E PERMISSÕES
+    function handleLogin(e) {
         if(e.key === 'Enter' && document.getElementById('pass-field').value === '1234') {
             document.getElementById('lock-screen').style.display='none';
             if (Notification.permission !== "granted") Notification.requestPermission();
         }
     }
 
-    function toggleLinkedinMode() {
+    function toggleBlindagem() {
         linkedinMode = !linkedinMode;
         document.getElementById('watermark').style.display = linkedinMode ? 'block' : 'none';
         renderTable();
     }
 
+    // BASE DE DADOS 30 ATIVOS
     const assets = [
-        { id: 'BTC', name: 'Bitcoin', price: 482150.0, base: 472000, vol: 90, color: '#C5A059', vSecs: 1240 },
-        { id: 'ETH', name: 'Ethereum', price: 14850.2, base: 14610, vol: 75, color: '#627EEA', vSecs: 850 },
-        { id: 'SOL', name: 'Solana', price: 968.45, base: 908, vol: 95, color: '#14F195', vSecs: 2100 },
-        { id: 'FET', name: 'Fetch.ai', price: 12.55, base: 10, vol: 92, color: '#14F195', vSecs: 450 },
-        { id: 'RNDR', name: 'Render', price: 55.40, base: 50, vol: 88, color: '#FFFFFF', vSecs: 320 },
-        { id: 'BNB', name: 'Binance', price: 3125.0, base: 3105, vol: 60, color: '#F3BA2F', vSecs: 1500 },
-        { id: 'NEAR', name: 'Near', price: 25.10, base: 24.05, vol: 50, color: '#FFFFFF', vSecs: 90 },
-        { id: 'AVAX', name: 'Avalanche', price: 181.6, base: 173.5, vol: 80, color: '#E84142', vSecs: 600 },
-        { id: 'TIA', name: 'Celestia', price: 32.40, base: 30, vol: 88, color: '#7D26CD', vSecs: 180 },
-        { id: 'PEPE', name: 'Pepe', price: 0.00004, base: 0.00003, vol: 98, color: '#00FF41', vSecs: 15 },
-        { id: 'LINK', name: 'Chainlink', price: 92.40, base: 89, vol: 70, color: '#2A5ADA', vSecs: 400 },
-        { id: 'MATIC', name: 'Polygon', price: 2.85, base: 2.70, vol: 65, color: '#8247E5', vSecs: 210 },
-        { id: 'DOT', name: 'Polkadot', price: 35.20, base: 34, vol: 50, color: '#E6007A', vSecs: 500 },
-        { id: 'ADA', name: 'Cardano', price: 2.15, base: 2.10, vol: 40, color: '#0033AD', vSecs: 800 },
-        { id: 'XRP', name: 'XRP', price: 3.10, base: 3.15, vol: 55, color: '#23292F', vSecs: 1100 },
-        { id: 'DOGE', name: 'Dogecoin', price: 0.85, base: 0.80, vol: 90, color: '#C2A633', vSecs: 150 },
-        { id: 'LTC', name: 'Litecoin', price: 420.5, base: 410, vol: 60, color: '#345D9D', vSecs: 1200 },
-        { id: 'SHIB', name: 'Shiba Inu', price: 0.0001, base: 0.00009, vol: 80, color: '#FFA500', vSecs: 50 },
-        { id: 'TRX', name: 'Tron', price: 0.65, base: 0.60, vol: 70, color: '#FF0013', vSecs: 3000 },
-        { id: 'UNI', name: 'Uniswap', price: 45.30, base: 42, vol: 68, color: '#FF007A', vSecs: 420 },
-        { id: 'AAVE', name: 'Aave', price: 450.2, base: 440, vol: 58, color: '#B6509E', vSecs: 600 },
-        { id: 'ALGO', name: 'Algorand', price: 0.95, base: 0.90, vol: 45, color: '#FFFFFF', vSecs: 150 },
-        { id: 'ARB', name: 'Arbitrum', price: 5.12, base: 4.90, vol: 62, color: '#28A0F0', vSecs: 110 },
-        { id: 'OP', name: 'Optimism', price: 15.40, base: 14.80, vol: 58, color: '#FF0420', vSecs: 95 },
-        { id: 'ICP', name: 'Internet Comp.', price: 65.2, base: 62, vol: 45, color: '#F15A24', vSecs: 340 },
-        { id: 'STX', name: 'Stacks', price: 10.15, base: 9.80, vol: 72, color: '#5546FF', vSecs: 180 },
-        { id: 'INJ', name: 'Injective', price: 145.2, base: 140, vol: 70, color: '#00A3FF', vSecs: 550 },
-        { id: 'SEI', name: 'Sei', price: 3.45, base: 3.10, vol: 84, color: '#FF3131', vSecs: 230 },
-        { id: 'KAS', name: 'Kaspa', price: 0.75, base: 0.70, vol: 78, color: '#70C7BA', vSecs: 400 },
-        { id: 'BONK', name: 'Bonk', price: 0.00012, base: 0.0001, vol: 85, color: '#FFA500', vSecs: 12 }
+        { id: 'BTC', name: 'Bitcoin', price: 482150.0, base: 472000, vol: 95, color: '#C5A059', vSecs: 1400, lastNotified: false },
+        { id: 'ETH', name: 'Ethereum', price: 14850.2, base: 14610, vol: 85, color: '#627EEA', vSecs: 900, lastNotified: false },
+        { id: 'SOL', name: 'Solana', price: 968.45, base: 908, vol: 92, color: '#14F195', vSecs: 2100, lastNotified: false },
+        { id: 'TIA', name: 'Celestia', price: 32.40, base: 30, vol: 88, color: '#7D26CD', vSecs: 400, lastNotified: false },
+        { id: 'FET', name: 'Fetch.ai', price: 12.55, base: 10, vol: 92, color: '#5546FF', vSecs: 600, lastNotified: false },
+        { id: 'RNDR', name: 'Render', price: 55.40, base: 50, vol: 90, color: '#FFFFFF', vSecs: 320, lastNotified: false },
+        { id: 'BNB', name: 'Binance', price: 3125.0, base: 3105, vol: 70, color: '#F3BA2F', vSecs: 1500, lastNotified: false },
+        { id: 'NEAR', name: 'Near', price: 25.10, base: 24.05, vol: 82, color: '#000000', vSecs: 90, lastNotified: false },
+        { id: 'AVAX', name: 'Avalanche', price: 181.6, base: 173.5, vol: 80, color: '#E84142', vSecs: 600, lastNotified: false },
+        { id: 'LINK', name: 'Chainlink', price: 92.40, base: 89, vol: 78, color: '#2A5ADA', vSecs: 400, lastNotified: false },
+        { id: 'PEPE', name: 'Pepe', price: 0.00004, base: 0.00003, vol: 98, color: '#00FF41', vSecs: 50, lastNotified: false },
+        { id: 'MATIC', name: 'Polygon', price: 2.85, base: 2.70, vol: 75, color: '#8247E5', vSecs: 210, lastNotified: false },
+        { id: 'DOT', name: 'Polkadot', price: 35.20, base: 34, vol: 70, color: '#E6007A', vSecs: 500, lastNotified: false },
+        { id: 'ADA', name: 'Cardano', price: 2.15, base: 2.10, vol: 65, color: '#0033AD', vSecs: 800, lastNotified: false },
+        { id: 'XRP', name: 'XRP', price: 3.10, base: 3.15, vol: 60, color: '#23292F', vSecs: 1100, lastNotified: false },
+        { id: 'DOGE', name: 'Dogecoin', price: 0.85, base: 0.80, vol: 91, color: '#C2A633', vSecs: 150, lastNotified: false },
+        { id: 'LTC', name: 'Litecoin', price: 420.5, base: 410, vol: 72, color: '#345D9D', vSecs: 1200, lastNotified: false },
+        { id: 'SHIB', name: 'Shiba Inu', price: 0.0001, base: 0.00009, vol: 88, color: '#FFA500', vSecs: 50, lastNotified: false },
+        { id: 'TRX', name: 'Tron', price: 0.65, base: 0.60, vol: 70, color: '#FF0013', vSecs: 3000, lastNotified: false },
+        { id: 'UNI', name: 'Uniswap', price: 45.30, base: 42, vol: 76, color: '#FF007A', vSecs: 420, lastNotified: false },
+        { id: 'AAVE', name: 'Aave', price: 450.2, base: 440, vol: 70, color: '#B6509E', vSecs: 600, lastNotified: false },
+        { id: 'ALGO', name: 'Algorand', price: 0.95, base: 0.90, vol: 60, color: '#FFFFFF', vSecs: 150, lastNotified: false },
+        { id: 'ARB', name: 'Arbitrum', price: 5.12, base: 4.90, vol: 82, color: '#28A0F0', vSecs: 110, lastNotified: false },
+        { id: 'OP', name: 'Optimism', price: 15.40, base: 14.80, vol: 80, color: '#FF0420', vSecs: 95, lastNotified: false },
+        { id: 'ICP', name: 'Internet Comp.', price: 65.2, base: 62, vol: 65, color: '#F15A24', vSecs: 340, lastNotified: false },
+        { id: 'STX', name: 'Stacks', price: 10.15, base: 9.80, vol: 88, color: '#5546FF', vSecs: 180, lastNotified: false },
+        { id: 'INJ', name: 'Injective', price: 145.2, base: 140, vol: 84, color: '#00A3FF', vSecs: 550, lastNotified: false },
+        { id: 'SEI', name: 'Sei', price: 3.45, base: 3.10, vol: 90, color: '#FF3131', vSecs: 230, lastNotified: false },
+        { id: 'KAS', name: 'Kaspa', price: 0.75, base: 0.70, vol: 85, color: '#70C7BA', vSecs: 400, lastNotified: false },
+        { id: 'BONK', name: 'Bonk', price: 0.00012, base: 0.0001, vol: 94, color: '#FFA500', vSecs: 12, lastNotified: false }
     ];
 
     let current = assets[0];
     const ctx = document.getElementById('mainChart').getContext('2d');
     const chart = new Chart(ctx, {
         type: 'line',
-        data: { labels: Array(30).fill(''), datasets: [{ data: Array(30).fill(current.price), borderColor: current.color, borderWidth: 2, pointRadius: 0, tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } } }
+        data: { labels: Array(30).fill(''), datasets: [{ data: Array(30).fill(current.price), borderColor: current.color, borderWidth: 3, pointRadius: 0, tension: 0.4, fill: false }] },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { display: false } }, plugins: { legend: { display: false } }, animation: { duration: 0 } }
     });
 
     function select(id) {
@@ -150,18 +156,20 @@
         updateDecision();
     }
 
-    function dispararAlerta(moeda, status) {
+    // VOZ E NOTIFICAÇÃO NATIVA
+    function notificar(moeda, status) {
         if (Notification.permission === "granted" && status === "LIBERADA: ENTRA") {
-            new Notification(`🔱 SENTINELA S.A.`, { body: `${moeda} LIBERADA! Alvo de 50% detectado.` });
-            const msg = new SpeechSynthesisUtterance(`${moeda} liberada. Padrão Ouro.`);
-            msg.lang = 'pt-BR';
-            window.speechSynthesis.speak(msg);
+            new Notification(`🔱 S.A. ALERTA`, { body: `${moeda} EM PADRÃO OURO!` });
+            const voz = new SpeechSynthesisUtterance(`${moeda} liberada. Alvo de cinquenta por cento calculado.`);
+            voz.lang = 'pt-BR';
+            window.speechSynthesis.speak(voz);
         }
     }
 
+    // DNA SOBERANO 16 -> 8 (-50% PROJEÇÃO)
     function updateDecision() {
-        const vBruta = (current.price - current.base);
-        const lucroSA = vBruta * 0.5; // DNA: Fator 16 -> 8
+        const variacaoBruta = (current.price - current.base);
+        const lucroSA = variacaoBruta * 0.5; // REGRA DOS 50%
         const alvoFinal = current.price + lucroSA;
 
         const dec = document.getElementById('sa-decision');
@@ -169,15 +177,21 @@
         const panel = document.getElementById('sa-panel');
         let status = "AGUARDAR";
 
-        if(vBruta < 0) {
-            status = "PULA (VÁCUO)"; dec.style.color = "var(--red)"; panel.style.background = "#1a0505";
-            current.vSecs = 0; stab.style.color = "var(--red)";
+        if(variacaoBruta < 0) {
+            status = "PULA (VÁCUO)"; 
+            dec.style.color = "var(--red)"; 
+            panel.style.background = "#1a0505";
+            current.vSecs = 0;
+            stab.style.color = "var(--red)";
         } else {
-            if(current.vol > 80 && (vBruta/current.base)*100 > 1) {
-                status = "LIBERADA: ENTRA"; dec.style.color = "var(--green)"; panel.style.background = "#080808";
-                if(lastStatus !== status) dispararAlerta(current.name, status);
+            if(current.vol > 85 && (variacaoBruta/current.base)*100 > 0.8) {
+                status = "LIBERADA: ENTRA"; 
+                dec.style.color = "var(--green)"; 
+                panel.style.background = "#051a05";
+                if(lastStatus !== status) notificar(current.name, status);
             } else {
-                dec.style.color = "var(--gold)"; panel.style.background = "#080808";
+                dec.style.color = "var(--gold)"; 
+                panel.style.background = "#080808";
             }
             stab.style.color = "var(--green)";
         }
@@ -195,7 +209,7 @@
             return `
                 <tr onclick="select('${a.id}')" class="${current.id === a.id ? 'selected' : ''}">
                     <td class="asset-name">${a.name} <span class="vacuo-counter">🛡️ ${a.vSecs}s</span></td>
-                    <td style="text-align:right; font-family:'Roboto Mono'; font-size:0.9em;">${priceStr}</td>
+                    <td style="text-align:right; font-family:'Roboto Mono'; font-size:0.9em; font-weight:bold;">${priceStr}</td>
                     <td style="text-align:right; font-family:'Roboto Mono';" class="${v >= 0 ? 'trend-up' : 'trend-down'}">
                         ${v >= 0 ? '▲' : '▼'} ${Math.abs(v).toFixed(2)}%
                     </td>
@@ -204,14 +218,16 @@
         }).join('');
     }
 
-    // SIMULAÇÃO REAL-TIME + CONTADORES
+    // MOTOR REAL-TIME (SIMULAÇÃO DE ALTA FIDELIDADE)
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString();
         assets.forEach(a => { 
-            a.price += (Math.random() - 0.5) * (a.price * 0.001);
+            const oscilacao = (Math.random() - 0.48) * (a.price * 0.001); // Leve viés de alta conforme DNA
+            a.price += oscilacao;
             a.vSecs++; 
         });
-        chart.data.datasets[0].data.push(current.price); chart.data.datasets[0].data.shift();
+        chart.data.datasets[0].data.push(current.price); 
+        chart.data.datasets[0].data.shift();
         chart.update('none');
         document.getElementById('main-price').innerText = linkedinMode ? "****" : current.price.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         renderTable();
