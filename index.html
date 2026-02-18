@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD V3.5 // 30 ATIVOS SOBERANOS</title>
+    <title>SENTINELA S.A. V3.7 // AUTONOMIA TOTAL</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.05); --select: rgba(197, 160, 89, 0.2); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--black); color: #fff; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
         
+        /* BLOQUEIO IPI */
         #lock-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .login-box { text-align: center; border: 1px solid var(--gold); padding: 40px; border-radius: 8px; background: #080808; }
         .login-box input { background: #111; border: 1px solid #333; color: var(--gold); padding: 10px; text-align: center; outline: none; margin-top: 20px; font-family: 'Roboto Mono'; }
@@ -30,7 +31,7 @@
         #main-price { font-size: 2.8em; font-weight: 100; font-family: 'Roboto Mono'; letter-spacing: -2px; }
         
         .chart-wrapper { height: 160px; padding: 0 10px; z-index: 2; }
-        .table-container { flex: 1; overflow-y: auto; background: #050505; border-top: 1px solid var(--line); scrollbar-width: none; z-index: 2; }
+        .table-container { flex: 1; overflow-y: auto; background: #050505; border-top: 1px solid var(--line); scrollbar-width: none; }
         .table-container::-webkit-scrollbar { display: none; }
 
         .asset-list { width: 100%; border-collapse: collapse; }
@@ -53,11 +54,12 @@
     <div class="login-box">
         <h2 style="color:var(--gold); font-size:0.7em; letter-spacing:3px;">S.A. ACCESS ONLY</h2>
         <input type="password" id="pass-field" placeholder="DIGITE O IPI" onkeypress="checkPass(event)">
+        <p style="color:#333; font-size:0.5em; margin-top:10px;">DNA: 16 -> 8 REGULATION ACTIVE</p>
     </div>
 </div>
 
 <div class="header">
-    <div class="logo" onclick="toggleLinkedinMode()">🔱 DIPLOMATA GOLD V3.5</div>
+    <div class="logo" onclick="toggleLinkedinMode()">🔱 DIPLOMATA GOLD V3.7</div>
     <div id="clock" style="font-family:'Roboto Mono'; font-size:0.7em; color:#333;">00:00:00</div>
 </div>
 
@@ -86,7 +88,12 @@
     let linkedinMode = false;
     let lastStatus = "";
 
-    function checkPass(e) { if(e.key === 'Enter' && document.getElementById('pass-field').value === '1234') document.getElementById('lock-screen').style.display='none'; }
+    function checkPass(e) { 
+        if(e.key === 'Enter' && document.getElementById('pass-field').value === '1234') {
+            document.getElementById('lock-screen').style.display='none';
+            if (Notification.permission !== "granted") Notification.requestPermission();
+        }
+    }
 
     function toggleLinkedinMode() {
         linkedinMode = !linkedinMode;
@@ -143,22 +150,32 @@
         updateDecision();
     }
 
+    function dispararAlerta(moeda, status) {
+        if (Notification.permission === "granted" && status === "LIBERADA: ENTRA") {
+            new Notification(`🔱 SENTINELA S.A.`, { body: `${moeda} LIBERADA! Alvo de 50% detectado.` });
+            const msg = new SpeechSynthesisUtterance(`${moeda} liberada. Padrão Ouro.`);
+            msg.lang = 'pt-BR';
+            window.speechSynthesis.speak(msg);
+        }
+    }
+
     function updateDecision() {
-        const v = ((current.price - current.base) / current.base) * 100;
-        const proj = current.price * (1 + (v * 0.5 / 100));
+        const vBruta = (current.price - current.base);
+        const lucroSA = vBruta * 0.5; // DNA: Fator 16 -> 8
+        const alvoFinal = current.price + lucroSA;
+
         const dec = document.getElementById('sa-decision');
         const stab = document.getElementById('sa-stability');
         const panel = document.getElementById('sa-panel');
         let status = "AGUARDAR";
 
-        if(v < 0) {
+        if(vBruta < 0) {
             status = "PULA (VÁCUO)"; dec.style.color = "var(--red)"; panel.style.background = "#1a0505";
-            current.vSecs = 0;
-            stab.style.color = "var(--red)";
+            current.vSecs = 0; stab.style.color = "var(--red)";
         } else {
-            if(current.vol > 80 && v > 1) {
+            if(current.vol > 80 && (vBruta/current.base)*100 > 1) {
                 status = "LIBERADA: ENTRA"; dec.style.color = "var(--green)"; panel.style.background = "#080808";
-                if(lastStatus !== status) { try { new Audio('https://assets.mixkit.co/sfx/preview/mixkit-bright-notificiation-2895.mp3').play(); } catch(e){} }
+                if(lastStatus !== status) dispararAlerta(current.name, status);
             } else {
                 dec.style.color = "var(--gold)"; panel.style.background = "#080808";
             }
@@ -168,7 +185,7 @@
         lastStatus = status;
         dec.innerText = status;
         stab.innerText = current.vSecs + "s";
-        document.getElementById('sa-proj').innerText = linkedinMode ? "****" : proj.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        document.getElementById('sa-proj').innerText = linkedinMode ? "****" : alvoFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     }
 
     function renderTable() {
@@ -187,6 +204,7 @@
         }).join('');
     }
 
+    // SIMULAÇÃO REAL-TIME + CONTADORES
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString();
         assets.forEach(a => { 
