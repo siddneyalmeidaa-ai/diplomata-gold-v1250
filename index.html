@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD // 20 ATIVOS</title>
+    <title>DIPLOMATA GOLD // SOBERANIA CLEAN</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --gold: #C5A059; --black: #050505; --green: #00FF41; --red: #FF3131; --line: rgba(255,255,255,0.05); }
@@ -13,6 +13,7 @@
         .header { padding: 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: #000; }
         .logo { color: var(--gold); font-weight: 900; letter-spacing: 2px; font-size: 0.75em; }
         
+        /* PAINEL DE DECISÃO SEM O R$ 1,00 EM CIMA */
         .decision-panel { background: #080808; padding: 12px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--line); }
         .stat-box { text-align: center; }
         .stat-label { font-size: 0.5em; color: #444; text-transform: uppercase; margin-bottom: 3px; }
@@ -34,7 +35,6 @@
         .price-col { font-family: 'Roboto Mono'; text-align: right; }
         .var-col { text-align: right; width: 85px; font-family: 'Roboto Mono'; font-weight: bold; }
         
-        /* Badge para Liberadas */
         .liberada { color: var(--green); font-weight: 900; font-size: 0.8em; margin-left: 5px; }
     </style>
 </head>
@@ -51,8 +51,8 @@
             <div id="sa-status" class="stat-value" style="color: var(--gold);">24 HORAS</div>
         </div>
         <div class="stat-box">
-            <div class="stat-label">Stake (24h)</div>
-            <div id="sa-stake" class="stat-value">---</div>
+            <div class="stat-label">Status Sentinela</div>
+            <div id="sa-decision" class="stat-value">START</div>
         </div>
         <div class="stat-box">
             <div class="stat-label">Proj. 24h (-50%)</div>
@@ -78,7 +78,6 @@
     </div>
 
     <script>
-        // EXPANSÃO PARA 20 ATIVOS
         const assets = [
             { id: 'BTC', name: 'Bitcoin', price: 481034.95, basePrice: 472000, var: 1.91, vol: 88, color: '#C5A059' },
             { id: 'ETH', name: 'Ethereum', price: 14838.72, basePrice: 14610, var: 1.57, vol: 72, color: '#627EEA' },
@@ -125,15 +124,14 @@
         function updateDecision() {
             const margem24h = current.var * 0.5;
             const projFinal = current.price * (1 + (margem24h / 100));
-            const statusEl = document.getElementById('sa-status');
-            const stakeEl = document.getElementById('sa-stake');
+            const decisionEl = document.getElementById('sa-decision');
             
             if(current.vol > 80 && margem24h > 0.5) {
-                statusEl.innerText = "LIBERADA: ENTRA"; statusEl.style.color = "var(--green)"; stakeEl.innerText = "R$ 1,00";
+                decisionEl.innerText = "LIBERADA: ENTRA"; decisionEl.style.color = "var(--green)";
             } else if (current.vol < 50 || margem24h < 0) {
-                statusEl.innerText = "PULA (VÁCUO)"; statusEl.style.color = "var(--red)"; stakeEl.innerText = "0,00";
+                decisionEl.innerText = "PULA (VÁCUO)"; decisionEl.style.color = "var(--red)";
             } else {
-                statusEl.innerText = "AGUARDAR"; statusEl.style.color = "var(--gold)"; stakeEl.innerText = "0,20";
+                decisionEl.innerText = "AGUARDAR"; decisionEl.style.color = "var(--gold)";
             }
             document.getElementById('sa-proj').innerText = projFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
         }
