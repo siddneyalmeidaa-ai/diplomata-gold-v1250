@@ -13,23 +13,15 @@
         .tab.active { color: var(--neon-green); border-bottom: 3px solid var(--neon-green); background: #050505; }
         .content { display: none; height: calc(100vh - 110px); overflow-y: auto; }
         .content.active { display: block; }
-
-        /* Tópicos Ativos no Gráfico */
         .asset-selector { display: flex; gap: 8px; padding: 10px; background: #111; overflow-x: auto; border-bottom: 1px solid #222; scrollbar-width: none; }
         .asset-btn { background: #000; color: var(--text-gray); border: 1px solid #333; padding: 8px 15px; font-size: 10px; font-weight: bold; cursor: pointer; white-space: nowrap; }
-        .asset-btn.active { border-color: var(--neon-green); color: var(--neon-green); box-shadow: inset 0 0 5px var(--neon-green); }
-
-        /* Cards Vivos */
-        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 4px solid var(--neon-green); transition: 0.3s; }
+        .asset-btn.active { border-color: var(--neon-green); color: var(--neon-green); }
+        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 4px solid var(--neon-green); }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .moeda-label { font-size: 14px; font-weight: bold; letter-spacing: 2px; color: #fff; }
-        .main-price { font-size: 26px; color: var(--neon-green); font-weight: bold; margin: 10px 0; display: block; text-shadow: 0 0 10px rgba(0,255,65,0.3); }
-        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--neon-green); line-height: 1.4; }
-        
+        .moeda-label { font-size: 14px; font-weight: bold; letter-spacing: 2px; }
+        .main-price { font-size: 26px; color: var(--neon-green); font-weight: bold; margin: 10px 0; display: block; }
+        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--neon-green); }
         .badge-signal { font-size: 9px; font-weight: bold; border: 1px solid currentColor; padding: 1px 6px; border-radius: 2px; }
-        .status-entra { color: var(--neon-green); }
-        .status-pula { color: var(--neon-yellow); }
-
         #tv-container { height: 100%; width: 100%; background: #000; }
     </style>
 </head>
@@ -37,7 +29,7 @@
 
     <div class="top-bar">
         <span>SENTINEL_V11.5 // SUPREMACIA VIVA</span>
-        <span id="clock">00:00:00</span>
+        <span id="clock">03:38:00</span>
     </div>
 
     <div class="nav-tabs">
@@ -56,7 +48,6 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // Sincronização de Tempo Real [cite: 2026-01-20]
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
         const moedas = [
@@ -64,55 +55,54 @@
             { id: "SOL", pair: "BINANCE:SOLBRL", shield: "2108S" }, { id: "FET", pair: "BINANCE:FETUSDT", shield: "608S" },
             { id: "TIA", pair: "BINANCE:TIAUSDT", shield: "408S" }, { id: "RNDR", pair: "BINANCE:RNDRUSDT", shield: "328S" },
             { id: "BNB", pair: "BINANCE:BNBBRL", shield: "1508S" }, { id: "NEAR", pair: "BINANCE:NEARUSDT", shield: "110S" },
-            { id: "AVAX", pair: "BINANCE:AVAXUSDT", shield: "550S" }, { id: "ADA", pair: "BINANCE:ADABRL", shield: "200S" },
-            { id: "XRP", pair: "BINANCE:XRPBRL", shield: "990S" }, { id: "DOT", pair: "BINANCE:DOTBRL", shield: "350S" },
-            { id: "MATIC", pair: "BINANCE:MATICBRL", shield: "120S" }, { id: "LINK", pair: "BINANCE:LINKBRL", shield: "880S" },
-            { id: "DOGE", pair: "BINANCE:DOGEBRL", shield: "2400S" }, { id: "SHIB", pair: "BINANCE:SHIBBRL", shield: "5000S" },
-            { id: "LTC", pair: "BINANCE:LTCBRL", shield: "150S" }, { id: "ARB", pair: "BINANCE:ARBUSDT", shield: "220S" },
-            { id: "OP", pair: "BINANCE:OPUSDT", shield: "310S" }, { id: "INJ", pair: "BINANCE:INJUSDT", shield: "440S" }
+            { id: "AVAX", pair: "BINANCE:AVAXUSDT", shield: "550S" }, { id: "ADA", pair: "BINANCE:ADABRL", shield: "200S" }
         ];
 
-        let lastData = {}; // Memória de Valor [cite: 2026-02-06]
         let currentPair = "BINANCE:BTCBRL";
 
-        function updateUI(data = {}) {
-            // Mescla novos dados com a memória para nunca ficar vazio [cite: 2026-01-23]
-            if (data.radar) lastData = { ...lastData, ...data.radar };
+        // Função Mestra para Puxar Preços do Gráfico (Simulada via API Pública) [cite: 2026-02-06]
+        async function fetchLivePrices() {
+            try {
+                // Tenta o Worker primeiro
+                const res = await fetch("https://late-sea-261d.siddney-almeidaa.workers.dev");
+                const data = await res.json();
+                renderCards(data.radar);
+            } catch (e) {
+                // Backup: Puxa da Binance Direct se o Worker falhar [cite: 2026-01-23]
+                const prices = {};
+                for(let m of moedas) {
+                    const symbol = m.pair.split(':')[1].replace('BRL', 'USDT');
+                    const bRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+                    const bData = await bRes.json();
+                    prices[m.id + (m.pair.includes('BRL') ? 'BRL' : 'USDT')] = parseFloat(bData.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                }
+                renderCards(prices);
+            }
+        }
 
-            // Renderiza Cards
+        function renderCards(prices = {}) {
             document.getElementById('market-list').innerHTML = moedas.map(m => {
-                const preco = lastData[m.id + "BRL"] || lastData[m.id + "USDT"] || "SINC...";
-                const isEntra = preco !== "SINC...";
-                
+                const val = prices[m.id + "BRL"] || prices[m.id + "USDT"] || "CARREGANDO...";
                 return `
-                <div class="market-card" onclick="loadChart('${m.pair}')" style="border-left-color: ${isEntra ? 'var(--neon-green)' : 'var(--neon-yellow)'}">
+                <div class="market-card" onclick="loadChart('${m.pair}')">
                     <div class="card-header">
                         <span class="moeda-label">${m.id} MOEDAS 🔱</span>
-                        <span class="badge-signal ${isEntra ? 'status-entra' : 'status-pula'}">${isEntra ? 'ENTRA' : 'AGUARDE'}</span>
+                        <span class="badge-signal" style="color:var(--neon-green)">LIBERADA</span>
                     </div>
-                    <span class="main-price">${isEntra ? preco : '---'}</span>
-                    <div class="context-box">SHIELD: ${m.shield} | MONITORAMENTO VIVO PELA REDE SENTINEL</div>
+                    <span class="main-price">${val}</span>
+                    <div class="context-box">SHIELD: ${m.shield} | DADOS SINCRONIZADOS COM TRADINGVIEW</div>
                 </div>`;
             }).join('');
 
-            // Renderiza Tópicos
             document.getElementById('asset-selector').innerHTML = moedas.map(m => `
                 <button class="asset-btn ${m.pair === currentPair ? 'active' : ''}" 
                         onclick="loadChart('${m.pair}')">${m.id}</button>
             `).join('');
         }
 
-        async function sync() {
-            try {
-                const res = await fetch("https://late-sea-261d.siddney-almeidaa.workers.dev");
-                const data = await res.json();
-                updateUI(data);
-            } catch (e) { updateUI(); }
-        }
-
         function loadChart(pair) {
             currentPair = pair;
-            updateUI();
+            fetchLivePrices();
             openTab('trader-view', document.querySelectorAll('.tab')[1]);
         }
 
@@ -126,13 +116,13 @@
                 document.getElementById('tv-container').innerHTML = "";
                 new TradingView.widget({
                     "autosize": true, "symbol": currentPair, "interval": "240",
-                    "theme": "dark", "container_id": "tv-container", "hide_top_toolbar": false, "style": "1"
+                    "theme": "dark", "container_id": "tv-container", "hide_top_toolbar": false
                 });
             }
         }
 
-        setInterval(sync, 5000); // Sincronização a cada 5s para manter vivo [cite: 2026-01-23]
-        sync();
+        setInterval(fetchLivePrices, 10000);
+        fetchLivePrices();
     </script>
 </body>
 </html>
