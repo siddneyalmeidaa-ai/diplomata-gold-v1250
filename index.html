@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // BLINK MOEDAS</title>
+    <title>SENTINEL_V11.5 // SUPREMACIA MOEDAS</title>
     <style>
         :root {
             --neon-green: #00ff41;
@@ -12,30 +12,33 @@
             --card-bg: #111;
             --text-gray: #666;
         }
-        body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow-x: hidden; }
+        
         .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
-        .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; position: sticky; top: 0; z-index: 100; }
-        .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
+        
+        .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; position: sticky; top: 0; z-index: 1000; }
+        .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; transition: 0.3s; }
         .tab.active { color: var(--neon-green); border-bottom: 3px solid var(--neon-green); background: #050505; }
 
         .content { padding: 15px; display: none; }
         .content.active { display: block; }
 
         /* Estilo Identidade Blink Moedas */
-        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--neon-green); }
+        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--neon-green); cursor: pointer; }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
         .moeda-label { font-size: 16px; font-weight: bold; color: #eee; letter-spacing: 2px; }
         .proj-label { font-size: 8px; color: var(--text-gray); margin-left: 10px; }
         
         .main-price { font-size: 28px; color: var(--neon-green); font-weight: bold; margin: 10px 0; display: block; }
         .variation-row { font-size: 10px; color: var(--text-gray); margin-bottom: 10px; }
-        .context-box { background: #000; border: 1px solid #222; padding: 10px; font-size: 9px; color: var(--neon-green); overflow: hidden; white-space: nowrap; }
+        .context-box { background: #000; border: 1px solid #222; padding: 10px; font-size: 9px; color: var(--neon-green); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         .badge-signal { font-size: 9px; padding: 2px 8px; border-radius: 10px; font-weight: bold; border: 1px solid currentColor; }
         .badge-entra { color: var(--neon-green); }
         .badge-pula { color: var(--neon-yellow); }
 
-        #tv-container { height: 80vh; width: 100%; border: none; }
+        /* Correção do Gráfico */
+        #tv-container { height: calc(100vh - 120px); width: 100%; background: #000; }
     </style>
 </head>
 <body>
@@ -60,40 +63,45 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // Sincronização de Relógio [cite: 2026-01-20]
+        // Sincronização Temporal [cite: 2026-01-20]
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
-        // Radar de 20 Moedas [cite: 2026-01-11]
+        // Radar de 20 Moedas de Elite
         const moedasAlvo = [
-            { id: "BTC", pair: "BINANCE:BTCBRL", t: "-50%", hist: "HISTÓRICO: Fluxo institucional em BTC." },
-            { id: "ETH", pair: "BINANCE:ETHBRL", t: "-50%", hist: "HISTÓRICO: Atualização de rede pendente." },
-            { id: "SOL", pair: "BINANCE:SOLBRL", t: "-50%", hist: "HISTÓRICO: Rompimento de resistência." },
-            { id: "FET", pair: "BINANCE:FETUSDT", t: "-50%", hist: "HISTÓRICO: IA em forte tendência." },
-            { id: "TIA", pair: "BINANCE:TIAUSDT", t: "-50%", hist: "HISTÓRICO: Acúmulo detectado." },
-            { id: "RNDR", pair: "BINANCE:RNDRUSDT", t: "-50%", hist: "HISTÓRICO: Renderização em alta." },
-            { id: "BNB", pair: "BINANCE:BNBBRL", t: "-50%", hist: "HISTÓRICO: Queima de tokens prevista." },
-            { id: "NEAR", pair: "BINANCE:NEARUSDT", t: "-50%", hist: "HISTÓRICO: Expansão de ecossistema." },
-            { id: "AVAX", pair: "BINANCE:AVAXUSDT", t: "-50%", hist: "HISTÓRICO: Subnet ativa." },
-            { id: "ADA", pair: "BINANCE:ADABRL", t: "-50%", hist: "HISTÓRICO: Consolidação de base." },
-            { id: "XRP", pair: "BINANCE:XRPBRL", t: "-50%", hist: "HISTÓRICO: Decisão judicial favorável." },
-            { id: "DOT", pair: "BINANCE:DOTBRL", t: "-50%", hist: "HISTÓRICO: Interoperabilidade estável." },
-            { id: "MATIC", pair: "BINANCE:MATICBRL", t: "-50%", hist: "HISTÓRICO: ZK-EVM em testes." },
-            { id: "LINK", pair: "BINANCE:LINKBRL", t: "-50%", hist: "HISTÓRICO: Oráculos em demanda." },
-            { id: "DOGE", pair: "BINANCE:DOGEBRL", t: "-50%", hist: "HISTÓRICO: Volume de rede subindo." },
-            { id: "SHIB", pair: "BINANCE:SHIBBRL", t: "-50%", hist: "HISTÓRICO: Ecossistema em queima." },
-            { id: "LTC", pair: "BINANCE:LTCBRL", t: "-50%", hist: "HISTÓRICO: Prata digital mantida." },
-            { id: "ARB", pair: "BINANCE:ARBUSDT", t: "-50%", hist: "HISTÓRICO: L2 com maior TVL." },
-            { id: "OP", pair: "BINANCE:OPUSDT", t: "-50%", hist: "HISTÓRICO: RetroPG ativo." },
-            { id: "INJ", pair: "BINANCE:INJUSDT", t: "-50%", hist: "HISTÓRICO: Injective em topo histórico." }
+            { id: "BTC", pair: "BINANCE:BTCBRL", t: "-50%", shield: "1408S", hist: "Fluxo institucional forte." },
+            { id: "ETH", pair: "BINANCE:ETHBRL", t: "-50%", shield: "908S", hist: "Resistência rompida." },
+            { id: "SOL", pair: "BINANCE:SOLBRL", t: "-50%", shield: "2108S", hist: "Volume de rede em alta." },
+            { id: "FET", pair: "BINANCE:FETUSDT", t: "-50%", shield: "608S", hist: "IA em tendência de polaridade." },
+            { id: "TIA", pair: "BINANCE:TIAUSDT", t: "-50%", shield: "408S", hist: "Acúmulo detectado." },
+            { id: "RNDR", pair: "BINANCE:RNDRUSDT", t: "-50%", shield: "328S", hist: "Renderização em alta." },
+            { id: "BNB", pair: "BINANCE:BNBBRL", t: "-50%", shield: "1508S", hist: "Launchpool ativa." },
+            { id: "NEAR", pair: "BINANCE:NEARUSDT", t: "-50%", shield: "110S", hist: "Ecossistema estável." },
+            { id: "AVAX", pair: "BINANCE:AVAXUSDT", t: "-50%", shield: "550S", hist: "Consolidação de suporte." },
+            { id: "ADA", pair: "BINANCE:ADABRL", t: "-50%", shield: "200S", hist: "Base de preço sólida." },
+            { id: "XRP", pair: "BINANCE:XRPBRL", t: "-50%", shield: "990S", hist: "Monitoramento jurídico." },
+            { id: "DOT", pair: "BINANCE:DOTBRL", t: "-50%", shield: "350S", hist: "Parachains ativas." },
+            { id: "MATIC", pair: "BINANCE:MATICBRL", t: "-50%", shield: "120S", hist: "ZkEVM progressivo." },
+            { id: "LINK", pair: "BINANCE:LINKBRL", t: "-50%", shield: "880S", hist: "CCIP em expansão." },
+            { id: "DOGE", pair: "BINANCE:DOGEBRL", t: "-50%", shield: "2400S", hist: "Polaridade positiva." },
+            { id: "SHIB", pair: "BINANCE:SHIBBRL", t: "-50%", shield: "5000S", hist: "Queima de tokens." },
+            { id: "LTC", pair: "BINANCE:LTCBRL", t: "-50%", shield: "150S", hist: "Liquidez constante." },
+            { id: "ARB", pair: "BINANCE:ARBUSDT", t: "-50%", shield: "220S", hist: "Dominância Layer 2." },
+            { id: "OP", pair: "BINANCE:OPUSDT", t: "-50%", shield: "310S", hist: "Superchain ativa." },
+            { id: "INJ", pair: "BINANCE:INJUSDT", t: "-50%", shield: "440S", hist: "Deflação acelerada." }
         ];
+
+        let currentPair = "BINANCE:BTCBRL";
 
         function renderBlink(data = {}) {
             const list = document.getElementById('market-list');
-            list.innerHTML = moedasAlvo.map(m => {
-                const precoRaw = data.radar ? data.radar[m.id + "BRL"] || data.radar[m.id + "USDT"] || "---" : "SINCRONIZANDO...";
-                const sinal = precoRaw.includes("---") ? "PULA" : "ENTRA";
+            let htmlBuffer = ""; 
+            
+            moedasAlvo.forEach(m => {
+                // Sincronização com seu Worker
+                const precoRaw = data.radar ? data.radar[m.id + "BRL"] || data.radar[m.id + "USDT"] || "---" : "SINC...";
+                const sinal = precoRaw === "SINC..." ? "PULA" : "ENTRA"; 
 
-                return `
+                htmlBuffer += `
                 <div class="market-card" onclick="loadChart('${m.pair}')" style="border-left-color: ${sinal === 'ENTRA' ? 'var(--neon-green)' : 'var(--neon-yellow)'}">
                     <div class="card-header">
                         <div>
@@ -104,14 +112,14 @@
                     </div>
                     <span class="main-price">${precoRaw}</span>
                     <div class="variation-row">
-                        VARIAÇÃO DIA: <span style="color:var(--neon-green)">+0.85%</span>
-                        <div style="margin-top:4px">CONTEXTO E GATILHOS</div>
+                        SHIELD: ${m.shield} | CONTEXTO E GATILHOS
                     </div>
                     <div class="context-box">
-                        ${m.hist}
+                        HISTÓRICO: [SINAL_IA] ${m.hist}
                     </div>
                 </div>`;
-            }).join('');
+            });
+            list.innerHTML = htmlBuffer;
         }
 
         async function sync() {
@@ -123,11 +131,8 @@
         }
 
         function loadChart(pair) {
+            currentPair = pair;
             openTab('trader-view', document.querySelectorAll('.tab')[1]);
-            new TradingView.widget({
-                "autosize": true, "symbol": pair, "interval": "240",
-                "theme": "dark", "container_id": "tv-container", "hide_top_toolbar": true
-            });
         }
 
         function openTab(tabId, el) {
@@ -135,6 +140,15 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             el.classList.add('active');
+            
+            // Força Recarregamento do Widget
+            if(tabId === 'trader-view') {
+                document.getElementById('tv-container').innerHTML = "";
+                new TradingView.widget({
+                    "autosize": true, "symbol": currentPair, "interval": "240",
+                    "theme": "dark", "container_id": "tv-container", "hide_top_toolbar": false, "style": "1"
+                });
+            }
         }
 
         setInterval(sync, 10000);
