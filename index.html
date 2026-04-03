@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD V1250 // TERMINAL SUPREMO</title>
+    <title>DIPLOMATA GOLD V1250 // SUPREMACIA</title>
     <style>
         :root {
             --gold: #d4af37;
@@ -15,76 +15,65 @@
         body {
             background-color: var(--bg);
             color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
+            padding: 0;
+            overflow-x: hidden;
         }
         .header {
             display: flex;
             justify-content: space-between;
             font-size: 11px;
             color: var(--gold);
-            border-bottom: 1px solid #222;
-            padding: 5px 0;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
-        .monitor-top {
-            display: flex;
-            justify-content: space-around;
-            background: var(--card-bg);
             padding: 10px;
-            border-radius: 5px;
-            font-size: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #1a1a1a;
+            border-bottom: 1px solid #222;
         }
-        .label { color: #666; display: block; margin-bottom: 3px; }
-        .val { font-weight: bold; font-size: 12px; }
-
-        .main-price-area { text-align: center; margin-bottom: 20px; }
-        .instrument { font-size: 12px; color: #888; letter-spacing: 3px; }
-        .big-price { font-size: 42px; font-weight: 200; margin: 5px 0; }
-
-        .chart-frame {
-            width: 100%;
-            height: 350px;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #222;
-            margin-bottom: 20px;
+        .tab-bar {
+            display: flex;
+            background: #111;
+            border-bottom: 1px solid #222;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-
-        /* Radar de Ativos (15 Moedas) */
-        .radar-title { 
-            font-size: 12px; 
-            color: var(--gold); 
-            margin-bottom: 10px; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px;
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            color: #666;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
         }
-        .radar-grid { display: grid; gap: 8px; }
+        .tab-btn.active {
+            color: var(--gold);
+            border-bottom: 2px solid var(--gold);
+            background: #151515;
+        }
+        .view-content { display: none; padding: 10px; }
+        .view-content.active { display: block; }
+
+        /* Radar de Valores */
+        .radar-grid { display: grid; gap: 10px; margin-top: 10px; }
         .asset-card {
             background: var(--card-bg);
-            padding: 12px;
-            border-radius: 6px;
+            padding: 15px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 3px solid #1a1a1a;
-            transition: 0.3s;
+            border-left: 4px solid var(--gold);
+            border: 1px solid #1a1a1a;
         }
-        .asset-card:active { background: #151515; }
-        .asset-left { display: flex; flex-direction: column; }
-        .asset-name { font-size: 13px; font-weight: bold; color: #eee; }
-        .asset-shield { font-size: 9px; color: #555; margin-top: 2px; }
-        .asset-right { text-align: right; }
-        .asset-price { font-size: 14px; font-weight: 500; }
-        .asset-pct { font-size: 11px; margin-top: 2px; }
+        .asset-info { display: flex; flex-direction: column; }
+        .asset-name { font-size: 14px; font-weight: bold; letter-spacing: 1px; }
+        .asset-shield { font-size: 10px; color: #555; margin-top: 4px; }
+        .asset-values { text-align: right; }
+        .price-text { font-size: 16px; font-weight: bold; }
+        .pct-text { font-size: 12px; margin-top: 2px; }
 
+        .chart-frame { height: 85vh; width: 100%; border: none; }
         .up { color: var(--green); }
         .down { color: var(--red); }
     </style>
@@ -96,28 +85,37 @@
         <span id="live-clock">00:00:00</span>
     </div>
 
-    <div class="monitor-top">
-        <div><span class="label">CICLO</span><span class="val" style="color:var(--gold)">LIVE</span></div>
-        <div><span class="label">IA-SENTINELA</span><span id="main-status" class="val">BUSCANDO...</span></div>
-        <div><span class="label">PROJ. (-50%)</span><span id="main-proj" class="val">R$ 0,00</span></div>
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('tab-charts')">📊 GRÁFICOS</button>
+        <button class="tab-btn" onclick="switchTab('tab-values')">💰 VALORES</button>
     </div>
 
-    <div class="main-price-area">
-        <div class="instrument">BITCOIN / BRL</div>
-        <div id="main-btc-price" class="big-price">R$ 0,00</div>
+    <div id="tab-charts" class="view-content active">
+        <div id="tradingview_main" class="chart-frame"></div>
     </div>
 
-    <div class="chart-frame" id="tv_chart"></div>
-
-    <div class="radar-title"><span>RADAR DE POLARIDADE</span> <hr style="flex-grow:1; border:0; border-top:1px solid #222;"></div>
-    
-    <div class="radar-grid" id="asset-list">
-        </div>
+    <div id="tab-values" class="view-content">
+        <div class="radar-grid" id="radar-list">
+            </div>
+    </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // 1. Configuração de Ativos (15 alvos)
-        const alvos = [
+        // Relógio de Operações
+        setInterval(() => {
+            document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('pt-BR');
+        }, 1000);
+
+        // Troca de Abas [cite: 2026-01-28]
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // Configuração dos Alvos (15 ativos)
+        const moedas = [
             { id: "BTC", nome: "BITCOIN", shield: "1408S", pair: "BINANCE:BTCBRL" },
             { id: "ETH", nome: "ETHEREUM", shield: "908S", pair: "BINANCE:ETHBRL" },
             { id: "SOL", nome: "SOLANA", shield: "2108S", pair: "BINANCE:SOLBRL" },
@@ -135,69 +133,62 @@
             { id: "DOGE", nome: "DOGECOIN", shield: "2400S", pair: "BINANCE:DOGEBRL" }
         ];
 
-        // 2. Relógio Diplomático
-        setInterval(() => {
-            document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('pt-BR');
-        }, 1000);
-
-        // 3. Renderização Inicial dos Cards
-        const listContainer = document.getElementById('asset-list');
-        listContainer.innerHTML = alvos.map(a => `
-            <div class="asset-card" id="card-${a.id}">
-                <div class="asset-left">
-                    <span class="asset-name">${a.nome} 🔱</span>
-                    <span class="asset-shield">🛡️ ${a.shield}</span>
+        // Renderização do Radar
+        const radarList = document.getElementById('radar-list');
+        radarList.innerHTML = moedas.map(m => `
+            <div class="asset-card" onclick="loadChart('${m.pair}')">
+                <div class="asset-info">
+                    <span class="asset-name">${m.nome} 🔱</span>
+                    <span class="asset-shield">🛡️ ${m.shield}</span>
                 </div>
-                <div class="asset-right">
-                    <div class="asset-price" id="p-${a.id}">---</div>
-                    <div class="asset-pct" id="c-${a.id}">---</div>
+                <div class="asset-values">
+                    <div class="price-text" id="val-${m.id}">---</div>
+                    <div class="pct-text" id="pct-${m.id}">---</div>
                 </div>
             </div>
         `).join('');
 
-        // 4. Gráfico de Casquinhas (TradingView)
-        new TradingView.widget({
-            "autosize": true,
-            "symbol": "BINANCE:BTCBRL",
-            "interval": "240",
-            "theme": "dark",
-            "style": "1",
-            "locale": "br",
-            "container_id": "tv_chart",
-            "hide_top_toolbar": true,
-            "save_image": false
-        });
+        // Gerenciador de Gráfico [cite: 2026-01-16]
+        function loadChart(symbol) {
+            switchTab('tab-charts');
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": symbol,
+                "interval": "240",
+                "theme": "dark",
+                "style": "1",
+                "locale": "br",
+                "container_id": "tradingview_main",
+                "hide_top_toolbar": true
+            });
+        }
+        loadChart("BINANCE:BTCBRL"); // Início padrão
 
-        // 5. Engine de Sincronismo (Pasta J) [cite: 2026-01-16, 2026-01-23]
-        async function syncData() {
+        // Sincronia com Worker Multi-Ativos (Pasta J) [cite: 2026-01-23]
+        async function syncEngine() {
             const URL = "https://late-sea-261d.siddney-almeidaa.workers.dev";
             try {
                 const response = await fetch(URL);
                 const data = await response.json();
-
-                // Atualiza Main Display (BTC)
-                document.getElementById('main-btc-price').innerText = data.valor_atual;
-                document.getElementById('main-status').innerText = data.status_ia;
-                document.getElementById('main-proj').innerText = data.projecao_24h;
-                document.getElementById('main-status').style.color = data.status_ia.includes("ENTRA") ? "var(--green)" : "var(--red)";
-
-                // Simulação de preenchimento do Radar (Será automatizado no Worker v2)
-                alvos.forEach(a => {
-                    const priceEl = document.getElementById(`p-${a.id}`);
-                    const cardEl = document.getElementById(`card-${a.id}`);
-                    if (a.id === "BTC") {
-                        priceEl.innerText = data.valor_atual.split(',')[0];
-                        priceEl.classList.add('up');
-                    }
-                });
-
+                
+                if(data.radar) {
+                    // Mapeamento de preenchimento do Radar
+                    Object.keys(data.radar).forEach(key => {
+                        const baseId = key.replace("BRL", "").replace("USDT", "");
+                        const el = document.getElementById(`val-${baseId}`);
+                        if(el) {
+                            el.innerText = data.radar[key];
+                            el.classList.add('up');
+                        }
+                    });
+                }
             } catch (e) {
-                console.error("JSL: Erro na blindagem.");
+                console.log("JSL: Aguardando sincronia de rede...");
             }
         }
 
-        setInterval(syncData, 10000);
-        syncData();
+        setInterval(syncEngine, 10000);
+        syncEngine();
     </script>
 </body>
 </html>
