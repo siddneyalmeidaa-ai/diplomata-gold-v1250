@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // CRYPTO BLINK</title>
+    <title>SENTINEL_V11.5 // BLINK MARKET 20</title>
     <style>
         :root {
             --neon-green: #00ff41;
@@ -14,17 +14,16 @@
         }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; }
         .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
-        .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; }
+        .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; position: sticky; top: 0; z-index: 100; }
         .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
-        .tab.active { color: var(--neon-green); border-bottom: 3px solid var(--neon-green); }
+        .tab.active { color: var(--neon-green); border-bottom: 3px solid var(--neon-green); background: #050505; }
 
         .content { padding: 15px; display: none; }
         .content.active { display: block; }
 
-        /* Cards Estilo Blink Market */
-        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--neon-green); }
+        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--neon-green); transition: 0.3s; }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .ticker { font-size: 16px; font-weight: bold; color: #eee; letter-spacing: 1px; }
+        .ticker { font-size: 16px; font-weight: bold; color: #eee; letter-spacing: 1.5px; }
         .proj-label { font-size: 8px; color: var(--text-gray); margin-left: 10px; }
         .main-price { font-size: 28px; color: var(--neon-green); font-weight: bold; margin: 10px 0; display: block; }
         .variation-row { font-size: 10px; color: var(--text-gray); margin-bottom: 10px; }
@@ -34,13 +33,13 @@
         .badge-entra { color: var(--neon-green); }
         .badge-pula { color: var(--neon-yellow); }
         
-        #tv-container { height: 80vh; width: 100%; }
+        #tv-container { height: 85vh; width: 100%; border: none; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <span>SENTINEL_V11.5 // SUPREMACIA CRYPTO</span>
+        <span>SENTINEL_V11.5 // SUPREMACIA TOTAL</span>
         <span id="clock">00:00:00</span>
     </div>
 
@@ -61,36 +60,52 @@
     <script>
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
-        const cryptoAlvos = [
+        // LISTA DE 20 ATIVOS DE ELITE
+        const ativos = [
             { id: "BTC", nome: "BITCOIN", pair: "BINANCE:BTCBRL", shield: "1408S", proj: "-50%" },
             { id: "ETH", nome: "ETHEREUM", pair: "BINANCE:ETHBRL", shield: "908S", proj: "-50%" },
-            { id: "SOL", nome: "SOLANA", pair: "BINANCE:SOLBRL", shield: "2108S", proj: "-75%" },
+            { id: "SOL", nome: "SOLANA", pair: "BINANCE:SOLBRL", shield: "2108S", proj: "-50%" },
             { id: "FET", nome: "FETCH.AI", pair: "BINANCE:FETUSDT", shield: "608S", proj: "-50%" },
-            { id: "TIA", nome: "CELESTIA", pair: "BINANCE:TIAUSDT", shield: "408S", proj: "-30%" }
+            { id: "TIA", nome: "CELESTIA", pair: "BINANCE:TIAUSDT", shield: "408S", proj: "-50%" },
+            { id: "RNDR", nome: "RENDER", pair: "BINANCE:RNDRUSDT", shield: "328S", proj: "-50%" },
+            { id: "BNB", nome: "BINANCE", pair: "BINANCE:BNBBRL", shield: "1508S", proj: "-50%" },
+            { id: "NEAR", nome: "NEAR", pair: "BINANCE:NEARUSDT", shield: "110S", proj: "-50%" },
+            { id: "AVAX", nome: "AVALANCHE", pair: "BINANCE:AVAXUSDT", shield: "550S", proj: "-50%" },
+            { id: "ADA", nome: "CARDANO", pair: "BINANCE:ADABRL", shield: "200S", proj: "-50%" },
+            { id: "XRP", nome: "XRP", pair: "BINANCE:XRPBRL", shield: "990S", proj: "-50%" },
+            { id: "DOT", nome: "POLKADOT", pair: "BINANCE:DOTBRL", shield: "350S", proj: "-50%" },
+            { id: "MATIC", nome: "POLYGON", pair: "BINANCE:MATICBRL", shield: "120S", proj: "-50%" },
+            { id: "LINK", nome: "CHAINLINK", pair: "BINANCE:LINKBRL", shield: "880S", proj: "-50%" },
+            { id: "DOGE", nome: "DOGECOIN", pair: "BINANCE:DOGEBRL", shield: "2400S", proj: "-50%" },
+            { id: "SHIB", nome: "SHIBA INU", pair: "BINANCE:SHIBBRL", shield: "5000S", proj: "-50%" },
+            { id: "LTC", nome: "LITECOIN", pair: "BINANCE:LTCBRL", shield: "150S", proj: "-50%" },
+            { id: "ARB", nome: "ARBITRUM", pair: "BINANCE:ARBUSDT", shield: "220S", proj: "-50%" },
+            { id: "OP", nome: "OPTIMISM", pair: "BINANCE:OPUSDT", shield: "310S", proj: "-50%" },
+            { id: "INJ", nome: "INJECTIVE", pair: "BINANCE:INJUSDT", shield: "440S", proj: "-50%" }
         ];
 
         function renderRadar(data = {}) {
             const list = document.getElementById('market-list');
-            list.innerHTML = cryptoAlvos.map(c => {
-                const preco = data.radar ? data.radar[c.id + "BRL"] || data.radar[c.id + "USDT"] || "---" : "SINCRONIZANDO...";
-                const sinal = preco.includes("34") || preco.includes("83") ? "ENTRA" : "PULA"; // Lógica exemplo
-                
+            list.innerHTML = ativos.map(a => {
+                const precoRaw = data.radar ? data.radar[a.id + "BRL"] || data.radar[a.id + "USDT"] || "---" : "SINCRONIZANDO...";
+                const sinal = precoRaw.includes("---") || precoRaw.includes("SINCRONIZANDO") ? "PULA" : "ENTRA"; 
+
                 return `
-                <div class="market-card" onclick="loadChart('${c.pair}')" style="border-left-color: ${sinal === 'ENTRA' ? 'var(--neon-green)' : 'var(--neon-yellow)'}">
+                <div class="market-card" onclick="loadChart('${a.pair}')" style="border-left-color: ${sinal === 'ENTRA' ? 'var(--neon-green)' : 'var(--neon-yellow)'}">
                     <div class="card-header">
                         <div>
-                            <span class="ticker">${c.nome}</span>
-                            <span class="proj-label">T: ${c.proj}</span>
+                            <span class="ticker">${a.nome} 🔱</span>
+                            <span class="proj-label">T: ${a.proj}</span>
                         </div>
                         <span class="badge-signal ${sinal === 'ENTRA' ? 'badge-entra' : 'badge-pula'}">${sinal}</span>
                     </div>
-                    <span class="main-price">${preco}</span>
+                    <span class="main-price">${precoRaw}</span>
                     <div class="variation-row">
-                        VARIAÇÃO DIA: <span style="color:var(--neon-green)">+1.25%</span> | SHIELD: ${c.shield}
+                        VARIAÇÃO: <span style="color:var(--neon-green)">+1.12%</span> | SHIELD: ${a.shield}
                         <div style="margin-top:4px">CONTEXTO E GATILHOS</div>
                     </div>
                     <div class="context-box">
-                        HISTÓRICO: [SINAL_IA] Fluxo de capital positivo detectado no par ${c.id}.
+                        HISTÓRICO: [SINAL_IA] Ativo ${a.id} monitorado pela rede SENTINEL.
                     </div>
                 </div>`;
             }).join('');
@@ -108,7 +123,7 @@
             openTab('trader-view', document.querySelectorAll('.tab')[1]);
             new TradingView.widget({
                 "autosize": true, "symbol": pair, "interval": "240",
-                "theme": "dark", "container_id": "tv-container", "hide_top_toolbar": true
+                "theme": "dark", "container_id": "tv-container", "hide_top_toolbar": true, "style": "1"
             });
         }
 
