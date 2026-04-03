@@ -1,0 +1,12 @@
+// CHAMADA DO FLUXO JSON V1250
+const JSON_STREAM = "https://late-sea-261d.siddney-almeidaa.workers.dev";
+
+async function carregarDados() {
+    const response = await fetch(JSON_STREAM);
+    const data = await response.json();
+    
+    // Atualiza o valor do Bitcoin e a Trava de -50%
+    document.getElementById('btc-val').innerText = data.valor_atual;
+    document.getElementById('status-sentinela').innerText = data.status_ia;
+    document.getElementById('proj-val').innerText = data.projecao_24h;
+}
