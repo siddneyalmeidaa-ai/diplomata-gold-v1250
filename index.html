@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // SUPREMACIA MOEDAS</title>
+    <title>SENTINEL_V11.5 // RADAR MOEDAS</title>
     <style>
         :root {
             --neon-green: #00ff41;
@@ -12,39 +12,51 @@
             --card-bg: #111;
             --text-gray: #666;
         }
-        body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow-x: hidden; }
-        
+        body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
         .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
-        
         .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; position: sticky; top: 0; z-index: 1000; }
-        .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; transition: 0.3s; }
+        .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
         .tab.active { color: var(--neon-green); border-bottom: 3px solid var(--neon-green); background: #050505; }
-
-        .content { padding: 15px; display: none; }
+        
+        .content { display: none; height: calc(100vh - 110px); overflow-y: auto; }
         .content.active { display: block; }
 
-        /* Estilo Identidade Blink Moedas */
-        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--neon-green); cursor: pointer; }
+        /* Barra de Tópicos (Moedas) no Gráfico */
+        .asset-selector { 
+            display: flex; 
+            gap: 8px; 
+            padding: 10px; 
+            background: #111; 
+            overflow-x: auto; 
+            border-bottom: 1px solid #222;
+            scrollbar-width: none; 
+        }
+        .asset-btn { 
+            background: #000; 
+            color: var(--text-gray); 
+            border: 1px solid #333; 
+            padding: 8px 15px; 
+            font-size: 10px; 
+            font-weight: bold; 
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .asset-btn.active { border-color: var(--neon-green); color: var(--neon-green); }
+
+        /* Estilo dos Cards */
+        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 15px; border-left: 4px solid var(--neon-green); }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .moeda-label { font-size: 16px; font-weight: bold; color: #eee; letter-spacing: 2px; }
-        .proj-label { font-size: 8px; color: var(--text-gray); margin-left: 10px; }
-        
-        .main-price { font-size: 28px; color: var(--neon-green); font-weight: bold; margin: 10px 0; display: block; }
-        .variation-row { font-size: 10px; color: var(--text-gray); margin-bottom: 10px; }
-        .context-box { background: #000; border: 1px solid #222; padding: 10px; font-size: 9px; color: var(--neon-green); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .moeda-label { font-size: 14px; font-weight: bold; letter-spacing: 2px; }
+        .main-price { font-size: 24px; color: var(--neon-green); font-weight: bold; margin: 10px 0; display: block; }
+        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--neon-green); }
 
-        .badge-signal { font-size: 9px; padding: 2px 8px; border-radius: 10px; font-weight: bold; border: 1px solid currentColor; }
-        .badge-entra { color: var(--neon-green); }
-        .badge-pula { color: var(--neon-yellow); }
-
-        /* Correção do Gráfico */
-        #tv-container { height: calc(100vh - 120px); width: 100%; background: #000; }
+        #tv-container { height: 100%; width: 100%; background: #000; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <span>SENTINEL_V11.5 // SUPREMACIA MOEDAS</span>
+        <span>SENTINEL_V11.5 // RADAR MOEDAS</span>
         <span id="clock">00:00:00</span>
     </div>
 
@@ -58,80 +70,52 @@
     </div>
 
     <div id="trader-view" class="content">
+        <div class="asset-selector" id="asset-selector"></div>
         <div id="tv-container"></div>
     </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // Sincronização Temporal [cite: 2026-01-20]
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
-        // Radar de 20 Moedas de Elite
-        const moedasAlvo = [
-            { id: "BTC", pair: "BINANCE:BTCBRL", t: "-50%", shield: "1408S", hist: "Fluxo institucional forte." },
-            { id: "ETH", pair: "BINANCE:ETHBRL", t: "-50%", shield: "908S", hist: "Resistência rompida." },
-            { id: "SOL", pair: "BINANCE:SOLBRL", t: "-50%", shield: "2108S", hist: "Volume de rede em alta." },
-            { id: "FET", pair: "BINANCE:FETUSDT", t: "-50%", shield: "608S", hist: "IA em tendência de polaridade." },
-            { id: "TIA", pair: "BINANCE:TIAUSDT", t: "-50%", shield: "408S", hist: "Acúmulo detectado." },
-            { id: "RNDR", pair: "BINANCE:RNDRUSDT", t: "-50%", shield: "328S", hist: "Renderização em alta." },
-            { id: "BNB", pair: "BINANCE:BNBBRL", t: "-50%", shield: "1508S", hist: "Launchpool ativa." },
-            { id: "NEAR", pair: "BINANCE:NEARUSDT", t: "-50%", shield: "110S", hist: "Ecossistema estável." },
-            { id: "AVAX", pair: "BINANCE:AVAXUSDT", t: "-50%", shield: "550S", hist: "Consolidação de suporte." },
-            { id: "ADA", pair: "BINANCE:ADABRL", t: "-50%", shield: "200S", hist: "Base de preço sólida." },
-            { id: "XRP", pair: "BINANCE:XRPBRL", t: "-50%", shield: "990S", hist: "Monitoramento jurídico." },
-            { id: "DOT", pair: "BINANCE:DOTBRL", t: "-50%", shield: "350S", hist: "Parachains ativas." },
-            { id: "MATIC", pair: "BINANCE:MATICBRL", t: "-50%", shield: "120S", hist: "ZkEVM progressivo." },
-            { id: "LINK", pair: "BINANCE:LINKBRL", t: "-50%", shield: "880S", hist: "CCIP em expansão." },
-            { id: "DOGE", pair: "BINANCE:DOGEBRL", t: "-50%", shield: "2400S", hist: "Polaridade positiva." },
-            { id: "SHIB", pair: "BINANCE:SHIBBRL", t: "-50%", shield: "5000S", hist: "Queima de tokens." },
-            { id: "LTC", pair: "BINANCE:LTCBRL", t: "-50%", shield: "150S", hist: "Liquidez constante." },
-            { id: "ARB", pair: "BINANCE:ARBUSDT", t: "-50%", shield: "220S", hist: "Dominância Layer 2." },
-            { id: "OP", pair: "BINANCE:OPUSDT", t: "-50%", shield: "310S", hist: "Superchain ativa." },
-            { id: "INJ", pair: "BINANCE:INJUSDT", t: "-50%", shield: "440S", hist: "Deflação acelerada." }
+        const moedas = [
+            { id: "BTC", pair: "BINANCE:BTCBRL" }, { id: "ETH", pair: "BINANCE:ETHBRL" },
+            { id: "SOL", pair: "BINANCE:SOLBRL" }, { id: "FET", pair: "BINANCE:FETUSDT" },
+            { id: "TIA", pair: "BINANCE:TIAUSDT" }, { id: "RNDR", pair: "BINANCE:RNDRUSDT" },
+            { id: "BNB", pair: "BINANCE:BNBBRL" }, { id: "NEAR", pair: "BINANCE:NEARUSDT" },
+            { id: "AVAX", pair: "BINANCE:AVAXUSDT" }, { id: "ADA", pair: "BINANCE:ADABRL" },
+            { id: "XRP", pair: "BINANCE:XRPBRL" }, { id: "DOT", pair: "BINANCE:DOTBRL" },
+            { id: "MATIC", pair: "BINANCE:MATICBRL" }, { id: "LINK", pair: "BINANCE:LINKBRL" },
+            { id: "DOGE", pair: "BINANCE:DOGEBRL" }, { id: "SHIB", pair: "BINANCE:SHIBBRL" },
+            { id: "LTC", pair: "BINANCE:LTCBRL" }, { id: "ARB", pair: "BINANCE:ARBUSDT" },
+            { id: "OP", pair: "BINANCE:OPUSDT" }, { id: "INJ", pair: "BINANCE:INJUSDT" }
         ];
 
-        let currentPair = "BINANCE:BTCBRL";
+        let currentActivePair = "BINANCE:BTCBRL";
 
-        function renderBlink(data = {}) {
-            const list = document.getElementById('market-list');
-            let htmlBuffer = ""; 
-            
-            moedasAlvo.forEach(m => {
-                // Sincronização com seu Worker
-                const precoRaw = data.radar ? data.radar[m.id + "BRL"] || data.radar[m.id + "USDT"] || "---" : "SINC...";
-                const sinal = precoRaw === "SINC..." ? "PULA" : "ENTRA"; 
-
-                htmlBuffer += `
-                <div class="market-card" onclick="loadChart('${m.pair}')" style="border-left-color: ${sinal === 'ENTRA' ? 'var(--neon-green)' : 'var(--neon-yellow)'}">
+        function renderInterface() {
+            // Renderiza Cards no Painel
+            document.getElementById('market-list').innerHTML = moedas.map(m => `
+                <div class="market-card" onclick="loadChart('${m.pair}')">
                     <div class="card-header">
-                        <div>
-                            <span class="moeda-label">${m.id} MOEDAS 🔱</span>
-                            <span class="proj-label">T: ${m.t}</span>
-                        </div>
-                        <span class="badge-signal ${sinal === 'ENTRA' ? 'badge-entra' : 'badge-pula'}">${sinal}</span>
+                        <span class="moeda-label">${m.id} MOEDAS 🔱</span>
+                        <span style="font-size:9px; color:var(--neon-green)">ENTRA</span>
                     </div>
-                    <span class="main-price">${precoRaw}</span>
-                    <div class="variation-row">
-                        SHIELD: ${m.shield} | CONTEXTO E GATILHOS
-                    </div>
-                    <div class="context-box">
-                        HISTÓRICO: [SINAL_IA] ${m.hist}
-                    </div>
-                </div>`;
-            });
-            list.innerHTML = htmlBuffer;
-        }
+                    <span class="main-price">---</span>
+                    <div class="context-box">HISTÓRICO: Rede SENTINEL monitorando fluxo de ${m.id}...</div>
+                </div>
+            `).join('');
 
-        async function sync() {
-            try {
-                const res = await fetch("https://late-sea-261d.siddney-almeidaa.workers.dev");
-                const data = await res.json();
-                renderBlink(data);
-            } catch (e) { renderBlink(); }
+            // Renderiza Botões de Tópicos
+            document.getElementById('asset-selector').innerHTML = moedas.map(m => `
+                <button class="asset-btn ${m.pair === currentActivePair ? 'active' : ''}" 
+                        onclick="loadChart('${m.pair}')">${m.id}</button>
+            `).join('');
         }
 
         function loadChart(pair) {
-            currentPair = pair;
+            currentActivePair = pair;
+            renderInterface(); // Atualiza botões ativos
             openTab('trader-view', document.querySelectorAll('.tab')[1]);
         }
 
@@ -140,19 +124,17 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             el.classList.add('active');
-            
-            // Força Recarregamento do Widget
+
             if(tabId === 'trader-view') {
                 document.getElementById('tv-container').innerHTML = "";
                 new TradingView.widget({
-                    "autosize": true, "symbol": currentPair, "interval": "240",
-                    "theme": "dark", "container_id": "tv-container", "hide_top_toolbar": false, "style": "1"
+                    "autosize": true, "symbol": currentActivePair, "interval": "240",
+                    "theme": "dark", "container_id": "tv-container", "hide_top_toolbar": false
                 });
             }
         }
 
-        setInterval(sync, 10000);
-        sync();
+        renderInterface();
     </script>
 </body>
 </html>
