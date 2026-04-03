@@ -3,109 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD V1250 // SUPREMACIA</title>
+    <title>SENTINEL_V11.5 // BLINK MARKET</title>
     <style>
-        :root { --gold: #d4af37; --green: #00ff00; --red: #ff0000; --bg: #000000; --card-bg: #0a0a0a; }
-        body { background-color: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 0; }
-        .header { display: flex; justify-content: space-between; font-size: 11px; color: var(--gold); padding: 10px; border-bottom: 1px solid #222; }
+        :root {
+            --neon-green: #00ff41;
+            --neon-yellow: #ffcc00;
+            --bg-dark: #0a0a0a;
+            --card-bg: #111;
+            --text-gray: #666;
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+        }
+        .top-bar {
+            background: #000;
+            padding: 10px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-gray);
+            border-bottom: 1px solid #222;
+        }
+        .nav-tabs {
+            display: flex;
+            background: #000;
+            border-bottom: 2px solid #1a1a1a;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-gray);
+            cursor: pointer;
+        }
+        .tab.active {
+            color: var(--neon-green);
+            border-bottom: 3px solid var(--neon-green);
+        }
+
+        .content { padding: 15px; display: none; }
+        .content.active { display: block; }
+
+        /* Estilização dos Cards Blink Market */
+        .market-card {
+            background: var(--card-bg);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+            border-left: 4px solid var(--neon-green);
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .ticker { font-size: 16px; font-weight: bold; color: #eee; }
+        .proj-label { font-size: 8px; color: var(--text-gray); }
         
-        .tab-bar { display: flex; background: #111; border-bottom: 1px solid #222; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #666; font-size: 12px; font-weight: bold; cursor: pointer; }
-        .tab-btn.active { color: var(--gold); border-bottom: 2px solid var(--gold); background: #151515; }
+        .price-row { margin: 10px 0; }
+        .main-price { font-size: 28px; color: var(--neon-green); font-weight: bold; }
+        
+        .variation-row { font-size: 10px; color: var(--text-gray); margin-bottom: 10px; }
+        .var-up { color: var(--neon-green); }
+        .var-down { color: #ff3333; }
 
-        .view-content { display: none; padding: 10px; height: 80vh; }
-        .view-content.active { display: block; }
+        .context-box {
+            background: #000;
+            border: 1px solid #222;
+            padding: 10px;
+            font-size: 9px;
+            color: var(--neon-green);
+            overflow: hidden;
+            white-space: nowrap;
+        }
 
-        .radar-grid { display: grid; gap: 8px; }
-        .asset-card { background: var(--card-bg); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--gold); }
-        .price-text { font-weight: bold; color: var(--gold); }
-        #tradingview_widget { width: 100%; height: 100%; }
+        .badge-signal {
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            border: 1px solid currentColor;
+        }
+        .badge-entra { color: var(--neon-green); }
+        .badge-pula { color: var(--neon-yellow); }
+
+        #tv-container { height: 80vh; width: 100%; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <span>🔱 DIPLOMATA GOLD V1250</span>
-        <span id="live-clock">00:00:00</span>
+    <div class="top-bar">
+        <span>SENTINEL_V11.5 // SUPREMACIA</span>
+        <span id="clock">00:00:00</span>
     </div>
 
-    <div class="tab-bar">
-        <button class="tab-btn active" id="btn-charts" onclick="switchTab('tab-charts')">📊 GRÁFICOS</button>
-        <button class="tab-btn" id="btn-values" onclick="switchTab('tab-values')">💰 VALORES</button>
+    <div class="nav-tabs">
+        <div class="tab active" onclick="openTab('painel-data', this)">PAINEL_DATA</div>
+        <div class="tab" onclick="openTab('trader-view', this)">TRADER_VIEW</div>
     </div>
 
-    <div id="tab-charts" class="view-content active">
-        <div id="tradingview_widget"></div>
+    <div id="painel-data" class="content active">
+        <div id="market-list">
+            </div>
     </div>
 
-    <div id="tab-values" class="view-content">
-        <div class="radar-grid" id="radar-list"></div>
+    <div id="trader-view" class="content">
+        <div id="tv-container"></div>
     </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // 1. Relógio Operacional [cite: 2026-01-20]
-        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
+        // Relógio Operacional [cite: 2026-01-20]
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR');
+        }, 1000);
 
-        // 2. Definição das Moedas
-        const moedas = [
-            { id: "BTC", nome: "BITCOIN", pair: "BINANCE:BTCBRL" },
-            { id: "ETH", nome: "ETHEREUM", pair: "BINANCE:ETHBRL" },
-            { id: "SOL", nome: "SOLANA", pair: "BINANCE:SOLBRL" }
+        // Dados Iniciais (Exemplos conforme seu print)
+        const ativos = [
+            { ticker: "VALE3", price: "83.55", var: "+0.66%", proj: "-50%", signal: "ENTRA", hist: "HISTÓRICO: [01/04] Minério subiu 1.2% em Dalian." },
+            { ticker: "PETR4", price: "48.15", var: "+1.65%", proj: "-75%", signal: "PULA", hist: "HISTÓRICO: [01/04] Petróleo Brent recuou no fechamento." },
+            { ticker: "ITUB4", price: "43.30", var: "-1.21%", proj: "-50%", signal: "ENTRA", hist: "HISTÓRICO: [01/04] Resultado trimestral acima do esperado." }
         ];
 
-        // 3. Função de Alternância de Abas com Fix de Renderização [cite: 2026-01-23]
-        function switchTab(tabId) {
-            document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
+        function renderCards() {
+            const list = document.getElementById('market-list');
+            list.innerHTML = ativos.map(a => `
+                <div class="market-card" style="border-left-color: ${a.signal === 'ENTRA' ? 'var(--neon-green)' : 'var(--neon-yellow)'}">
+                    <div class="card-header">
+                        <div>
+                            <span class="ticker">${a.ticker}</span>
+                            <span class="proj-label">T: ${a.proj}</span>
+                        </div>
+                        <span class="badge-signal ${a.signal === 'ENTRA' ? 'badge-entra' : 'badge-pula'}">${a.signal}</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="main-price">R$ ${a.price}</span>
+                    </div>
+                    <div class="variation-row">
+                        VARIAÇÃO DIA: <span class="${a.var.includes('+') ? 'var-up' : 'var-down'}">${a.var}</span>
+                        <div style="margin-top:4px">CONTEXTO E GATILHOS</div>
+                    </div>
+                    <div class="context-box">
+                        ${a.hist}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openTab(tabId, el) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
-
-            if(tabId === 'tab-charts') { initChart("BINANCE:BTCBRL"); }
+            el.classList.add('active');
+            
+            if(tabId === 'trader-view') {
+                new TradingView.widget({
+                    "autosize": true, "symbol": "BINANCE:BTCBRL", "interval": "D",
+                    "theme": "dark", "container_id": "tv-container", "hide_top_toolbar": true
+                });
+            }
         }
 
-        // 4. Inicializador do Gráfico (Garante que não fique preto) [cite: 2026-02-06]
-        function initChart(symbol) {
-            new TradingView.widget({
-                "autosize": true,
-                "symbol": symbol,
-                "interval": "D",
-                "theme": "dark",
-                "style": "1",
-                "locale": "br",
-                "container_id": "tradingview_widget",
-                "hide_top_toolbar": true,
-                "save_image": false
-            });
-        }
-
-        // 5. Injeção do Radar
-        document.getElementById('radar-list').innerHTML = moedas.map(m => `
-            <div class="asset-card" onclick="switchTab('tab-charts'); initChart('${m.pair}');">
-                <div><b>${m.nome} 🔱</b></div>
-                <div class="price-text" id="val-${m.id}">CARREGANDO...</div>
-            </div>
-        `).join('');
-
-        // 6. Sincronia com o Worker (Pasta J) [cite: 2026-01-16]
-        async function sync() {
-            try {
-                const res = await fetch("https://late-sea-261d.siddney-almeidaa.workers.dev");
-                const data = await res.json();
-                if(data.radar) {
-                    document.getElementById('val-BTC').innerText = data.radar["BTCBRL"] || "---";
-                    document.getElementById('val-ETH').innerText = data.radar["ETHBRL"] || "---";
-                    document.getElementById('val-SOL').innerText = data.radar["SOLBRL"] || "---";
-                }
-            } catch (e) { console.log("Erro de Sync."); }
-        }
-
-        // Start Geral
-        initChart("BINANCE:BTCBRL");
-        setInterval(sync, 10000);
-        sync();
+        renderCards();
     </script>
-</
-    body>
+</body>
 </html>
