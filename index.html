@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // SUPREMACIA TOTAL</title>
+    <title>SENTINEL_V11.5 // CORREÇÃO DE PREÇO</title>
     <style>
         :root { --neon-green: #00ff41; --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
@@ -28,8 +28,8 @@
 <body>
 
     <div class="top-bar">
-        <span>SENTINEL_V11.5 // SUPREMACIA TOTAL</span>
-        <span id="clock">03:41:00</span>
+        <span>SENTINEL_V11.5 // MATRIZ CORRIGIDA</span>
+        <span id="clock">03:42:00</span>
     </div>
 
     <div class="nav-tabs">
@@ -51,11 +51,16 @@
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
         const moedas = [
-            { id: "BTC", pair: "BINANCE:BTCBRL", shield: "1408S" }, { id: "ETH", pair: "BINANCE:ETHBRL", shield: "908S" },
-            { id: "SOL", pair: "BINANCE:SOLBRL", shield: "2108S" }, { id: "FET", pair: "BINANCE:FETUSDT", shield: "608S" },
-            { id: "TIA", pair: "BINANCE:TIAUSDT", shield: "408S" }, { id: "RNDR", pair: "BINANCE:RNDRUSDT", shield: "328S" },
-            { id: "BNB", pair: "BINANCE:BNBBRL", shield: "1508S" }, { id: "NEAR", pair: "BINANCE:NEARUSDT", shield: "110S" },
-            { id: "AVAX", pair: "BINANCE:AVAXUSDT", shield: "550S" }, { id: "ADA", pair: "BINANCE:ADABRL", shield: "200S" }
+            { id: "BTC", pair: "BINANCE:BTCBRL", binanceSymbol: "BTCBRL", shield: "1408S" },
+            { id: "ETH", pair: "BINANCE:ETHBRL", binanceSymbol: "ETHBRL", shield: "908S" },
+            { id: "SOL", pair: "BINANCE:SOLBRL", binanceSymbol: "SOLBRL", shield: "2108S" },
+            { id: "FET", pair: "BINANCE:FETUSDT", binanceSymbol: "FETUSDT", shield: "608S" },
+            { id: "TIA", pair: "BINANCE:TIAUSDT", binanceSymbol: "TIAUSDT", shield: "408S" },
+            { id: "RNDR", pair: "BINANCE:RNDRUSDT", binanceSymbol: "RNDRUSDT", shield: "328S" },
+            { id: "BNB", pair: "BINANCE:BNBBRL", binanceSymbol: "BNBBRL", shield: "1508S" },
+            { id: "NEAR", pair: "BINANCE:NEARUSDT", binanceSymbol: "NEARUSDT", shield: "110S" },
+            { id: "AVAX", pair: "BINANCE:AVAXUSDT", binanceSymbol: "AVAXUSDT", shield: "550S" },
+            { id: "ADA", pair: "BINANCE:ADABRL", binanceSymbol: "ADABRL", shield: "200S" }
         ];
 
         let currentPair = "BINANCE:BTCBRL";
@@ -63,23 +68,21 @@
 
         async function fetchPrices() {
             try {
-                // Requisição múltipla para evitar o "Carregando..." [cite: 2026-01-23]
-                const symbols = moedas.map(m => `"${m.pair.split(':')[1].replace('BRL', 'USDT')}"`).join(',');
-                const res = await fetch(`https://api.binance.com/api/v3/ticker/price`);
-                const allData = await res.json();
-                
-                const filtered = {};
-                allData.forEach(item => {
-                    const match = moedas.find(m => m.pair.includes(item.symbol.replace('USDT', '')));
-                    if(match) {
-                        // Simulação de conversão para BRL aproximada [cite: 2026-01-23]
-                        const price = parseFloat(item.price) * 5.05; 
-                        filtered[match.id] = price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                // Busca individual para garantir precisão decimal [cite: 2026-01-23]
+                for(let m of moedas) {
+                    const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${m.binanceSymbol}`);
+                    const data = await res.json();
+                    
+                    if(data.price) {
+                        let priceVal = parseFloat(data.price);
+                        // Se for USDT, converte para BRL (Taxa aprox 5.05) [cite: 2026-01-23]
+                        if(m.binanceSymbol.includes('USDT')) priceVal *= 5.05;
+                        
+                        lastPrices[m.id] = priceVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                     }
-                });
-                lastPrices = filtered;
+                }
                 renderUI();
-            } catch (e) { console.error("Erro na rede SENTINEL"); }
+            } catch (e) { console.error("Falha na sincronização SENTINEL"); }
         }
 
         function renderUI() {
@@ -89,8 +92,8 @@
                         <span class="moeda-label">${m.id} MOEDAS 🔱</span>
                         <span class="badge-signal" style="color:var(--neon-green)">LIBERADA</span>
                     </div>
-                    <span class="main-price">${lastPrices[m.id] || "SINCRONIZANDO..."}</span>
-                    <div class="context-box">SHIELD: ${m.shield} | MONITORAMENTO DIRETO BINANCE API</div>
+                    <span class="main-price">${lastPrices[m.id] || "CARREGANDO..."}</span>
+                    <div class="context-box">SHIELD: ${m.shield} | SINCRONIA REAL: BINANCE BRL</div>
                 </div>
             `).join('');
 
@@ -121,7 +124,7 @@
             }
         }
 
-        setInterval(fetchPrices, 5000);
+        setInterval(fetchPrices, 8000);
         fetchPrices();
     </script>
 </body>
