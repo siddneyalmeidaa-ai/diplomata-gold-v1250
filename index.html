@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // SUPREMACIA VIVA</title>
+    <title>SENTINEL_V11.5 // SUPREMACIA TOTAL</title>
     <style>
-        :root { --neon-green: #00ff41; --neon-yellow: #ffcc00; --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; }
+        :root { --neon-green: #00ff41; --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
         .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
-        .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; position: sticky; top: 0; z-index: 1000; }
+        .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; }
         .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
         .tab.active { color: var(--neon-green); border-bottom: 3px solid var(--neon-green); background: #050505; }
         .content { display: none; height: calc(100vh - 110px); overflow-y: auto; }
@@ -17,7 +17,7 @@
         .asset-btn { background: #000; color: var(--text-gray); border: 1px solid #333; padding: 8px 15px; font-size: 10px; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .asset-btn.active { border-color: var(--neon-green); color: var(--neon-green); }
         .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 4px solid var(--neon-green); }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .card-header { display: flex; justify-content: space-between; }
         .moeda-label { font-size: 14px; font-weight: bold; letter-spacing: 2px; }
         .main-price { font-size: 26px; color: var(--neon-green); font-weight: bold; margin: 10px 0; display: block; }
         .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--neon-green); }
@@ -28,8 +28,8 @@
 <body>
 
     <div class="top-bar">
-        <span>SENTINEL_V11.5 // SUPREMACIA VIVA</span>
-        <span id="clock">03:38:00</span>
+        <span>SENTINEL_V11.5 // SUPREMACIA TOTAL</span>
+        <span id="clock">03:41:00</span>
     </div>
 
     <div class="nav-tabs">
@@ -59,40 +59,40 @@
         ];
 
         let currentPair = "BINANCE:BTCBRL";
+        let lastPrices = {};
 
-        // Função Mestra para Puxar Preços do Gráfico (Simulada via API Pública) [cite: 2026-02-06]
-        async function fetchLivePrices() {
+        async function fetchPrices() {
             try {
-                // Tenta o Worker primeiro
-                const res = await fetch("https://late-sea-261d.siddney-almeidaa.workers.dev");
-                const data = await res.json();
-                renderCards(data.radar);
-            } catch (e) {
-                // Backup: Puxa da Binance Direct se o Worker falhar [cite: 2026-01-23]
-                const prices = {};
-                for(let m of moedas) {
-                    const symbol = m.pair.split(':')[1].replace('BRL', 'USDT');
-                    const bRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
-                    const bData = await bRes.json();
-                    prices[m.id + (m.pair.includes('BRL') ? 'BRL' : 'USDT')] = parseFloat(bData.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                }
-                renderCards(prices);
-            }
+                // Requisição múltipla para evitar o "Carregando..." [cite: 2026-01-23]
+                const symbols = moedas.map(m => `"${m.pair.split(':')[1].replace('BRL', 'USDT')}"`).join(',');
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/price`);
+                const allData = await res.json();
+                
+                const filtered = {};
+                allData.forEach(item => {
+                    const match = moedas.find(m => m.pair.includes(item.symbol.replace('USDT', '')));
+                    if(match) {
+                        // Simulação de conversão para BRL aproximada [cite: 2026-01-23]
+                        const price = parseFloat(item.price) * 5.05; 
+                        filtered[match.id] = price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    }
+                });
+                lastPrices = filtered;
+                renderUI();
+            } catch (e) { console.error("Erro na rede SENTINEL"); }
         }
 
-        function renderCards(prices = {}) {
-            document.getElementById('market-list').innerHTML = moedas.map(m => {
-                const val = prices[m.id + "BRL"] || prices[m.id + "USDT"] || "CARREGANDO...";
-                return `
+        function renderUI() {
+            document.getElementById('market-list').innerHTML = moedas.map(m => `
                 <div class="market-card" onclick="loadChart('${m.pair}')">
                     <div class="card-header">
                         <span class="moeda-label">${m.id} MOEDAS 🔱</span>
                         <span class="badge-signal" style="color:var(--neon-green)">LIBERADA</span>
                     </div>
-                    <span class="main-price">${val}</span>
-                    <div class="context-box">SHIELD: ${m.shield} | DADOS SINCRONIZADOS COM TRADINGVIEW</div>
-                </div>`;
-            }).join('');
+                    <span class="main-price">${lastPrices[m.id] || "SINCRONIZANDO..."}</span>
+                    <div class="context-box">SHIELD: ${m.shield} | MONITORAMENTO DIRETO BINANCE API</div>
+                </div>
+            `).join('');
 
             document.getElementById('asset-selector').innerHTML = moedas.map(m => `
                 <button class="asset-btn ${m.pair === currentPair ? 'active' : ''}" 
@@ -102,7 +102,7 @@
 
         function loadChart(pair) {
             currentPair = pair;
-            fetchLivePrices();
+            renderUI();
             openTab('trader-view', document.querySelectorAll('.tab')[1]);
         }
 
@@ -121,8 +121,8 @@
             }
         }
 
-        setInterval(fetchLivePrices, 10000);
-        fetchLivePrices();
+        setInterval(fetchPrices, 5000);
+        fetchPrices();
     </script>
 </body>
 </html>
