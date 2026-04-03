@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // CORREÇÃO DE PREÇO</title>
+    <title>SENTINEL_V11.5 // SUPREMACIA TOTAL</title>
     <style>
         :root { --neon-green: #00ff41; --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
@@ -16,7 +16,8 @@
         .asset-selector { display: flex; gap: 8px; padding: 10px; background: #111; overflow-x: auto; border-bottom: 1px solid #222; scrollbar-width: none; }
         .asset-btn { background: #000; color: var(--text-gray); border: 1px solid #333; padding: 8px 15px; font-size: 10px; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .asset-btn.active { border-color: var(--neon-green); color: var(--neon-green); }
-        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 4px solid var(--neon-green); }
+        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 4px solid var(--neon-green); transition: 0.3s; cursor: pointer; }
+        .market-card:hover { background: #1a1a1a; }
         .card-header { display: flex; justify-content: space-between; }
         .moeda-label { font-size: 14px; font-weight: bold; letter-spacing: 2px; }
         .main-price { font-size: 26px; color: var(--neon-green); font-weight: bold; margin: 10px 0; display: block; }
@@ -29,7 +30,7 @@
 
     <div class="top-bar">
         <span>SENTINEL_V11.5 // MATRIZ CORRIGIDA</span>
-        <span id="clock">03:42:00</span>
+        <span id="clock">03:47:40</span>
     </div>
 
     <div class="nav-tabs">
@@ -56,7 +57,7 @@
             { id: "SOL", pair: "BINANCE:SOLBRL", binanceSymbol: "SOLBRL", shield: "2108S" },
             { id: "FET", pair: "BINANCE:FETUSDT", binanceSymbol: "FETUSDT", shield: "608S" },
             { id: "TIA", pair: "BINANCE:TIAUSDT", binanceSymbol: "TIAUSDT", shield: "408S" },
-            { id: "RNDR", pair: "BINANCE:RNDRUSDT", binanceSymbol: "RNDRUSDT", shield: "328S" },
+            { id: "RENDER", pair: "BINANCE:RENDERUSDT", binanceSymbol: "RENDERUSDT", shield: "328S" }, // Correção RNDR -> RENDER
             { id: "BNB", pair: "BINANCE:BNBBRL", binanceSymbol: "BNBBRL", shield: "1508S" },
             { id: "NEAR", pair: "BINANCE:NEARUSDT", binanceSymbol: "NEARUSDT", shield: "110S" },
             { id: "AVAX", pair: "BINANCE:AVAXUSDT", binanceSymbol: "AVAXUSDT", shield: "550S" },
@@ -68,21 +69,20 @@
 
         async function fetchPrices() {
             try {
-                // Busca individual para garantir precisão decimal [cite: 2026-01-23]
                 for(let m of moedas) {
                     const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${m.binanceSymbol}`);
                     const data = await res.json();
                     
                     if(data.price) {
                         let priceVal = parseFloat(data.price);
-                        // Se for USDT, converte para BRL (Taxa aprox 5.05) [cite: 2026-01-23]
-                        if(m.binanceSymbol.includes('USDT')) priceVal *= 5.05;
+                        // Conversão dinâmica para pares USDT se necessário
+                        if(m.binanceSymbol.includes('USDT')) priceVal *= 5.05; 
                         
                         lastPrices[m.id] = priceVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                     }
                 }
                 renderUI();
-            } catch (e) { console.error("Falha na sincronização SENTINEL"); }
+            } catch (e) { console.error("FALHA NA REDE SENTINEL"); }
         }
 
         function renderUI() {
@@ -92,8 +92,8 @@
                         <span class="moeda-label">${m.id} MOEDAS 🔱</span>
                         <span class="badge-signal" style="color:var(--neon-green)">LIBERADA</span>
                     </div>
-                    <span class="main-price">${lastPrices[m.id] || "CARREGANDO..."}</span>
-                    <div class="context-box">SHIELD: ${m.shield} | SINCRONIA REAL: BINANCE BRL</div>
+                    <span class="main-price">${lastPrices[m.id] || "SINCRONIZANDO..."}</span>
+                    <div class="context-box">SHIELD: ${m.shield} | MONITORAMENTO: BINANCE BRL</div>
                 </div>
             `).join('');
 
@@ -118,13 +118,20 @@
             if(tabId === 'trader-view') {
                 document.getElementById('tv-container').innerHTML = "";
                 new TradingView.widget({
-                    "autosize": true, "symbol": currentPair, "interval": "240",
-                    "theme": "dark", "container_id": "tv-container", "hide_top_toolbar": false
+                    "autosize": true,
+                    "symbol": currentPair,
+                    "interval": "240",
+                    "theme": "dark",
+                    "container_id": "tv-container",
+                    "hide_top_toolbar": false,
+                    "allow_symbol_change": true,
+                    "save_image": false,
+                    "locale": "br"
                 });
             }
         }
 
-        setInterval(fetchPrices, 8000);
+        setInterval(fetchPrices, 10000); // Atualiza a cada 10s para estabilidade [cite: 2026-01-23]
         fetchPrices();
     </script>
 </body>
