@@ -3,127 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DIPLOMATA GOLD V1250 // TERMINAL</title>
+    <title>DIPLOMATA GOLD V1250 // TERMINAL SUPREMO</title>
     <style>
         :root {
             --gold: #d4af37;
             --green: #00ff00;
             --red: #ff0000;
-            --bg: #0a0a0a;
+            --bg: #000000;
+            --card-bg: #0a0a0a;
         }
         body {
             background-color: var(--bg);
             color: white;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 15px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            align-items: center;
         }
         .header {
-            width: 100%;
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 5px;
-            margin-bottom: 15px;
+            font-size: 11px;
+            color: var(--gold);
+            border-bottom: 1px solid #222;
+            padding: 5px 0;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
         }
-        .main-display {
-            text-align: center;
-            margin: 20px 0;
-        }
-        .instrument { font-size: 14px; color: #888; letter-spacing: 2px; }
-        .price { font-size: 48px; margin: 10px 0; font-weight: bold; }
-        .status-box {
+        .monitor-top {
             display: flex;
-            gap: 15px;
-            background: #111;
+            justify-content: space-around;
+            background: var(--card-bg);
             padding: 10px;
             border-radius: 5px;
-            font-size: 11px;
-            text-transform: uppercase;
+            font-size: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #1a1a1a;
         }
-        .status-ia { color: var(--green); font-weight: bold; }
-        .chart-container {
+        .label { color: #666; display: block; margin-bottom: 3px; }
+        .val { font-weight: bold; font-size: 12px; }
+
+        .main-price-area { text-align: center; margin-bottom: 20px; }
+        .instrument { font-size: 12px; color: #888; letter-spacing: 3px; }
+        .big-price { font-size: 42px; font-weight: 200; margin: 5px 0; }
+
+        .chart-frame {
             width: 100%;
-            height: 300px;
-            margin: 20px 0;
+            height: 350px;
+            border-radius: 8px;
+            overflow: hidden;
             border: 1px solid #222;
+            margin-bottom: 20px;
         }
+
+        /* Radar de Ativos (15 Moedas) */
+        .radar-title { 
+            font-size: 12px; 
+            color: var(--gold); 
+            margin-bottom: 10px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+        }
+        .radar-grid { display: grid; gap: 8px; }
+        .asset-card {
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid #1a1a1a;
+            transition: 0.3s;
+        }
+        .asset-card:active { background: #151515; }
+        .asset-left { display: flex; flex-direction: column; }
+        .asset-name { font-size: 13px; font-weight: bold; color: #eee; }
+        .asset-shield { font-size: 9px; color: #555; margin-top: 2px; }
+        .asset-right { text-align: right; }
+        .asset-price { font-size: 14px; font-weight: 500; }
+        .asset-pct { font-size: 11px; margin-top: 2px; }
+
+        .up { color: var(--green); }
+        .down { color: var(--red); }
     </style>
 </head>
 <body>
 
     <div class="header">
         <span>🔱 DIPLOMATA GOLD V1250</span>
-        <span id="clock">00:00:00</span>
+        <span id="live-clock">00:00:00</span>
     </div>
 
-    <div class="status-box">
-        <div>CICLO: <span style="color:var(--gold)">LIVE</span></div>
-        <div>IA-SENTINELA: <span id="status-ia" class="status-ia">---</span></div>
-        <div>PROJ. (-50%): <span id="proj-val">R$ 0,00</span></div>
+    <div class="monitor-top">
+        <div><span class="label">CICLO</span><span class="val" style="color:var(--gold)">LIVE</span></div>
+        <div><span class="label">IA-SENTINELA</span><span id="main-status" class="val">BUSCANDO...</span></div>
+        <div><span class="label">PROJ. (-50%)</span><span id="main-proj" class="val">R$ 0,00</span></div>
     </div>
 
-    <div class="main-display">
+    <div class="main-price-area">
         <div class="instrument">BITCOIN / BRL</div>
-        <div id="btc-price" class="price">R$ 0,00</div>
+        <div id="main-btc-price" class="big-price">R$ 0,00</div>
     </div>
 
-    <div class="chart-container" id="tradingview_chart"></div>
+    <div class="chart-frame" id="tv_chart"></div>
+
+    <div class="radar-title"><span>RADAR DE POLARIDADE</span> <hr style="flex-grow:1; border:0; border-top:1px solid #222;"></div>
+    
+    <div class="radar-grid" id="asset-list">
+        </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // 1. Relógio em Tempo Real
-        function updateClock() {
-            document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR');
-        }
-        setInterval(updateClock, 1000);
+        // 1. Configuração de Ativos (15 alvos)
+        const alvos = [
+            { id: "BTC", nome: "BITCOIN", shield: "1408S", pair: "BINANCE:BTCBRL" },
+            { id: "ETH", nome: "ETHEREUM", shield: "908S", pair: "BINANCE:ETHBRL" },
+            { id: "SOL", nome: "SOLANA", shield: "2108S", pair: "BINANCE:SOLBRL" },
+            { id: "FET", nome: "FETCH.AI", shield: "608S", pair: "BINANCE:FETUSDT" },
+            { id: "TIA", nome: "CELESTIA", shield: "408S", pair: "BINANCE:TIAUSDT" },
+            { id: "RNDR", nome: "RENDER", shield: "328S", pair: "BINANCE:RNDRUSDT" },
+            { id: "BNB", nome: "BINANCE", shield: "1508S", pair: "BINANCE:BNBBRL" },
+            { id: "NEAR", nome: "NEAR", shield: "110S", pair: "BINANCE:NEARUSDT" },
+            { id: "AVAX", nome: "AVALANCHE", shield: "550S", pair: "BINANCE:AVAXUSDT" },
+            { id: "ADA", nome: "CARDANO", shield: "200S", pair: "BINANCE:ADABRL" },
+            { id: "XRP", nome: "XRP", shield: "990S", pair: "BINANCE:XRPBRL" },
+            { id: "DOT", nome: "POLKADOT", shield: "350S", pair: "BINANCE:DOTBRL" },
+            { id: "MATIC", nome: "POLYGON", shield: "120S", pair: "BINANCE:MATICBRL" },
+            { id: "LINK", nome: "CHAINLINK", shield: "880S", pair: "BINANCE:LINKBRL" },
+            { id: "DOGE", nome: "DOGECOIN", shield: "2400S", pair: "BINANCE:DOGEBRL" }
+        ];
 
-        // 2. Gráfico Profissional TradingView
+        // 2. Relógio Diplomático
+        setInterval(() => {
+            document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('pt-BR');
+        }, 1000);
+
+        // 3. Renderização Inicial dos Cards
+        const listContainer = document.getElementById('asset-list');
+        listContainer.innerHTML = alvos.map(a => `
+            <div class="asset-card" id="card-${a.id}">
+                <div class="asset-left">
+                    <span class="asset-name">${a.nome} 🔱</span>
+                    <span class="asset-shield">🛡️ ${a.shield}</span>
+                </div>
+                <div class="asset-right">
+                    <div class="asset-price" id="p-${a.id}">---</div>
+                    <div class="asset-pct" id="c-${a.id}">---</div>
+                </div>
+            </div>
+        `).join('');
+
+        // 4. Gráfico de Casquinhas (TradingView)
         new TradingView.widget({
             "autosize": true,
             "symbol": "BINANCE:BTCBRL",
-            "interval": "D",
-            "timezone": "Etc/UTC",
+            "interval": "240",
             "theme": "dark",
             "style": "1",
             "locale": "br",
-            "container_id": "tradingview_chart",
+            "container_id": "tv_chart",
             "hide_top_toolbar": true,
-            "hide_legend": true,
             "save_image": false
         });
 
-        // 3. Integração com a PASTA J (Seu Worker no Cloudflare)
-        async function syncTerminal() {
-            const ENDPOINT = "https://late-sea-261d.siddney-almeidaa.workers.dev";
+        // 5. Engine de Sincronismo (Pasta J) [cite: 2026-01-16, 2026-01-23]
+        async function syncData() {
+            const URL = "https://late-sea-261d.siddney-almeidaa.workers.dev";
             try {
-                const response = await fetch(ENDPOINT);
+                const response = await fetch(URL);
                 const data = await response.json();
 
-                // Atualiza Interface
-                document.getElementById('btc-price').innerText = data.valor_atual;
-                document.getElementById('status-ia').innerText = data.status_ia;
-                document.getElementById('proj-val').innerText = data.projecao_24h;
+                // Atualiza Main Display (BTC)
+                document.getElementById('main-btc-price').innerText = data.valor_atual;
+                document.getElementById('main-status').innerText = data.status_ia;
+                document.getElementById('main-proj').innerText = data.projecao_24h;
+                document.getElementById('main-status').style.color = data.status_ia.includes("ENTRA") ? "var(--green)" : "var(--red)";
 
-                // Lógica de Cor do Sinal
-                const statusEl = document.getElementById('status-ia');
-                if(data.status_ia.includes("ENTRA")) {
-                    statusEl.style.color = "var(--green)";
-                } else {
-                    statusEl.style.color = "var(--red)";
-                }
+                // Simulação de preenchimento do Radar (Será automatizado no Worker v2)
+                alvos.forEach(a => {
+                    const priceEl = document.getElementById(`p-${a.id}`);
+                    const cardEl = document.getElementById(`card-${a.id}`);
+                    if (a.id === "BTC") {
+                        priceEl.innerText = data.valor_atual.split(',')[0];
+                        priceEl.classList.add('up');
+                    }
+                });
 
             } catch (e) {
-                console.error("Erro na sincronia JSL: Blindagem ativa.");
+                console.error("JSL: Erro na blindagem.");
             }
         }
 
-        setInterval(syncTerminal, 10000); // Sincroniza a cada 10s
-        syncTerminal();
+        setInterval(syncData, 10000);
+        syncData();
     </script>
 </body>
 </html>
