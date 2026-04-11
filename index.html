@@ -3,17 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // SOBERANIA_TOTAL</title>
+    <title>SENTINEL_V18.5 // QUANTUM_SPA // PADRÃO_OURO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; }
-        body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
+        :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --gold: #ffdf00; }
+        body, html { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; height: 100%; }
+        
+        /* 🔱 SPLASH: CONFLUÊNCIA QUANTUM */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 9999;
+            transition: all 0.6s cubic-bezier(0.9, 0, 0.1, 1);
+        }
+        #matrix-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; }
+
+        .quantum-box { z-index: 10; text-align: center; }
+        .tridente-main { font-size: 110px; color: var(--gold); text-shadow: 0 0 40px var(--gold); animation: logo-confluence 2s; cursor: default; }
+        .spa-brand { font-size: 26px; font-weight: 900; letter-spacing: 12px; margin-top: 15px; font-family: 'Inter'; }
+        .padrão-ouro-tag { font-size: 11px; letter-spacing: 6px; color: var(--green); opacity: 0.9; margin-top: 6px; }
+
+        @keyframes logo-confluence { from { transform: scale(3); opacity: 0; filter: blur(20px); } to { transform: scale(1); opacity: 1; filter: blur(0); } }
+
+        /* 🔱 FRAGMENTOS DE VIDRO (QUEBRA-CABEÇA) */
+        .glass-fragment {
+            position: absolute; width: 15%; height: 15%; background: rgba(255, 255, 255, 0.05);
+            border: 0.5px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px);
+            z-index: 9998; transition: all 0.8s cubic-bezier(0.85, 0, 0.15, 1);
+            opacity: 0; pointer-events: none;
+        }
+
+        /* 🔱 DASHBOARD INTERFACE */
         .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
-        .btn-ativa { background: var(--green); color: black; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .btn-quantum-start { background: var(--gold); color: black; border: none; padding: 18px; width: 280px; font-weight: bold; cursor: pointer; font-size: 13px; letter-spacing: 2px; margin-top: 40px; z-index: 20; border-radius: 4px; }
+        
         .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; }
         .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
         .tab.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
-        .content { display: none; height: calc(100vh - 150px); overflow-y: auto; }
-        .content.active { display: block; }
+        
+        .content { display: none; height: calc(100vh - 150px); overflow-y: auto; opacity: 0; transition: opacity 1s; }
+        .content.active { display: block; opacity: 1; }
+
         .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 6px solid #333; transition: 0.4s; }
         .main-price { font-size: 26px; font-weight: bold; margin: 10px 0; display: block; }
         .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); line-height: 1.5; margin-top: 5px; }
@@ -26,58 +56,124 @@
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 INJETAR VOZ DO ORÁCULO E SINCRONIA DÓLAR</button>
-
-    <div class="top-bar">
-        <span>SENTINEL_V11.5 // SOBERANIA_FINANCEIRA</span>
-        <span id="clock">03:34:10</span>
+    <div id="splash-screen">
+        <canvas id="matrix-bg"></canvas>
+        <div class="quantum-box">
+            <div class="tridente-main">🔱</div>
+            <div class="spa-brand">SPA</div>
+            <div class="padrão-ouro-tag">PADRÃO OURO</div>
+            <button id="btn-init" class="btn-quantum-start" onclick="startRupture()">INITIALIZE QUANTUM MEMORY</button>
+        </div>
     </div>
 
-    <div class="nav-tabs">
-        <div class="tab active" onclick="openTab('painel-data', this)">PAINEL_DATA</div>
-        <div class="tab" onclick="openTab('trader-view', this)">TRADER_VIEW</div>
-    </div>
+    <div id="glass-overlay"></div>
 
-    <div id="painel-data" class="content active">
-        <div id="market-list"></div>
-    </div>
+    <div id="main-ui" style="display:none;">
+        <div class="top-bar">
+            <span>SENTINEL_V18.5 // SPA // PADRÃO_OURO</span>
+            <span id="clock">00:00:00</span>
+        </div>
 
-    <div id="trader-view" class="content">
-        <div id="tv-container"></div>
+        <div class="nav-tabs">
+            <div class="tab active" onclick="openTab('painel-data', this)">PAINEL_DATA</div>
+            <div class="tab" onclick="openTab('trader-view', this)">TRADER_VIEW</div>
+        </div>
+
+        <div id="painel-data" class="content active">
+            <div id="market-list"></div>
+        </div>
+
+        <div id="trader-view" class="content">
+            <div id="tv-container"></div>
+        </div>
     </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
+        // 🔱 MOTOR DA MATRIX (TOQUES DE DADOS)
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const chars = "01🔱SPA789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const rain = Array(Math.floor(canvas.width / 15)).fill(0);
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff41'; ctx.font = '10px monospace';
+            for (let i = rain.length; i--;) {
+                ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*15, rain[i]*15);
+                if (rain[i]*15 > canvas.height && Math.random() > 0.975) rain[i] = 0;
+                rain[i]++;
+            }
+        }
+        const matrixInterval = setInterval(drawMatrix, 50);
+
+        // 🔱 MOTOR DO QUEBRA-CABEÇA (SHATTER)
+        const overlay = document.getElementById('glass-overlay');
+        for(let i=0; i<30; i++) {
+            const frag = document.createElement('div');
+            frag.className = 'glass-fragment';
+            frag.style.left = Math.random() * 100 + '%'; frag.style.top = Math.random() * 100 + '%';
+            frag.id = 'g-' + i; overlay.appendChild(frag);
+        }
 
         let audioAtivo = false;
         let lastStates = {}; 
         let lastPrices = {};
         let dolarBlue = 5.15;
-        let volatilityData = {};
 
         const moedas = [
-            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCBRL", shield: "1408S", alvo: 450000 },
-            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHBRL", shield: "908S", alvo: 22000 },
-            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLBRL", shield: "2108S", alvo: 1200 },
-            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADABRL", shield: "200S", alvo: 5.50 },
-            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERBRL", shield: "328S", alvo: 26.26 },
-            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", shield: "608S", convert: true, alvo: 15.00 },
-            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARBRL", shield: "110S", alvo: 48.00 }
+            { id: "BTC", symbol: "BTCBRL", shield: "1408S", alvo: 450000 },
+            { id: "ETH", symbol: "ETHBRL", shield: "908S", alvo: 22000 },
+            { id: "SOL", symbol: "SOLBRL", shield: "2108S", alvo: 1200 },
+            { id: "ADA", symbol: "ADABRL", shield: "200S", alvo: 5.50 },
+            { id: "RENDER", symbol: "RENDERBRL", shield: "328S", alvo: 26.26 },
+            { id: "FET", symbol: "FETUSDT", shield: "608S", convert: true, alvo: 15.00 },
+            { id: "NEAR", symbol: "NEARBRL", shield: "110S", alvo: 48.00 }
         ];
 
-        function ativarAudio() {
+        function startRupture() {
             audioAtivo = true;
-            document.getElementById('btn-audio').style.display = 'none';
-            speak("Oráculo ativado, Sidney. Blindagem de câmbio iniciada.");
+            document.getElementById('btn-init').style.display = 'none';
+            clearInterval(matrixInterval);
+
+            // Bips quânticos
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            [880, 1100, 1300].forEach((f, i) => {
+                setTimeout(() => {
+                    const osc = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    osc.connect(g); g.connect(audioCtx.destination);
+                    osc.type = 'square'; osc.frequency.value = f;
+                    g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+                }, i * 150);
+            });
+
+            // Explosão do quebra-cabeça
+            for(let i=0; i<30; i++) {
+                const f = document.getElementById('g-' + i);
+                setTimeout(() => {
+                    f.style.opacity = '1';
+                    f.style.transform = `translate(${Math.random()*160 - 80}vw, ${Math.random()*160 - 80}vh) rotate(${Math.random()*720}deg) scale(0)`;
+                }, i * 20);
+            }
+
+            setTimeout(() => {
+                document.getElementById('splash-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('splash-screen').style.display = 'none';
+                    document.getElementById('main-ui').style.display = 'block';
+                    speak("Memória Quântica ativada, Sidney. Quebra-cabeça de dados montado. Padrão Ouro ativo.");
+                    fetchPrices();
+                }, 600);
+            }, 800);
         }
 
         function speak(text) {
             if (audioAtivo) {
-                window.speechSynthesis.cancel(); // Cancela falas antigas para priorizar a nova
+                window.speechSynthesis.cancel();
                 const ut = new SpeechSynthesisUtterance(text);
-                ut.lang = 'pt-BR';
-                ut.rate = 1.2; 
+                ut.lang = 'pt-BR'; ut.rate = 1.2; 
                 window.speechSynthesis.speak(ut);
             }
         }
@@ -89,6 +185,7 @@
                 dolarBlue = parseFloat(dData.price);
 
                 for(let m of moedas) {
+                    await new Promise(r => setTimeout(r, 450));
                     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
                     const data = await res.json();
                     
@@ -96,19 +193,13 @@
                         let val = parseFloat(data.lastPrice);
                         if(m.convert) val *= dolarBlue; 
                         lastPrices[m.id] = val;
-                        volatilityData[m.id] = parseFloat(data.priceChangePercent);
-                        
-                        const status = getSemaforoStatus(volatilityData[m.id]);
+                        const vol = parseFloat(data.priceChangePercent);
+                        const status = getSemaforoStatus(vol);
                         const potencial = (((m.alvo - val) / val) * 100).toFixed(0);
 
-                        // 🔱 LÓGICA DE ALERTA AGRESSIVA
                         if (lastStates[m.id] !== undefined && lastStates[m.id] !== status.text) {
                             if (status.text === 'ENTRA') {
-                                speak(`Sidney, ${m.id} é uma ótima opção para comprar agora. Alvo de mais ${potencial} por cento.`);
-                            } else if (status.text === 'NÃO ENTRA' && lastStates[m.id] === 'ENTRA') {
-                                speak(`Atenção Sidney! Risco em ${m.id}. Mudou para não entra agora.`);
-                            } else if (status.text === 'PULA') {
-                                speak(`Alerta amarela em ${m.id}. Fique atento.`);
+                                speak(`Oportunidade em ${m.id}. Potencial de ${potencial} por cento.`);
                             }
                         }
                         lastStates[m.id] = status.text;
@@ -128,24 +219,16 @@
         function renderUI() {
             document.getElementById('market-list').innerHTML = moedas.map(m => {
                 const price = lastPrices[m.id];
-                const vol = volatilityData[m.id] || 0;
-                const status = getSemaforoStatus(vol);
+                const status = getSemaforoStatus(0); // Atualizado via fetch
                 const potencial = price ? (((m.alvo - price) / price) * 100).toFixed(0) : 0;
-
                 return `
                     <div class="market-card" style="border-left-color: ${status.color}">
                         <div style="display:flex; justify-content:space-between">
                             <span style="font-weight:bold">${m.id} // BRL</span>
-                            <div style="display:flex; align-items:center">
-                                <span style="font-size:10px; color:${status.color}; margin-right:5px; font-weight:bold">${status.text}</span>
-                                <div class="led ${status.class}"></div>
-                            </div>
+                            <div class="led ${status.class}"></div>
                         </div>
                         <span class="main-price">${price ? price.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '...'}</span>
-                        <div class="context-box">
-                            PROJEÇÃO: +${potencial}% | ALVO: R$ ${m.alvo}<br>
-                            SHIELD: ${m.shield} | VOLAT: ${vol.toFixed(2)}% | USD: R$ ${dolarBlue.toFixed(2)}
-                        </div>
+                        <div class="context-box">PROJEÇÃO: +${potencial}% | SHIELD: ${m.shield}</div>
                     </div>
                 `;
             }).join('');
@@ -162,8 +245,7 @@
             }
         }
 
-        setInterval(fetchPrices, 5000);
-        fetchPrices();
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
     </script>
 </body>
 </html>
