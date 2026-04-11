@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // SEMÁFORO_SUPREMO</title>
+    <title>SENTINEL_V11.5 // BRL_SOBERANO</title>
     <style>
         :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
@@ -13,31 +13,26 @@
         .tab.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
         .content { display: none; height: calc(100vh - 110px); overflow-y: auto; }
         .content.active { display: block; }
-        .asset-selector { display: flex; gap: 8px; padding: 10px; background: #111; overflow-x: auto; border-bottom: 1px solid #222; scrollbar-width: none; }
+        .asset-selector { display: flex; gap: 8px; padding: 10px; background: #111; overflow-x: auto; border-bottom: 1px solid #222; }
         .asset-btn { background: #000; color: var(--text-gray); border: 1px solid #333; padding: 8px 15px; font-size: 10px; font-weight: bold; cursor: pointer; }
         .asset-btn.active { border-color: var(--green); color: var(--green); }
-        
-        /* Sistema de Semáforo */
         .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 6px solid #333; transition: 0.4s; position: relative; cursor: pointer; }
         .card-header { display: flex; justify-content: space-between; align-items: center; }
         .moeda-label { font-size: 14px; font-weight: bold; letter-spacing: 2px; }
         .main-price { font-size: 26px; font-weight: bold; margin: 10px 0; display: block; color: white; }
         .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); }
-        
-        /* Luzinha do Semáforo */
-        .led { width: 12px; height: 12px; border-radius: 50%; background: #333; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .led { width: 12px; height: 12px; border-radius: 50%; background: #333; }
         .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
-        
         #tv-container { height: 100%; width: 100%; background: #000; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <span>SENTINEL_V11.5 // SEMÁFORO_VIVO</span>
-        <span id="clock">04:00:00</span>
+        <span>SENTINEL_V11.5 // PADRÃO_OURO_BRL</span>
+        <span id="clock">00:00:00</span>
     </div>
 
     <div class="nav-tabs">
@@ -58,30 +53,42 @@
     <script>
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
+        // 🔱 LISTA ATUALIZADA PARA BUSCAR BRL SEMPRE QUE POSSÍVEL
         const moedas = [
-            { id: "BTC", pair: "BINANCE:BTCBRL", binanceSymbol: "BTCBRL", shield: "1408S" },
-            { id: "ETH", pair: "BINANCE:ETHBRL", binanceSymbol: "ETHBRL", shield: "908S" },
-            { id: "SOL", pair: "BINANCE:SOLBRL", binanceSymbol: "SOLBRL", shield: "2108S" },
-            { id: "FET", pair: "BINANCE:FETUSDT", binanceSymbol: "FETUSDT", shield: "608S" },
-            { id: "TIA", pair: "BINANCE:TIAUSDT", binanceSymbol: "TIAUSDT", shield: "408S" },
-            { id: "RENDER", pair: "BINANCE:RENDERUSDT", binanceSymbol: "RENDERUSDT", shield: "328S" },
-            { id: "BNB", pair: "BINANCE:BNBBRL", binanceSymbol: "BNBBRL", shield: "1508S" },
-            { id: "NEAR", pair: "BINANCE:NEARUSDT", binanceSymbol: "NEARUSDT", shield: "110S" },
-            { id: "AVAX", pair: "BINANCE:AVAXUSDT", binanceSymbol: "AVAXUSDT", shield: "550S" },
-            { id: "ADA", pair: "BINANCE:ADABRL", binanceSymbol: "ADABRL", shield: "200S" }
+            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCBRL", shield: "1408S" },
+            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHBRL", shield: "908S" },
+            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLBRL", shield: "2108S" },
+            { id: "BNB", pair: "BINANCE:BNBBRL", symbol: "BNBBRL", shield: "1508S" },
+            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADABRL", shield: "200S" },
+            // Moedas sem par BRL direto usam conversão dinâmica
+            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", shield: "608S", convert: true },
+            { id: "TIA", pair: "BINANCE:TIAUSDT", symbol: "TIAUSDT", shield: "408S", convert: true },
+            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERBRL", shield: "328S" },
+            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARBRL", shield: "110S" },
+            { id: "AVAX", pair: "BINANCE:AVAXBRL", symbol: "AVAXBRL", shield: "550S" }
         ];
 
         let lastPrices = {};
         let currentPair = "BINANCE:BTCBRL";
+        let dolarBlue = 5.15; // ⚡ Será atualizado dinamicamente
+
+        async function fetchDolar() {
+            try {
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
+                const data = await res.json();
+                dolarBlue = parseFloat(data.price);
+            } catch(e) { console.error("ERRO_CÂMBIO"); }
+        }
 
         async function fetchPrices() {
+            await fetchDolar();
             try {
                 for(let m of moedas) {
-                    const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${m.binanceSymbol}`);
+                    const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${m.symbol}`);
                     const data = await res.json();
                     if(data.price) {
                         let val = parseFloat(data.price);
-                        if(m.binanceSymbol.includes('USDT')) val *= 5.05;
+                        if(m.convert) val *= dolarBlue; // ⚡ CONVERSÃO REAL-TIME
                         lastPrices[m.id] = val;
                     }
                 }
@@ -90,12 +97,10 @@
         }
 
         function getSemaforoStatus(id, price) {
-            // Lógica inteligente: Simula tendência para o semáforo [cite: 2026-02-13]
-            // Verde: Alta | Amarelo: Estável | Vermelho: Queda (Baseado no valor simulado)
             if (!price) return 'led-yellow';
-            const lastDigit = Math.floor(price * 100) % 10;
-            if (lastDigit > 6) return 'led-green';
-            if (lastDigit < 3) return 'led-red';
+            const seed = Math.floor(price * 100) % 10;
+            if (seed > 6) return 'led-green';
+            if (seed < 3) return 'led-red';
             return 'led-yellow';
         }
 
@@ -104,16 +109,16 @@
                 const priceVal = lastPrices[m.id];
                 const statusClass = getSemaforoStatus(m.id, priceVal);
                 const borderColor = statusClass === 'led-green' ? '#00ff41' : (statusClass === 'led-yellow' ? '#ffdf00' : '#ff3131');
-                const priceFormatted = priceVal ? priceVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : "SINCRONIZANDO...";
+                const priceFormatted = priceVal ? priceVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : "AGUARDANDO...";
                 
                 return `
                     <div class="market-card" style="border-left-color: ${borderColor}" onclick="loadChart('${m.pair}')">
                         <div class="card-header">
-                            <span class="moeda-label">${m.id} MOEDAS 🔱</span>
+                            <span class="moeda-label">${m.id} // BRL 🔱</span>
                             <div class="led ${statusClass}"></div>
                         </div>
                         <span class="main-price">${priceFormatted}</span>
-                        <div class="context-box">SHIELD: ${m.shield} | STAKE: R$ 0,20 | RISCO: MÍNIMO</div>
+                        <div class="context-box">SHIELD: ${m.shield} | STAKE: R$ 0,20 | USD: R$ ${dolarBlue.toFixed(2)}</div>
                     </div>
                 `;
             }).join('');
@@ -137,12 +142,12 @@
             if(tabId === 'trader-view') {
                 document.getElementById('tv-container').innerHTML = "";
                 new TradingView.widget({
-                    "autosize": true, "symbol": currentPair, "interval": "240", "theme": "dark", "container_id": "tv-container", "locale": "br"
+                    "autosize": true, "symbol": currentPair, "interval": "60", "theme": "dark", "container_id": "tv-container", "locale": "br"
                 });
             }
         }
 
-        setInterval(fetchPrices, 10000);
+        setInterval(fetchPrices, 5000); // ⚡ MAIS RÁPIDO PARA EVITAR AMNÉSIA
         fetchPrices();
     </script>
 </body>
