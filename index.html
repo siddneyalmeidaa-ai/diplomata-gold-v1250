@@ -22,7 +22,6 @@
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
         #tv-container { height: 100%; width: 100%; background: #000; }
-        .banca-footer { position: fixed; bottom: 0; width: 100%; background: #000; color: var(--green); text-align: center; padding: 10px; font-size: 11px; border-top: 1px solid #222; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -31,7 +30,7 @@
 
     <div class="top-bar">
         <span>SENTINEL_V11.5 // SOBERANIA_FINANCEIRA</span>
-        <span id="clock">00:00:00</span>
+        <span id="clock">03:34:10</span>
     </div>
 
     <div class="nav-tabs">
@@ -41,13 +40,11 @@
 
     <div id="painel-data" class="content active">
         <div id="market-list"></div>
-        <div style="height: 50px;"></div> </div>
+    </div>
 
     <div id="trader-view" class="content">
         <div id="tv-container"></div>
     </div>
-
-    <div class="banca-footer">BLINDAGEM ATIVA // BANCA R$ 1.273,00 // SPA</div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
@@ -55,9 +52,8 @@
 
         let audioAtivo = false;
         let lastStates = {}; 
-        let announcedThisCycle = {}; // Memória para não repetir
-        let dolarBlue = 5.15;
         let lastPrices = {};
+        let dolarBlue = 5.15;
         let volatilityData = {};
 
         const moedas = [
@@ -76,18 +72,13 @@
             speak("Oráculo ativado, Sidney. Blindagem de câmbio iniciada.");
         }
 
-        function speak(text, coinId) {
+        function speak(text) {
             if (audioAtivo) {
-                // Só fala se for uma mudança real de estado para essa moeda
-                if (announcedThisCycle[coinId] === text) return;
-
-                window.speechSynthesis.cancel();
+                window.speechSynthesis.cancel(); // Cancela falas antigas para priorizar a nova
                 const ut = new SpeechSynthesisUtterance(text);
                 ut.lang = 'pt-BR';
                 ut.rate = 1.2; 
                 window.speechSynthesis.speak(ut);
-                
-                announcedThisCycle[coinId] = text;
             }
         }
 
@@ -110,14 +101,15 @@
                         const status = getSemaforoStatus(volatilityData[m.id]);
                         const potencial = (((m.alvo - val) / val) * 100).toFixed(0);
 
-                        // ALERTA INTELIGENTE (SÓ FALA NA MUDANÇA)
-                        if (status.text === 'ENTRA') {
-                            speak(`Sidney, ${m.id} é uma ótima opção para comprar agora. Alvo de mais ${potencial} por cento.`, m.id);
-                        } else if (status.text === 'PULA') {
-                            speak(`Alerta amarela em ${m.id}. Fique atento.`, m.id);
-                        } else {
-                            // Se voltar para NÃO ENTRA, reseta a memória para poder avisar quando virar ENTRA de novo
-                            announcedThisCycle[m.id] = "NÃO ENTRA";
+                        // 🔱 LÓGICA DE ALERTA AGRESSIVA
+                        if (lastStates[m.id] !== undefined && lastStates[m.id] !== status.text) {
+                            if (status.text === 'ENTRA') {
+                                speak(`Sidney, ${m.id} é uma ótima opção para comprar agora. Alvo de mais ${potencial} por cento.`);
+                            } else if (status.text === 'NÃO ENTRA' && lastStates[m.id] === 'ENTRA') {
+                                speak(`Atenção Sidney! Risco em ${m.id}. Mudou para não entra agora.`);
+                            } else if (status.text === 'PULA') {
+                                speak(`Alerta amarela em ${m.id}. Fique atento.`);
+                            }
                         }
                         lastStates[m.id] = status.text;
                     }
@@ -170,8 +162,9 @@
             }
         }
 
-        setInterval(fetchPrices, 8000); // Ajustado para 8s para poupar bateria e dados
+        setInterval(fetchPrices, 5000);
         fetchPrices();
     </script>
 </body>
 </html>
+ Só verifica se tá tudo certo, não precisa retirar nada, tá bom? Deixa dessa forma você vai fazer nada.
