@@ -3,245 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V18.5 // QUANTUM_SPA // PADRÃO_OURO</title>
+    <title>SENTINEL_V20 // SPA_SOBERANO</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --gold: #ffdf00; }
-        body, html { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; height: 100%; }
-        
-        /* 🔱 SPLASH: CONFLUÊNCIA QUANTUM */
+        :root { --bg: #050505; --green: #00ff41; --gold: #ffdf00; --red: #ff3131; --card: #111; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
+
+        /* 🔱 CANVAS DE CONFLUÊNCIA */
+        #canvas-confluence { position: fixed; top: 0; left: 0; z-index: 999; pointer-events: none; transition: opacity 1s; }
+
+        /* 🔱 INTERFACE DE ABERTURA */
         #splash-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; z-index: 9999;
-            transition: all 0.6s cubic-bezier(0.9, 0, 0.1, 1);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; background: rgba(0,0,0,0.9); transition: 0.8s;
         }
-        #matrix-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; }
+        .spa-brand { font-family: 'Inter'; font-size: 38px; font-weight: 900; letter-spacing: 15px; margin-top: 180px; }
+        .padrão-tag { color: var(--gold); font-size: 11px; letter-spacing: 5px; margin-top: 10px; }
 
-        .quantum-box { z-index: 10; text-align: center; }
-        .tridente-main { font-size: 110px; color: var(--gold); text-shadow: 0 0 40px var(--gold); animation: logo-confluence 2s; cursor: default; }
-        .spa-brand { font-size: 26px; font-weight: 900; letter-spacing: 12px; margin-top: 15px; font-family: 'Inter'; }
-        .padrão-ouro-tag { font-size: 11px; letter-spacing: 6px; color: var(--green); opacity: 0.9; margin-top: 6px; }
+        /* 🔱 DASHBOARD SOBERANO */
+        #main-ui { display: none; height: 100vh; flex-direction: column; opacity: 0; transition: 1s; }
+        .top-bar { padding: 15px; font-size: 10px; display: flex; justify-content: space-between; border-bottom: 1px solid #222; background: #000; }
+        .nav-tabs { display: flex; background: #000; }
+        .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: #555; cursor: pointer; border-bottom: 2px solid #111; }
+        .tab.active { color: var(--green); border-bottom-color: var(--green); background: #0a0a0a; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding: 15px; overflow-y: auto; }
+        .card { background: var(--card); border-radius: 4px; padding: 20px; border-left: 5px solid #333; position: relative; }
+        .price { font-size: 22px; font-weight: bold; margin: 10px 0; display: block; color: #fff; }
+        .status-tag { font-size: 10px; font-weight: bold; }
+        .led { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: 5px; }
 
-        @keyframes logo-confluence { from { transform: scale(3); opacity: 0; filter: blur(20px); } to { transform: scale(1); opacity: 1; filter: blur(0); } }
-
-        /* 🔱 FRAGMENTOS DE VIDRO (QUEBRA-CABEÇA) */
-        .glass-fragment {
-            position: absolute; width: 15%; height: 15%; background: rgba(255, 255, 255, 0.05);
-            border: 0.5px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px);
-            z-index: 9998; transition: all 0.8s cubic-bezier(0.85, 0, 0.15, 1);
-            opacity: 0; pointer-events: none;
+        .btn-init {
+            margin-top: 40px; background: transparent; color: var(--gold); border: 1px solid var(--gold);
+            padding: 15px 45px; font-size: 12px; font-weight: 900; letter-spacing: 3px; cursor: pointer;
         }
+        .btn-exit { position: fixed; bottom: 80px; right: 20px; background: var(--red); border: none; color: #fff; padding: 10px; border-radius: 50%; cursor: pointer; z-index: 100; width: 50px; height: 50px; font-weight: bold; }
 
-        /* 🔱 DASHBOARD INTERFACE */
-        .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
-        .btn-quantum-start { background: var(--gold); color: black; border: none; padding: 18px; width: 280px; font-weight: bold; cursor: pointer; font-size: 13px; letter-spacing: 2px; margin-top: 40px; z-index: 20; border-radius: 4px; }
-        
-        .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; }
-        .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
-        .tab.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
-        
-        .content { display: none; height: calc(100vh - 150px); overflow-y: auto; opacity: 0; transition: opacity 1s; }
-        .content.active { display: block; opacity: 1; }
-
-        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 6px solid #333; transition: 0.4s; }
-        .main-price { font-size: 26px; font-weight: bold; margin: 10px 0; display: block; }
-        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); line-height: 1.5; margin-top: 5px; }
-        .led { width: 12px; height: 12px; border-radius: 50%; background: #333; }
-        .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
-        .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
-        .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
-        #tv-container { height: 100%; width: 100%; background: #000; }
+        /* 🔱 EFEITOS LED */
+        .led-green { background: var(--green); box-shadow: 0 0 10px var(--green); }
+        .led-yellow { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+        .led-red { background: var(--red); box-shadow: 0 0 10px var(--red); }
     </style>
 </head>
 <body>
 
+    <canvas id="canvas-confluence"></canvas>
+
     <div id="splash-screen">
-        <canvas id="matrix-bg"></canvas>
-        <div class="quantum-box">
-            <div class="tridente-main">🔱</div>
-            <div class="spa-brand">SPA</div>
-            <div class="padrão-ouro-tag">PADRÃO OURO</div>
-            <button id="btn-init" class="btn-quantum-start" onclick="startRupture()">INITIALIZE QUANTUM MEMORY</button>
-        </div>
+        <div class="spa-brand">SPA</div>
+        <div class="padrão-tag">PADRÃO OURO</div>
+        <button class="btn-init" onclick="initializeSystem()">INITIALIZE QUANTUM MEMORY</button>
     </div>
 
-    <div id="glass-overlay"></div>
-
-    <div id="main-ui" style="display:none;">
+    <div id="main-ui">
         <div class="top-bar">
-            <span>SENTINEL_V18.5 // SPA // PADRÃO_OURO</span>
+            <span>SENTINEL_V20 // SPA_SOBERANO</span>
             <span id="clock">00:00:00</span>
         </div>
-
         <div class="nav-tabs">
-            <div class="tab active" onclick="openTab('painel-data', this)">PAINEL_DATA</div>
-            <div class="tab" onclick="openTab('trader-view', this)">TRADER_VIEW</div>
+            <div class="tab active" onclick="tab(this, 'painel')">PAINEL_DATA</div>
+            <div class="tab" onclick="tab(this, 'view')">TRADER_VIEW</div>
         </div>
-
-        <div id="painel-data" class="content active">
-            <div id="market-list"></div>
+        <div id="painel" class="grid"></div>
+        <div id="view" style="display:none; height: 100%;">
+            <div id="tv-box" style="height: calc(100vh - 180px);"></div>
         </div>
-
-        <div id="trader-view" class="content">
-            <div id="tv-container"></div>
+        <div style="background:#000; padding:15px; border-top:1px solid #222; text-align:center; font-size:10px; color:var(--green);">
+            SISTEMA BLINDADO // R$ 1.273,00 MONITORADOS
         </div>
+        <button class="btn-exit" onclick="exitSystem()">🔱</button>
     </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // 🔱 MOTOR DA MATRIX (TOQUES DE DADOS)
-        const canvas = document.getElementById('matrix-bg');
+        const canvas = document.getElementById('canvas-confluence');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const chars = "01🔱SPA789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        const rain = Array(Math.floor(canvas.width / 15)).fill(0);
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#00ff41'; ctx.font = '10px monospace';
-            for (let i = rain.length; i--;) {
-                ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*15, rain[i]*15);
-                if (rain[i]*15 > canvas.height && Math.random() > 0.975) rain[i] = 0;
-                rain[i]++;
-            }
-        }
-        const matrixInterval = setInterval(drawMatrix, 50);
-
-        // 🔱 MOTOR DO QUEBRA-CABEÇA (SHATTER)
-        const overlay = document.getElementById('glass-overlay');
-        for(let i=0; i<30; i++) {
-            const frag = document.createElement('div');
-            frag.className = 'glass-fragment';
-            frag.style.left = Math.random() * 100 + '%'; frag.style.top = Math.random() * 100 + '%';
-            frag.id = 'g-' + i; overlay.appendChild(frag);
-        }
-
+        let particles = [];
         let audioAtivo = false;
-        let lastStates = {}; 
-        let lastPrices = {};
-        let dolarBlue = 5.15;
+        let running = true;
+        let systemActive = false;
+        const symbols = "01<>[]_X*🔱";
 
+        // CONFIGURAÇÃO DAS MOEDAS (PADRÃO OURO)
         const moedas = [
-            { id: "BTC", symbol: "BTCBRL", shield: "1408S", alvo: 450000 },
-            { id: "ETH", symbol: "ETHBRL", shield: "908S", alvo: 22000 },
-            { id: "SOL", symbol: "SOLBRL", shield: "2108S", alvo: 1200 },
-            { id: "ADA", symbol: "ADABRL", shield: "200S", alvo: 5.50 },
-            { id: "RENDER", symbol: "RENDERBRL", shield: "328S", alvo: 26.26 },
-            { id: "FET", symbol: "FETUSDT", shield: "608S", convert: true, alvo: 15.00 },
-            { id: "NEAR", symbol: "NEARBRL", shield: "110S", alvo: 48.00 }
+            { id: "BTC", sym: "BTCBRL", alvo: 450000 },
+            { id: "ETH", sym: "ETHBRL", alvo: 22000 },
+            { id: "SOL", sym: "SOLBRL", alvo: 1200 },
+            { id: "FET", sym: "FETUSDT", convert: true, alvo: 15.00 },
+            { id: "RENDER", sym: "RENDERBRL", alvo: 26.26 },
+            { id: "ADA", sym: "ADABRL", alvo: 5.50 }
         ];
 
-        function startRupture() {
-            audioAtivo = true;
-            document.getElementById('btn-init').style.display = 'none';
-            clearInterval(matrixInterval);
-
-            // Bips quânticos
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            [880, 1100, 1300].forEach((f, i) => {
-                setTimeout(() => {
-                    const osc = audioCtx.createOscillator();
-                    const g = audioCtx.createGain();
-                    osc.connect(g); g.connect(audioCtx.destination);
-                    osc.type = 'square'; osc.frequency.value = f;
-                    g.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-                }, i * 150);
-            });
-
-            // Explosão do quebra-cabeça
-            for(let i=0; i<30; i++) {
-                const f = document.getElementById('g-' + i);
-                setTimeout(() => {
-                    f.style.opacity = '1';
-                    f.style.transform = `translate(${Math.random()*160 - 80}vw, ${Math.random()*160 - 80}vh) rotate(${Math.random()*720}deg) scale(0)`;
-                }, i * 20);
+        class Particle {
+            constructor(isExiting = false) {
+                this.isExiting = isExiting;
+                this.reset();
             }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = this.isExiting ? canvas.height / 2 : Math.random() * canvas.height;
+                this.tx = canvas.width / 2 + (Math.random() * 200 - 100);
+                this.ty = canvas.height / 2 - 80 + (Math.random() * 200 - 100);
+                this.char = symbols[Math.floor(Math.random() * symbols.length)];
+                this.speed = 0.02 + Math.random() * 0.04;
+                this.a = 0;
+            }
+            update() {
+                if(!systemActive || this.isExiting) {
+                    this.x += (this.tx - this.x) * this.speed;
+                    this.y += (this.ty - this.y) * this.speed;
+                    if(this.a < 1) this.a += 0.02;
+                } else {
+                    this.x += (Math.random() - 0.5) * 50;
+                    this.y += (Math.random() - 0.5) * 50;
+                    this.a -= 0.05;
+                }
+            }
+            draw() {
+                ctx.fillStyle = `rgba(255, 223, 0, ${this.a})`;
+                ctx.font = "12px monospace";
+                ctx.fillText(this.char, this.x, this.y);
+            }
+        }
 
+        function initCanvas() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            particles = [];
+            for(let i=0; i<150; i++) particles.push(new Particle());
+        }
+        initCanvas();
+
+        function loop() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            if(running) requestAnimationFrame(loop);
+        }
+        loop();
+
+        function initializeSystem() {
+            audioAtivo = true; systemActive = true;
+            document.getElementById('splash-screen').style.opacity = '0';
+            speak("Sidney, Memória Quântica ativada. Montando quebra-cabeça.");
+            
             setTimeout(() => {
-                document.getElementById('splash-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('splash-screen').style.display = 'none';
-                    document.getElementById('main-ui').style.display = 'block';
-                    speak("Memória Quântica ativada, Sidney. Quebra-cabeça de dados montado. Padrão Ouro ativo.");
-                    fetchPrices();
-                }, 600);
+                document.getElementById('splash-screen').style.display = 'none';
+                document.getElementById('main-ui').style.display = 'flex';
+                setTimeout(() => document.getElementById('main-ui').style.opacity = '1', 100);
+                fetchMarket();
             }, 800);
         }
 
-        function speak(text) {
-            if (audioAtivo) {
-                window.speechSynthesis.cancel();
-                const ut = new SpeechSynthesisUtterance(text);
-                ut.lang = 'pt-BR'; ut.rate = 1.2; 
-                window.speechSynthesis.speak(ut);
-            }
+        function exitSystem() {
+            systemActive = false;
+            document.getElementById('main-ui').style.opacity = '0';
+            speak("Saindo do sistema. Voltando para o Tridente de segurança.");
+            
+            setTimeout(() => {
+                document.getElementById('main-ui').style.display = 'none';
+                document.getElementById('splash-screen').style.display = 'flex';
+                document.getElementById('splash-screen').style.opacity = '1';
+                initCanvas();
+            }, 1000);
         }
 
-        async function fetchPrices() {
+        function speak(t) { if(audioAtivo) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang='pt-BR'; u.rate=1.2; window.speechSynthesis.speak(u); } }
+
+        async function fetchMarket() {
             try {
-                const dRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
-                const dData = await dRes.json();
-                dolarBlue = parseFloat(dData.price);
+                const resD = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
+                const dData = await resD.json();
+                const dolar = parseFloat(dData.price);
 
+                let html = "";
                 for(let m of moedas) {
-                    await new Promise(r => setTimeout(r, 450));
-                    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
+                    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.sym}`);
                     const data = await res.json();
+                    let price = parseFloat(data.lastPrice);
+                    if(m.convert) price *= dolar;
                     
-                    if(data.lastPrice) {
-                        let val = parseFloat(data.lastPrice);
-                        if(m.convert) val *= dolarBlue; 
-                        lastPrices[m.id] = val;
-                        const vol = parseFloat(data.priceChangePercent);
-                        const status = getSemaforoStatus(vol);
-                        const potencial = (((m.alvo - val) / val) * 100).toFixed(0);
-
-                        if (lastStates[m.id] !== undefined && lastStates[m.id] !== status.text) {
-                            if (status.text === 'ENTRA') {
-                                speak(`Oportunidade em ${m.id}. Potencial de ${potencial} por cento.`);
-                            }
-                        }
-                        lastStates[m.id] = status.text;
+                    const vol = Math.abs(parseFloat(data.priceChangePercent));
+                    let status = { text: 'NÃO ENTRA', color: '#ff3131', led: 'led-red' };
+                    
+                    if(vol >= 2 && vol <= 6) { 
+                        status = { text: 'ENTRA', color: '#00ff41', led: 'led-green' };
+                        speak(`Oportunidade detectada em ${m.id}. Padrão Ouro ativo.`);
+                    } else if(vol > 6 && vol <= 10) {
+                        status = { text: 'PULA', color: '#ffdf00', led: 'led-yellow' };
                     }
-                }
-                renderUI();
-            } catch (e) { console.error("ERRO_ORACULO_SYNC"); }
-        }
 
-        function getSemaforoStatus(vol) {
-            const v = Math.abs(vol);
-            if (v >= 2 && v <= 6) return { text: 'ENTRA', color: '#00ff41', class: 'led-green' };
-            if (v > 6 && v <= 10) return { text: 'PULA', color: '#ffdf00', class: 'led-yellow' };
-            return { text: 'NÃO ENTRA', color: '#ff3131', class: 'led-red' };
-        }
+                    const potencial = (((m.alvo - price) / price) * 100).toFixed(0);
 
-        function renderUI() {
-            document.getElementById('market-list').innerHTML = moedas.map(m => {
-                const price = lastPrices[m.id];
-                const status = getSemaforoStatus(0); // Atualizado via fetch
-                const potencial = price ? (((m.alvo - price) / price) * 100).toFixed(0) : 0;
-                return `
-                    <div class="market-card" style="border-left-color: ${status.color}">
-                        <div style="display:flex; justify-content:space-between">
-                            <span style="font-weight:bold">${m.id} // BRL</span>
-                            <div class="led ${status.class}"></div>
+                    html += `
+                        <div class="card" style="border-left-color: ${status.color}">
+                            <div style="display:flex; justify-content:space-between; align-items:center">
+                                <span style="font-size:10px; color:#555;">${m.id}/BRL</span>
+                                <div class="led ${status.led}"></div>
+                            </div>
+                            <span class="price">R$ ${price.toLocaleString('pt-BR')}</span>
+                            <span class="status-tag" style="color:${status.color}">${status.text} (+${potencial}%)</span>
                         </div>
-                        <span class="main-price">${price ? price.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '...'}</span>
-                        <div class="context-box">PROJEÇÃO: +${potencial}% | SHIELD: ${m.shield}</div>
-                    </div>
-                `;
-            }).join('');
+                    `;
+                }
+                document.getElementById('painel').innerHTML = html;
+            } catch(e) {}
+            setTimeout(fetchMarket, 10000);
         }
 
-        function openTab(tabId, el) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+        function tab(el, id) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+            document.getElementById('painel').style.display = 'none';
+            document.getElementById('view').style.display = 'none';
             el.classList.add('active');
-            if(tabId === 'trader-view') {
-                document.getElementById('tv-container').innerHTML = "";
-                new TradingView.widget({ "autosize": true, "symbol": "BINANCE:BTCBRL", "theme": "dark", "container_id": "tv-container", "locale": "br" });
+            document.getElementById(id).style.display = (id === 'painel' ? 'grid' : 'block');
+            if(id === 'view') {
+                document.getElementById('tv-box').innerHTML = "";
+                new TradingView.widget({ "autosize": true, "symbol": "BINANCE:BTCBRL", "theme": "dark", "container_id": "tv-box", "locale": "br" });
             }
         }
 
