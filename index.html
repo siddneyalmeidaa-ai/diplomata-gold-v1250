@@ -3,34 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // SOBERANIA_SYNC</title>
+    <title>SENTINEL_V11.5 // SOBERANIA_TOTAL</title>
     <style>
         :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
         .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
+        .btn-ativa { background: var(--green); color: black; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 13px; }
         .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; }
         .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
         .tab.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
         .content { display: none; height: calc(100vh - 150px); overflow-y: auto; }
         .content.active { display: block; }
-        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 6px solid #333; transition: 0.4s; position: relative; }
+        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 6px solid #333; transition: 0.4s; }
         .main-price { font-size: 26px; font-weight: bold; margin: 10px 0; display: block; }
-        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); line-height: 1.5; margin-top: 10px; }
+        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); line-height: 1.5; margin-top: 5px; }
         .led { width: 12px; height: 12px; border-radius: 50%; background: #333; }
         .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
-        .btn-ativa { background: var(--green); color: black; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; }
         #tv-container { height: 100%; width: 100%; background: #000; }
     </style>
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 CLIQUE PARA INJETAR INTELIGÊNCIA AUDITIVA</button>
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 INJETAR VOZ DO ORÁCULO E SINCRONIA DÓLAR</button>
 
     <div class="top-bar">
         <span>SENTINEL_V11.5 // SOBERANIA_FINANCEIRA</span>
-        <span id="clock">00:00:00</span>
+        <span id="clock">03:34:10</span>
     </div>
 
     <div class="nav-tabs">
@@ -52,32 +52,32 @@
 
         let audioAtivo = false;
         let lastStates = {}; 
-        let lastAlertTime = {};
-
-        const moedas = [
-            { id: "BTC", symbol: "BTCBRL", pair: "BINANCE:BTCBRL", shield: "1408S", alvo: 450000 },
-            { id: "ETH", symbol: "ETHBRL", pair: "BINANCE:ETHBRL", shield: "908S", alvo: 22000 },
-            { id: "SOL", symbol: "SOLBRL", pair: "BINANCE:SOLBRL", shield: "2108S", alvo: 1200 },
-            { id: "ADA", symbol: "ADABRL", pair: "BINANCE:ADABRL", shield: "200S", alvo: 5.50 },
-            { id: "RENDER", symbol: "RENDERBRL", pair: "BINANCE:RENDERBRL", shield: "328S", alvo: 26.26 },
-            { id: "FET", symbol: "FETUSDT", pair: "BINANCE:FETUSDT", shield: "608S", convert: true, alvo: 15.00 },
-            { id: "NEAR", symbol: "NEARBRL", pair: "BINANCE:NEARBRL", shield: "110S", alvo: 48.00 }
-        ];
-
         let lastPrices = {};
         let dolarBlue = 5.15;
         let volatilityData = {};
 
+        const moedas = [
+            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCBRL", shield: "1408S", alvo: 450000 },
+            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHBRL", shield: "908S", alvo: 22000 },
+            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLBRL", shield: "2108S", alvo: 1200 },
+            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADABRL", shield: "200S", alvo: 5.50 },
+            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERBRL", shield: "328S", alvo: 26.26 },
+            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", shield: "608S", convert: true, alvo: 15.00 },
+            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARBRL", shield: "110S", alvo: 48.00 }
+        ];
+
         function ativarAudio() {
             audioAtivo = true;
             document.getElementById('btn-audio').style.display = 'none';
-            speak("Oráculo ativado. Monitorando o mercado para Sidney.");
+            speak("Oráculo ativado, Sidney. Blindagem de câmbio iniciada.");
         }
 
         function speak(text) {
             if (audioAtivo) {
+                window.speechSynthesis.cancel(); // Cancela falas antigas para priorizar a nova
                 const ut = new SpeechSynthesisUtterance(text);
                 ut.lang = 'pt-BR';
+                ut.rate = 1.2; 
                 window.speechSynthesis.speak(ut);
             }
         }
@@ -101,17 +101,21 @@
                         const status = getSemaforoStatus(volatilityData[m.id]);
                         const potencial = (((m.alvo - val) / val) * 100).toFixed(0);
 
-                        // 🔱 LÓGICA DE ALERTA ATUALIZADA
-                        if (lastStates[m.id] !== status.text) {
+                        // 🔱 LÓGICA DE ALERTA AGRESSIVA
+                        if (lastStates[m.id] !== undefined && lastStates[m.id] !== status.text) {
                             if (status.text === 'ENTRA') {
-                                speak(`${m.id} é uma ótima opção para comprar agora. Alvo de mais ${potencial} por cento.`);
+                                speak(`Sidney, ${m.id} é uma ótima opção para comprar agora. Alvo de mais ${potencial} por cento.`);
+                            } else if (status.text === 'NÃO ENTRA' && lastStates[m.id] === 'ENTRA') {
+                                speak(`Atenção Sidney! Risco em ${m.id}. Mudou para não entra agora.`);
+                            } else if (status.text === 'PULA') {
+                                speak(`Alerta amarela em ${m.id}. Fique atento.`);
                             }
                         }
                         lastStates[m.id] = status.text;
                     }
                 }
                 renderUI();
-            } catch (e) { console.error("ERRO_SYNC"); }
+            } catch (e) { console.error("ERRO_ORACULO_SYNC"); }
         }
 
         function getSemaforoStatus(vol) {
@@ -131,7 +135,7 @@
                 return `
                     <div class="market-card" style="border-left-color: ${status.color}">
                         <div style="display:flex; justify-content:space-between">
-                            <span style="font-weight:bold">${m.id} // BRL 🔱</span>
+                            <span style="font-weight:bold">${m.id} // BRL</span>
                             <div style="display:flex; align-items:center">
                                 <span style="font-size:10px; color:${status.color}; margin-right:5px; font-weight:bold">${status.text}</span>
                                 <div class="led ${status.class}"></div>
