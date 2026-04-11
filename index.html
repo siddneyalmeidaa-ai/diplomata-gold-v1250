@@ -26,6 +26,7 @@
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
         #tv-container { height: 100%; width: 100%; background: #000; }
+        .decision-text { font-size: 10px; font-weight: bold; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -53,14 +54,12 @@
     <script>
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
-        // 🔱 LISTA ATUALIZADA PARA BUSCAR BRL SEMPRE QUE POSSÍVEL
         const moedas = [
             { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCBRL", shield: "1408S" },
             { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHBRL", shield: "908S" },
             { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLBRL", shield: "2108S" },
             { id: "BNB", pair: "BINANCE:BNBBRL", symbol: "BNBBRL", shield: "1508S" },
             { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADABRL", shield: "200S" },
-            // Moedas sem par BRL direto usam conversão dinâmica
             { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", shield: "608S", convert: true },
             { id: "TIA", pair: "BINANCE:TIAUSDT", symbol: "TIAUSDT", shield: "408S", convert: true },
             { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERBRL", shield: "328S" },
@@ -70,7 +69,8 @@
 
         let lastPrices = {};
         let currentPair = "BINANCE:BTCBRL";
-        let dolarBlue = 5.15; // ⚡ Será atualizado dinamicamente
+        let dolarBlue = 5.15;
+        let volatilityData = {};
 
         async function fetchDolar() {
             try {
@@ -84,41 +84,53 @@
             await fetchDolar();
             try {
                 for(let m of moedas) {
-                    const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${m.symbol}`);
+                    // ⚡ Busca Ticker de 24h para pegar Volatilidade e Preço Atual
+                    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
                     const data = await res.json();
-                    if(data.price) {
-                        let val = parseFloat(data.price);
-                        if(m.convert) val *= dolarBlue; // ⚡ CONVERSÃO REAL-TIME
+                    
+                    if(data.lastPrice) {
+                        let val = parseFloat(data.lastPrice);
+                        if(m.convert) val *= dolarBlue; 
                         lastPrices[m.id] = val;
+                        volatilityData[m.id] = parseFloat(data.priceChangePercent);
                     }
                 }
                 renderUI();
             } catch (e) { console.error("ERRO_SENTINEL"); }
         }
 
-        function getSemaforoStatus(id, price) {
-            if (!price) return 'led-yellow';
-            const seed = Math.floor(price * 100) % 10;
-            if (seed > 6) return 'led-green';
-            if (seed < 3) return 'led-red';
-            return 'led-yellow';
+        function getSemaforoStatus(vol) {
+            const v = Math.abs(vol);
+            if (!vol && vol !== 0) return { class: 'led-yellow', text: 'SYNC', color: '#ffdf00' };
+            // 🟢 ZONA DE LUCRO SPA: 2% a 6%
+            if (v >= 2 && v <= 6) return { class: 'led-green', text: 'ENTRA', color: '#00ff41' };
+            // 🟡 ZONA DE ATENÇÃO: 6% a 10%
+            if (v > 6 && v <= 10) return { class: 'led-yellow', text: 'PULA', color: '#ffdf00' };
+            // 🔴 PERIGO: FORA DOS PARÂMETROS
+            return { class: 'led-red', text: 'NÃO ENTRA', color: '#ff3131' };
         }
 
         function renderUI() {
             document.getElementById('market-list').innerHTML = moedas.map(m => {
                 const priceVal = lastPrices[m.id];
-                const statusClass = getSemaforoStatus(m.id, priceVal);
-                const borderColor = statusClass === 'led-green' ? '#00ff41' : (statusClass === 'led-yellow' ? '#ffdf00' : '#ff3131');
+                const volVal = volatilityData[m.id] || 0;
+                const status = getSemaforoStatus(volVal);
+                
                 const priceFormatted = priceVal ? priceVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : "AGUARDANDO...";
                 
                 return `
-                    <div class="market-card" style="border-left-color: ${borderColor}" onclick="loadChart('${m.pair}')">
+                    <div class="market-card" style="border-left-color: ${status.color}" onclick="loadChart('${m.pair}')">
                         <div class="card-header">
                             <span class="moeda-label">${m.id} // BRL 🔱</span>
-                            <div class="led ${statusClass}"></div>
+                            <div style="display: flex; align-items: center;">
+                                <span class="decision-text" style="color: ${status.color}">${status.text}</span>
+                                <div class="led ${status.class}"></div>
+                            </div>
                         </div>
                         <span class="main-price">${priceFormatted}</span>
-                        <div class="context-box">SHIELD: ${m.shield} | STAKE: R$ 0,20 | USD: R$ ${dolarBlue.toFixed(2)}</div>
+                        <div class="context-box">
+                            SHIELD: ${m.shield} | VOLAT: ${volVal.toFixed(2)}% | USD: R$ ${dolarBlue.toFixed(2)}
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -147,7 +159,7 @@
             }
         }
 
-        setInterval(fetchPrices, 5000); // ⚡ MAIS RÁPIDO PARA EVITAR AMNÉSIA
+        setInterval(fetchPrices, 5000); 
         fetchPrices();
     </script>
 </body>
