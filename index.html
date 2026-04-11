@@ -3,36 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V21 // SPA_SOBERANO</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>SENTINEL_V11.5 // SOBERANIA_TOTAL</title>
     <style>
-        :root { --bg: #000; --gold: #ffdf00; --green: #00ff41; --red: #ff3131; }
-        body, html { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; }
+        :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
+        .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
+        .btn-ativa { background: var(--green); color: black; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; }
+        .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
+        .tab.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
+        .content { display: none; height: calc(100vh - 150px); overflow-y: auto; }
+        .content.active { display: block; }
+        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 6px solid #333; transition: 0.4s; }
+        .main-price { font-size: 26px; font-weight: bold; margin: 10px 0; display: block; }
+        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); line-height: 1.5; margin-top: 5px; }
+        .led { width: 12px; height: 12px; border-radius: 50%; background: #333; }
+        .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
+        .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
+        .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
+        #tv-container { height: 100%; width: 100%; background: #000; }
+        .banca-footer { position: fixed; bottom: 0; width: 100%; background: #000; color: var(--green); text-align: center; padding: 10px; font-size: 11px; border-top: 1px solid #222; font-weight: bold; }
+    </style>
+</head>
+<body>
 
-        /* 🔱 MOTOR DE CONFLUÊNCIA */
-        #canvas-intro { position: fixed; top: 0; left: 0; z-index: 5; }
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 INJETAR VOZ DO ORÁCULO E SINCRONIA DÓLAR</button>
 
-        #ui-splash {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10; background: rgba(0,0,0,0.6); transition: 0.5s;
+    <div class="top-bar">
+        <span>SENTINEL_V11.5 // SOBERANIA_FINANCEIRA</span>
+        <span id="clock">00:00:00</span>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="tab active" onclick="openTab('painel-data', this)">PAINEL_DATA</div>
+        <div class="tab" onclick="openTab('trader-view', this)">TRADER_VIEW</div>
+    </div>
+
+    <div id="painel-data" class="content active">
+        <div id="market-list"></div>
+        <div style="height: 50px;"></div> </div>
+
+    <div id="trader-view" class="content">
+        <div id="tv-container"></div>
+    </div>
+
+    <div class="banca-footer">BLINDAGEM ATIVA // BANCA R$ 1.273,00 // SPA</div>
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
+
+        let audioAtivo = false;
+        let lastStates = {}; 
+        let announcedThisCycle = {}; // Memória para não repetir
+        let dolarBlue = 5.15;
+        let lastPrices = {};
+        let volatilityData = {};
+
+        const moedas = [
+            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCBRL", shield: "1408S", alvo: 450000 },
+            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHBRL", shield: "908S", alvo: 22000 },
+            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLBRL", shield: "2108S", alvo: 1200 },
+            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADABRL", shield: "200S", alvo: 5.50 },
+            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERBRL", shield: "328S", alvo: 26.26 },
+            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", shield: "608S", convert: true, alvo: 15.00 },
+            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARBRL", shield: "110S", alvo: 48.00 }
+        ];
+
+        function ativarAudio() {
+            audioAtivo = true;
+            document.getElementById('btn-audio').style.display = 'none';
+            speak("Oráculo ativado, Sidney. Blindagem de câmbio iniciada.");
         }
 
-        .spa-brand { font-family: 'Inter'; font-size: 42px; font-weight: 900; letter-spacing: 12px; margin-top: 150px; }
-        .gold-tag { color: var(--gold); font-size: 10px; letter-spacing: 5px; margin-top: 5px; }
+        function speak(text, coinId) {
+            if (audioAtivo) {
+                // Só fala se for uma mudança real de estado para essa moeda
+                if (announcedThisCycle[coinId] === text) return;
 
-        .btn-start {
-            margin-top: 50px; background: var(--gold); color: #000; border: none;
-            padding: 18px 50px; font-size: 12px; font-weight: 900; letter-spacing: 2px;
-            cursor: pointer; border-radius: 4px; box-shadow: 0 0 20px rgba(255,223,0,0.4);
+                window.speechSynthesis.cancel();
+                const ut = new SpeechSynthesisUtterance(text);
+                ut.lang = 'pt-BR';
+                ut.rate = 1.2; 
+                window.speechSynthesis.speak(ut);
+                
+                announcedThisCycle[coinId] = text;
+            }
         }
 
-        /* 🔱 DASHBOARD SOBERANO */
-        #main-dashboard { display: none; height: 100vh; flex-direction: column; opacity: 0; transition: 0.8s; }
-        .top-info { padding: 15px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; font-size: 10px; color: #666; }
-        
-        .grid-data { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; padding: 15px; overflow-y: auto; flex: 1; }
-        .card-moeda { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 20px; border-radius: 8px; position: relative; border-left: 4px solid #333; transition: 0.3s; }
-        .price-val { font-size: 22px; font-weight: bold; margin: 10px 0; display: block; }
-        .tag-status { font-size: 9px; font-weight: 900; text-transform: uppercase; }
-        
+        async function fetchPrices() {
+            try {
+                const dRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
+                const dData = await dRes.json();
+                dolarBlue = parseFloat(dData.price);
+
+                for(let m of moedas) {
+                    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
+                    const data = await res.json();
+                    
+                    if(data.lastPrice) {
+                        let val = parseFloat(data.lastPrice);
+                        if(m.convert) val *= dolarBlue; 
+                        lastPrices[m.id] = val;
+                        volatilityData[m.id] = parseFloat(data.priceChangePercent);
+                        
+                        const status = getSemaforoStatus(volatilityData[m.id]);
+                        const potencial = (((m.alvo - val) / val) * 100).toFixed(0);
+
+                        // ALERTA INTELIGENTE (SÓ FALA NA MUDANÇA)
+                        if (status.text === 'ENTRA') {
+                            speak(`Sidney, ${m.id} é uma ótima opção para comprar agora. Alvo de mais ${potencial} por cento.`, m.id);
+                        } else if (status.text === 'PULA') {
+                            speak(`Alerta amarela em ${m.id}. Fique atento.`, m.id);
+                        } else {
+                            // Se voltar para NÃO ENTRA, reseta a memória para poder avisar quando virar ENTRA de novo
+                            announcedThisCycle[m.id] = "NÃO ENTRA";
+                        }
+                        lastStates[m.id] = status.text;
+                    }
+                }
+                renderUI();
+            } catch (e) { console.error("ERRO_ORACULO_SYNC"); }
+        }
+
+        function getSemaforoStatus(vol) {
+            const v = Math.abs(vol);
+            if (v >= 2 && v <= 6) return { text: 'ENTRA', color: '#00ff41', class: 'led-green' };
+            if (v > 6 && v <= 10) return { text: 'PULA', color: '#ffdf00', class: 'led-yellow' };
+            return { text: 'NÃO ENTRA', color: '#ff3131', class: 'led-red' };
+        }
+
+        function renderUI() {
+            document.getElementById('market-list').innerHTML = moedas.map(m => {
+                const price = lastPrices[m.id];
+                const vol = volatilityData[m.id] || 0;
+                const status = getSemaforoStatus(vol);
+                const potencial = price ? (((m.alvo - price) / price) * 100).toFixed(0) : 0;
+
+                return `
+                    <div class="market-card" style="border-left-color: ${status.color}">
+                        <div style="display:flex; justify-content:space-between">
+                            <span style="font-weight:bold">${m.id} // BRL</span>
+                            <div style="display:flex; align-items:center">
+                                <span style="font-size:10px; color:${status.color}; margin-right:5px; font-weight:bold">${status.text}</span>
+                                <div class="led ${status.class}"></div>
+                            </div>
+                        </div>
+                        <span class="main-price">${price ? price.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '...'}</span>
+                        <div class="context-box">
+                            PROJEÇÃO: +${potencial}% | ALVO: R$ ${m.alvo}<br>
+                            SHIELD: ${m.shield} | VOLAT: ${vol.toFixed(2)}% | USD: R$ ${dolarBlue.toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openTab(tabId, el) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            el.classList.add('active');
+            if(tabId === 'trader-view') {
+                document.getElementById('tv-container').innerHTML = "";
+                new TradingView.widget({ "autosize": true, "symbol": "BINANCE:BTCBRL", "theme": "dark", "container_id": "tv-container", "locale": "br" });
+            }
+        }
+
+        setInterval(fetchPrices, 8000); // Ajustado para 8s para poupar bateria e dados
+        fetchPrices();
+    </script>
+</body>
+</html>
