@@ -3,30 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // ORÁCULO_SUPREMO</title>
+    <title>SENTINEL_V11.5 // SOBERANIA_SYNC</title>
     <style>
         :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
         .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
-        .btn-ativa { background: var(--green); color: black; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 13px; }
         .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; }
         .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
         .tab.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
         .content { display: none; height: calc(100vh - 150px); overflow-y: auto; }
         .content.active { display: block; }
-        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 6px solid #333; transition: 0.4s; cursor: pointer; }
+        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 6px solid #333; transition: 0.4s; position: relative; }
         .main-price { font-size: 26px; font-weight: bold; margin: 10px 0; display: block; }
-        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); line-height: 1.5; }
+        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); line-height: 1.5; margin-top: 10px; }
         .led { width: 12px; height: 12px; border-radius: 50%; background: #333; }
         .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
+        .btn-ativa { background: var(--green); color: black; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; }
         #tv-container { height: 100%; width: 100%; background: #000; }
     </style>
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR INTELIGÊNCIA AUDITIVA (MODO COMPRA/VENDA)</button>
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 CLIQUE PARA INJETAR INTELIGÊNCIA AUDITIVA</button>
 
     <div class="top-bar">
         <span>SENTINEL_V11.5 // SOBERANIA_FINANCEIRA</span>
@@ -52,16 +52,16 @@
 
         let audioAtivo = false;
         let lastStates = {}; 
-        let lastAlertTime = {}; // Para evitar repetir alertas seguidos
+        let lastAlertTime = {};
 
         const moedas = [
-            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCBRL", alvo: 450000 },
-            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHBRL", alvo: 22000 },
-            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLBRL", alvo: 1200 },
-            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADABRL", alvo: 5.50 },
-            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERBRL", alvo: 26.26 },
-            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", convert: true, alvo: 15.00 },
-            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARBRL", alvo: 48.00 }
+            { id: "BTC", symbol: "BTCBRL", pair: "BINANCE:BTCBRL", shield: "1408S", alvo: 450000 },
+            { id: "ETH", symbol: "ETHBRL", pair: "BINANCE:ETHBRL", shield: "908S", alvo: 22000 },
+            { id: "SOL", symbol: "SOLBRL", pair: "BINANCE:SOLBRL", shield: "2108S", alvo: 1200 },
+            { id: "ADA", symbol: "ADABRL", pair: "BINANCE:ADABRL", shield: "200S", alvo: 5.50 },
+            { id: "RENDER", symbol: "RENDERBRL", pair: "BINANCE:RENDERBRL", shield: "328S", alvo: 26.26 },
+            { id: "FET", symbol: "FETUSDT", pair: "BINANCE:FETUSDT", shield: "608S", convert: true, alvo: 15.00 },
+            { id: "NEAR", symbol: "NEARBRL", pair: "BINANCE:NEARBRL", shield: "110S", alvo: 48.00 }
         ];
 
         let lastPrices = {};
@@ -71,15 +71,14 @@
         function ativarAudio() {
             audioAtivo = true;
             document.getElementById('btn-audio').style.display = 'none';
-            speak("Oráculo de compra e venda ativado, Sidney. Monitorando oportunidades.");
+            speak("Oráculo ativado. Monitorando o mercado para Sidney.");
         }
 
         function speak(text) {
             if (audioAtivo) {
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'pt-BR';
-                utterance.rate = 1.1;
-                window.speechSynthesis.speak(utterance);
+                const ut = new SpeechSynthesisUtterance(text);
+                ut.lang = 'pt-BR';
+                window.speechSynthesis.speak(ut);
             }
         }
 
@@ -102,31 +101,17 @@
                         const status = getSemaforoStatus(volatilityData[m.id]);
                         const potencial = (((m.alvo - val) / val) * 100).toFixed(0);
 
-                        // 🔱 LÓGICA DE ALERTA DE COMPRA/VENDA
-                        gestaoAlertas(m.id, status.text, potencial);
+                        // 🔱 LÓGICA DE ALERTA ATUALIZADA
+                        if (lastStates[m.id] !== status.text) {
+                            if (status.text === 'ENTRA') {
+                                speak(`${m.id} é uma ótima opção para comprar agora. Alvo de mais ${potencial} por cento.`);
+                            }
+                        }
                         lastStates[m.id] = status.text;
                     }
                 }
                 renderUI();
-            } catch (e) { console.error("ERRO_SENTINEL"); }
-        }
-
-        function gestaoAlertas(id, status, potencial) {
-            const agora = Date.now();
-            if (lastAlertTime[id] && agora - lastAlertTime[id] < 600000) return; // Espera 10 min entre alertas da mesma moeda
-
-            if (lastStates[id] !== status) {
-                if (status === 'ENTRA') {
-                    speak(`Sidney, a moeda ${id} é uma ótima opção para comprar agora. O alvo de mais ${potencial} por cento está liberado. Execute!`);
-                    lastAlertTime[id] = agora;
-                } else if (status === 'PULA') {
-                    speak(`Atenção Arquiteto! ${id} entrou em Zona de Alerta. Considere realizar o lucro agora.`);
-                    lastAlertTime[id] = agora;
-                } else if (status === 'NÃO ENTRA') {
-                    speak(`Sidney, alerta de risco máximo em ${id}. Não entre agora.`);
-                    lastAlertTime[id] = agora;
-                }
-            }
+            } catch (e) { console.error("ERRO_SYNC"); }
         }
 
         function getSemaforoStatus(vol) {
@@ -138,28 +123,28 @@
 
         function renderUI() {
             document.getElementById('market-list').innerHTML = moedas.map(m => {
-                const priceVal = lastPrices[m.id];
-                const volVal = volatilityData[m.id] || 0;
-                const status = getSemaforoStatus(volVal);
-                const potencial = priceVal ? (((m.alvo - priceVal) / priceVal) * 100).toFixed(0) : 0;
+                const price = lastPrices[m.id];
+                const vol = volatilityData[m.id] || 0;
+                const status = getSemaforoStatus(vol);
+                const potencial = price ? (((m.alvo - price) / price) * 100).toFixed(0) : 0;
 
                 return `
-                    <div class="market-card" style="border-left-color: ${status.color}" onclick="openTab('trader-view', document.querySelectorAll('.tab')[1]); currentPair='${m.pair}'; loadTradingView();">
+                    <div class="market-card" style="border-left-color: ${status.color}">
                         <div style="display:flex; justify-content:space-between">
-                            <span style="font-weight:bold">${m.id} // BRL</span>
-                            <div class="led ${status.class}"></div>
+                            <span style="font-weight:bold">${m.id} // BRL 🔱</span>
+                            <div style="display:flex; align-items:center">
+                                <span style="font-size:10px; color:${status.color}; margin-right:5px; font-weight:bold">${status.text}</span>
+                                <div class="led ${status.class}"></div>
+                            </div>
                         </div>
-                        <span class="main-price">${priceVal ? priceVal.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '...'}</span>
-                        <div class="context-box">PROJEÇÃO: +${potencial}% | ALVO: R$ ${m.alvo}</div>
+                        <span class="main-price">${price ? price.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '...'}</span>
+                        <div class="context-box">
+                            PROJEÇÃO: +${potencial}% | ALVO: R$ ${m.alvo}<br>
+                            SHIELD: ${m.shield} | VOLAT: ${vol.toFixed(2)}% | USD: R$ ${dolarBlue.toFixed(2)}
+                        </div>
                     </div>
                 `;
             }).join('');
-        }
-
-        let currentPair = "BINANCE:BTCBRL";
-        function loadTradingView() {
-            document.getElementById('tv-container').innerHTML = "";
-            new TradingView.widget({ "autosize": true, "symbol": currentPair, "interval": "60", "theme": "dark", "container_id": "tv-container", "locale": "br" });
         }
 
         function openTab(tabId, el) {
@@ -167,7 +152,10 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             el.classList.add('active');
-            if(tabId === 'trader-view') loadTradingView();
+            if(tabId === 'trader-view') {
+                document.getElementById('tv-container').innerHTML = "";
+                new TradingView.widget({ "autosize": true, "symbol": "BINANCE:BTCBRL", "theme": "dark", "container_id": "tv-container", "locale": "br" });
+            }
         }
 
         setInterval(fetchPrices, 5000);
@@ -175,4 +163,3 @@
     </script>
 </body>
 </html>
-l>
