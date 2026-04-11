@@ -20,13 +20,14 @@
         .card-header { display: flex; justify-content: space-between; align-items: center; }
         .moeda-label { font-size: 14px; font-weight: bold; letter-spacing: 2px; }
         .main-price { font-size: 26px; font-weight: bold; margin: 10px 0; display: block; color: white; }
-        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); }
+        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); line-height: 1.5; }
         .led { width: 12px; height: 12px; border-radius: 50%; background: #333; }
         .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
         #tv-container { height: 100%; width: 100%; background: #000; }
         .decision-text { font-size: 10px; font-weight: bold; margin-right: 8px; }
+        .alvo-text { color: #fff; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -54,17 +55,18 @@
     <script>
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
+        // 🔱 LISTA COM ALVOS ESTRATÉGICOS (PROJEÇÃO ARQUITETO)
         const moedas = [
-            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCBRL", shield: "1408S" },
-            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHBRL", shield: "908S" },
-            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLBRL", shield: "2108S" },
-            { id: "BNB", pair: "BINANCE:BNBBRL", symbol: "BNBBRL", shield: "1508S" },
-            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADABRL", shield: "200S" },
-            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", shield: "608S", convert: true },
-            { id: "TIA", pair: "BINANCE:TIAUSDT", symbol: "TIAUSDT", shield: "408S", convert: true },
-            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERBRL", shield: "328S" },
-            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARBRL", shield: "110S" },
-            { id: "AVAX", pair: "BINANCE:AVAXBRL", symbol: "AVAXBRL", shield: "550S" }
+            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCBRL", shield: "1408S", alvo: 450000 },
+            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHBRL", shield: "908S", alvo: 22000 },
+            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLBRL", shield: "2108S", alvo: 1200 },
+            { id: "BNB", pair: "BINANCE:BNBBRL", symbol: "BNBBRL", shield: "1508S", alvo: 4000 },
+            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADABRL", shield: "200S", alvo: 5.50 },
+            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", shield: "608S", convert: true, alvo: 15.00 },
+            { id: "TIA", pair: "BINANCE:TIAUSDT", symbol: "TIAUSDT", shield: "408S", convert: true, alvo: 45.00 },
+            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERBRL", shield: "328S", alvo: 26.26 }, // 🔱 SEU ALVO CRAVADO
+            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARBRL", shield: "110S", alvo: 48.00 },
+            { id: "AVAX", pair: "BINANCE:AVAXBRL", symbol: "AVAXBRL", shield: "550S", alvo: 300.00 }
         ];
 
         let lastPrices = {};
@@ -84,7 +86,6 @@
             await fetchDolar();
             try {
                 for(let m of moedas) {
-                    // ⚡ Busca Ticker de 24h para pegar Volatilidade e Preço Atual
                     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
                     const data = await res.json();
                     
@@ -102,11 +103,8 @@
         function getSemaforoStatus(vol) {
             const v = Math.abs(vol);
             if (!vol && vol !== 0) return { class: 'led-yellow', text: 'SYNC', color: '#ffdf00' };
-            // 🟢 ZONA DE LUCRO SPA: 2% a 6%
             if (v >= 2 && v <= 6) return { class: 'led-green', text: 'ENTRA', color: '#00ff41' };
-            // 🟡 ZONA DE ATENÇÃO: 6% a 10%
             if (v > 6 && v <= 10) return { class: 'led-yellow', text: 'PULA', color: '#ffdf00' };
-            // 🔴 PERIGO: FORA DOS PARÂMETROS
             return { class: 'led-red', text: 'NÃO ENTRA', color: '#ff3131' };
         }
 
@@ -116,6 +114,8 @@
                 const volVal = volatilityData[m.id] || 0;
                 const status = getSemaforoStatus(volVal);
                 
+                // 🔱 CÁLCULO CUMULATIVO: POTENCIAL DE VALORIZAÇÃO
+                const potencial = priceVal ? (((m.alvo - priceVal) / priceVal) * 100).toFixed(0) : 0;
                 const priceFormatted = priceVal ? priceVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : "AGUARDANDO...";
                 
                 return `
@@ -128,7 +128,8 @@
                             </div>
                         </div>
                         <span class="main-price">${priceFormatted}</span>
-                        <div class="context-box">
+                        <div class="context-box" style="border-color: ${potencial > 50 ? '#00ff41' : '#222'}">
+                            PROJEÇÃO (1W): <span class="alvo-text">+${potencial}% (ALVO R$ ${m.alvo})</span><br>
                             SHIELD: ${m.shield} | VOLAT: ${volVal.toFixed(2)}% | USD: R$ ${dolarBlue.toFixed(2)}
                         </div>
                     </div>
