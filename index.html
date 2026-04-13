@@ -9,10 +9,31 @@
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
         .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
         .btn-ativa { background: var(--green); color: black; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 13px; }
+        
+        /* 🔱 INJEÇÃO: ESTILO DO RADAR SUPERIOR */
+        .radar-top { 
+            display: flex; 
+            overflow-x: auto; 
+            background: #000; 
+            border-bottom: 1px solid #222; 
+            padding: 8px; 
+            gap: 10px; 
+            scrollbar-width: none;
+        }
+        .mini-tite { 
+            min-width: 120px; 
+            background: #111; 
+            padding: 10px; 
+            border-radius: 4px;
+            border-bottom: 3px solid #333; 
+            font-size: 11px; 
+            text-align: center;
+        }
+
         .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; }
         .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
         .tab.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
-        .content { display: none; height: calc(100vh - 150px); overflow-y: auto; }
+        .content { display: none; height: calc(100vh - 220px); overflow-y: auto; }
         .content.active { display: block; }
         .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 6px solid #333; transition: 0.4s; }
         .main-price { font-size: 26px; font-weight: bold; margin: 10px 0; display: block; }
@@ -28,9 +49,11 @@
 
     <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 INJETAR VOZ DO ORÁCULO E SINCRONIA DÓLAR</button>
 
+    <div id="radar-superior" class="radar-top"></div>
+
     <div class="top-bar">
         <span>SENTINEL_V11.5 // SOBERANIA_FINANCEIRA</span>
-        <span id="clock">03:34:10</span>
+        <span id="clock">00:00:00</span>
     </div>
 
     <div class="nav-tabs">
@@ -74,7 +97,7 @@
 
         function speak(text) {
             if (audioAtivo) {
-                window.speechSynthesis.cancel(); // Cancela falas antigas para priorizar a nova
+                window.speechSynthesis.cancel();
                 const ut = new SpeechSynthesisUtterance(text);
                 ut.lang = 'pt-BR';
                 ut.rate = 1.2; 
@@ -101,7 +124,6 @@
                         const status = getSemaforoStatus(volatilityData[m.id]);
                         const potencial = (((m.alvo - val) / val) * 100).toFixed(0);
 
-                        // 🔱 LÓGICA DE ALERTA AGRESSIVA
                         if (lastStates[m.id] !== undefined && lastStates[m.id] !== status.text) {
                             if (status.text === 'ENTRA') {
                                 speak(`Sidney, ${m.id} é uma ótima opção para comprar agora. Alvo de mais ${potencial} por cento.`);
@@ -126,6 +148,20 @@
         }
 
         function renderUI() {
+            // 🔱 INJEÇÃO: ALIMENTAR O RADAR SUPERIOR
+            document.getElementById('radar-superior').innerHTML = moedas.map(m => {
+                const price = lastPrices[m.id];
+                const vol = volatilityData[m.id] || 0;
+                const status = getSemaforoStatus(vol);
+                return `
+                    <div class="mini-tite" style="border-bottom-color: ${status.color}">
+                        <span style="color:#666; font-weight:bold">${m.id}</span><br>
+                        <b style="font-size:13px">R$ ${price ? price.toFixed(2) : '...'}</b><br>
+                        <span style="color:${status.color}; font-size:10px">${status.text}</span>
+                    </div>
+                `;
+            }).join('');
+
             document.getElementById('market-list').innerHTML = moedas.map(m => {
                 const price = lastPrices[m.id];
                 const vol = volatilityData[m.id] || 0;
