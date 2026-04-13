@@ -6,68 +6,38 @@
     <title>SENTINEL_V11.5 // SOBERANIA_TOTAL</title>
     <style>
         :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; }
-        body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow: hidden; }
-        .top-bar { background: #000; padding: 10px; font-size: 10px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 1px solid #222; }
-        .btn-ativa { background: var(--green); color: black; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; font-size: 13px; }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow-y: auto; }
         
-        /* 🔱 INJEÇÃO: ESTILO DO RADAR SUPERIOR */
-        .radar-top { 
-            display: flex; 
-            overflow-x: auto; 
-            background: #000; 
-            border-bottom: 1px solid #222; 
-            padding: 8px; 
-            gap: 10px; 
-            scrollbar-width: none;
-        }
-        .mini-tite { 
-            min-width: 120px; 
-            background: #111; 
-            padding: 10px; 
-            border-radius: 4px;
-            border-bottom: 3px solid #333; 
-            font-size: 11px; 
-            text-align: center;
-        }
-
-        .nav-tabs { display: flex; background: #000; border-bottom: 2px solid #1a1a1a; }
-        .tab { flex: 1; padding: 15px; text-align: center; font-size: 12px; font-weight: bold; color: var(--text-gray); cursor: pointer; }
-        .tab.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
-        .content { display: none; height: calc(100vh - 220px); overflow-y: auto; }
-        .content.active { display: block; }
-        .market-card { background: var(--card-bg); border-radius: 4px; padding: 15px; margin: 12px; border-left: 6px solid #333; transition: 0.4s; }
-        .main-price { font-size: 26px; font-weight: bold; margin: 10px 0; display: block; }
-        .context-box { background: #000; border: 1px solid #222; padding: 8px; font-size: 9px; color: var(--green); line-height: 1.5; margin-top: 5px; }
-        .led { width: 12px; height: 12px; border-radius: 50%; background: #333; }
+        .top-bar { background: #000; padding: 15px; font-size: 11px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 2px solid #222; position: sticky; top: 0; z-index: 100; }
+        .btn-ativa { background: var(--green); color: black; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase; }
+        
+        .container { padding: 10px; }
+        .crypto-section { background: var(--card-bg); border-radius: 8px; margin-bottom: 30px; border: 1px solid #222; overflow: hidden; }
+        
+        .market-info { padding: 20px; border-left: 8px solid #333; display: flex; justify-content: space-between; align-items: center; background: #151515; }
+        .price-big { font-size: 28px; font-weight: bold; color: white; display: block; }
+        .details { font-size: 10px; color: var(--green); line-height: 1.6; text-transform: uppercase; }
+        
+        .chart-container { height: 450px; width: 100%; background: #000; border-top: 1px solid #222; }
+        
+        .status-badge { font-weight: bold; padding: 5px 10px; border-radius: 3px; font-size: 12px; }
+        .led { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-left: 10px; }
         .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
-        #tv-container { height: 100%; width: 100%; background: #000; }
     </style>
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 INJETAR VOZ DO ORÁCULO E SINCRONIA DÓLAR</button>
-
-    <div id="radar-superior" class="radar-top"></div>
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR ORÁCULO E CARREGAR GRÁFICOS</button>
 
     <div class="top-bar">
         <span>SENTINEL_V11.5 // SOBERANIA_FINANCEIRA</span>
         <span id="clock">00:00:00</span>
     </div>
 
-    <div class="nav-tabs">
-        <div class="tab active" onclick="openTab('painel-data', this)">PAINEL_DATA</div>
-        <div class="tab" onclick="openTab('trader-view', this)">TRADER_VIEW</div>
-    </div>
-
-    <div id="painel-data" class="content active">
-        <div id="market-list"></div>
-    </div>
-
-    <div id="trader-view" class="content">
-        <div id="tv-container"></div>
-    </div>
+    <div class="container" id="main-content">
+        </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
@@ -76,23 +46,25 @@
         let audioAtivo = false;
         let lastStates = {}; 
         let lastPrices = {};
-        let dolarBlue = 5.15;
+        let dolarReal = 5.15;
         let volatilityData = {};
 
+        // Lista de moedas com o par direto para o gráfico e o símbolo para a API
         const moedas = [
-            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCBRL", shield: "1408S", alvo: 450000 },
-            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHBRL", shield: "908S", alvo: 22000 },
-            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLBRL", shield: "2108S", alvo: 1200 },
-            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADABRL", shield: "200S", alvo: 5.50 },
-            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERBRL", shield: "328S", alvo: 26.26 },
-            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", shield: "608S", convert: true, alvo: 15.00 },
-            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARBRL", shield: "110S", alvo: 48.00 }
+            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARUSDT", alvo: 48.00 },
+            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCUSDT", alvo: 450000 },
+            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHUSDT", alvo: 22000 },
+            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLUSDT", alvo: 1200 },
+            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERUSDT", alvo: 26.26 },
+            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADAUSDT", alvo: 5.50 },
+            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", alvo: 15.00 }
         ];
 
         function ativarAudio() {
             audioAtivo = true;
             document.getElementById('btn-audio').style.display = 'none';
-            speak("Oráculo ativado, Sidney. Blindagem de câmbio iniciada.");
+            speak("Oráculo ativado. Carregando todos os gráficos, Bigode.");
+            initCharts();
         }
 
         function speak(text) {
@@ -105,41 +77,6 @@
             }
         }
 
-        async function fetchPrices() {
-            try {
-                const dRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
-                const dData = await dRes.json();
-                dolarBlue = parseFloat(dData.price);
-
-                for(let m of moedas) {
-                    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
-                    const data = await res.json();
-                    
-                    if(data.lastPrice) {
-                        let val = parseFloat(data.lastPrice);
-                        if(m.convert) val *= dolarBlue; 
-                        lastPrices[m.id] = val;
-                        volatilityData[m.id] = parseFloat(data.priceChangePercent);
-                        
-                        const status = getSemaforoStatus(volatilityData[m.id]);
-                        const potencial = (((m.alvo - val) / val) * 100).toFixed(0);
-
-                        if (lastStates[m.id] !== undefined && lastStates[m.id] !== status.text) {
-                            if (status.text === 'ENTRA') {
-                                speak(`Sidney, ${m.id} é uma ótima opção para comprar agora. Alvo de mais ${potencial} por cento.`);
-                            } else if (status.text === 'NÃO ENTRA' && lastStates[m.id] === 'ENTRA') {
-                                speak(`Atenção Sidney! Risco em ${m.id}. Mudou para não entra agora.`);
-                            } else if (status.text === 'PULA') {
-                                speak(`Alerta amarela em ${m.id}. Fique atento.`);
-                            }
-                        }
-                        lastStates[m.id] = status.text;
-                    }
-                }
-                renderUI();
-            } catch (e) { console.error("ERRO_ORACULO_SYNC"); }
-        }
-
         function getSemaforoStatus(vol) {
             const v = Math.abs(vol);
             if (v >= 2 && v <= 6) return { text: 'ENTRA', color: '#00ff41', class: 'led-green' };
@@ -147,57 +84,95 @@
             return { text: 'NÃO ENTRA', color: '#ff3131', class: 'led-red' };
         }
 
-        function renderUI() {
-            // 🔱 INJEÇÃO: ALIMENTAR O RADAR SUPERIOR
-            document.getElementById('radar-superior').innerHTML = moedas.map(m => {
-                const price = lastPrices[m.id];
-                const vol = volatilityData[m.id] || 0;
-                const status = getSemaforoStatus(vol);
-                return `
-                    <div class="mini-tite" style="border-bottom-color: ${status.color}">
-                        <span style="color:#666; font-weight:bold">${m.id}</span><br>
-                        <b style="font-size:13px">R$ ${price ? price.toFixed(2) : '...'}</b><br>
-                        <span style="color:${status.color}; font-size:10px">${status.text}</span>
-                    </div>
-                `;
-            }).join('');
+        async function fetchPrices() {
+            try {
+                // Sincronia de dólar real para evitar o erro do "USD R$ 5.00"
+                const dRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
+                const dData = await dRes.json();
+                dolarReal = parseFloat(dData.price);
 
-            document.getElementById('market-list').innerHTML = moedas.map(m => {
+                for(let m of moedas) {
+                    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
+                    const data = await res.json();
+                    
+                    if(data.lastPrice) {
+                        let valBrl = parseFloat(data.lastPrice) * dolarReal; 
+                        lastPrices[m.id] = valBrl;
+                        volatilityData[m.id] = parseFloat(data.priceChangePercent);
+                        
+                        const status = getSemaforoStatus(volatilityData[m.id]);
+                        if (lastStates[m.id] !== undefined && lastStates[m.id] !== status.text && status.text === 'ENTRA') {
+                            speak(`${m.id} está no vigor.`);
+                        }
+                        lastStates[m.id] = status.text;
+                    }
+                }
+                updateUIValues();
+            } catch (e) { console.error("ERRO_SYNC_VIGOR"); }
+        }
+
+        function initUI() {
+            document.getElementById('main-content').innerHTML = moedas.map(m => `
+                <div class="crypto-section" id="section-${m.id}">
+                    <div class="market-info" id="info-${m.id}">
+                        <div>
+                            <span style="color:#666; font-weight:bold; font-size:14px;">${m.id} // MONITORAMENTO</span>
+                            <span class="price-big" id="price-${m.id}">R$ ...</span>
+                            <div class="details" id="details-${m.id}">AGUARDANDO SINAL...</div>
+                        </div>
+                        <div style="text-align:right">
+                            <span class="status-badge" id="status-${m.id}">---</span>
+                            <div class="led" id="led-${m.id}"></div>
+                        </div>
+                    </div>
+                    <div class="chart-container" id="chart-${m.id}"></div>
+                </div>
+            `).join('');
+        }
+
+        function initCharts() {
+            moedas.forEach(m => {
+                new TradingView.widget({
+                    "autosize": true,
+                    "symbol": m.pair,
+                    "interval": "1",
+                    "timezone": "America/Sao_Paulo",
+                    "theme": "dark",
+                    "style": "1",
+                    "locale": "br",
+                    "container_id": `chart-${m.id}`,
+                    "hide_side_toolbar": true,
+                    "allow_symbol_change": false,
+                    "save_image": false
+                });
+            });
+        }
+
+        function updateUIValues() {
+            moedas.forEach(m => {
                 const price = lastPrices[m.id];
                 const vol = volatilityData[m.id] || 0;
                 const status = getSemaforoStatus(vol);
                 const potencial = price ? (((m.alvo - price) / price) * 100).toFixed(0) : 0;
 
-                return `
-                    <div class="market-card" style="border-left-color: ${status.color}">
-                        <div style="display:flex; justify-content:space-between">
-                            <span style="font-weight:bold">${m.id} // BRL</span>
-                            <div style="display:flex; align-items:center">
-                                <span style="font-size:10px; color:${status.color}; margin-right:5px; font-weight:bold">${status.text}</span>
-                                <div class="led ${status.class}"></div>
-                            </div>
-                        </div>
-                        <span class="main-price">${price ? price.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) : '...'}</span>
-                        <div class="context-box">
-                            PROJEÇÃO: +${potencial}% | ALVO: R$ ${m.alvo}<br>
-                            SHIELD: ${m.shield} | VOLAT: ${vol.toFixed(2)}% | USD: R$ ${dolarBlue.toFixed(2)}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                const priceEl = document.getElementById(`price-${m.id}`);
+                const detailsEl = document.getElementById(`details-${m.id}`);
+                const statusEl = document.getElementById(`status-${m.id}`);
+                const ledEl = document.getElementById(`led-${m.id}`);
+                const infoEl = document.getElementById(`info-${m.id}`);
+
+                if(priceEl) priceEl.innerText = price ? price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) : '...';
+                if(detailsEl) detailsEl.innerHTML = `POTENCIAL: +${potencial}% | VOLAT: ${vol.toFixed(2)}% | USD REAL: R$ ${dolarReal.toFixed(2)}`;
+                if(statusEl) {
+                    statusEl.innerText = status.text;
+                    statusEl.style.color = status.color;
+                }
+                if(ledEl) ledEl.className = `led ${status.class}`;
+                if(infoEl) infoEl.style.borderLeftColor = status.color;
+            });
         }
 
-        function openTab(tabId, el) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            el.classList.add('active');
-            if(tabId === 'trader-view') {
-                document.getElementById('tv-container').innerHTML = "";
-                new TradingView.widget({ "autosize": true, "symbol": "BINANCE:BTCBRL", "theme": "dark", "container_id": "tv-container", "locale": "br" });
-            }
-        }
-
+        initUI();
         setInterval(fetchPrices, 5000);
         fetchPrices();
     </script>
