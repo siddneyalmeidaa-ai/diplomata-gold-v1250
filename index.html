@@ -8,25 +8,37 @@
         :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; }
         
+        /* NAVEGAÇÃO MANTENDO O PADRÃO */
+        .nav-sistema { display: flex; background: #000; border-bottom: 2px solid #222; }
+        .tab-link { flex: 1; padding: 15px; border: none; background: none; color: var(--text-gray); cursor: pointer; font-weight: bold; font-size: 12px; text-transform: uppercase; }
+        .tab-link.active { color: var(--green); border-bottom: 3px solid var(--green); background: #111; }
+
         .top-bar { background: #000; padding: 15px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: var(--text-gray); border-bottom: 2px solid #222; position: sticky; top: 0; z-index: 100; }
         .btn-ativa { background: var(--green); color: black; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase; }
         
-        .btn-refresh { background: #222; color: var(--green); border: 1px solid var(--green); padding: 5px 15px; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; transition: 0.3s; }
-        .btn-refresh:hover { background: var(--green); color: black; }
+        .btn-refresh { background: #222; color: var(--green); border: 1px solid var(--green); padding: 5px 15px; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; }
         
         .container { padding: 10px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* CARDS ORIGINAIS */
         .crypto-section { background: var(--card-bg); border-radius: 8px; margin-bottom: 30px; border: 1px solid #222; overflow: hidden; }
         .market-info { padding: 20px; border-left: 8px solid #333; display: flex; justify-content: space-between; align-items: center; background: #151515; }
-        
         .price-big { font-size: 28px; font-weight: bold; color: white; display: block; }
         .details { font-size: 10px; color: var(--green); line-height: 1.6; text-transform: uppercase; }
         .chart-container { height: 450px; width: 100%; background: #000; border-top: 1px solid #222; }
         
         .status-badge { font-weight: bold; padding: 5px 10px; border-radius: 3px; font-size: 12px; }
-        .led { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-left: 10px; transition: 0.5s; }
-        
+        .led { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-left: 10px; }
         .pulse { animation: pulse-animation 1s infinite; }
         @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* ESTILO DA NOVA ABA (PATRIMÔNIO) */
+        .pnl-card { background: var(--card-bg); border: 1px solid #333; border-radius: 8px; padding: 25px; border-left: 8px solid var(--blue); }
+        .pnl-row { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        .pnl-label { color: var(--text-gray); font-size: 11px; text-transform: uppercase; }
+        .pnl-value { font-size: 20px; font-weight: bold; }
 
         .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
@@ -38,23 +50,68 @@
 
     <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR ORÁCULO SÊNIOR & VIGOR DE MERCADO</button>
 
+    <div class="nav-sistema">
+        <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 Monitoramento</button>
+        <button class="tab-link" onclick="mudarTab(event, 'patrimonio')">📊 Patrimônio</button>
+    </div>
+
     <div class="top-bar">
         <div>
-            <span>SENTINEL_V11.5 // IPI_V3_SENIOR</span>
+            <span>SENTINEL_V11.5 // SOBERANIA</span>
             <span id="heartbeat" style="margin-left: 10px; color: var(--green);">●</span>
         </div>
         <div>
-            <button class="btn-refresh" onclick="fetchPrices()">REFRESH_DATA ⟳</button>
+            <button class="btn-refresh" onclick="fetchPrices()">REFRESH ⟳</button>
             <span id="clock" style="margin-left: 15px;">00:00:00</span>
         </div>
     </div>
 
-    <div class="container" id="main-content">
-        <div style="padding: 40px; text-align: center; color: #444; font-size: 12px;">AGUARDANDO ATIVAÇÃO DO PROTOCOLO SÊNIOR...</div>
+    <div class="container">
+        <div id="monitoramento" class="tab-content active">
+            <div id="main-content">
+                <div style="padding: 40px; text-align: center; color: #444;">AGUARDANDO ATIVAÇÃO...</div>
+            </div>
+        </div>
+
+        <div id="patrimonio" class="tab-content">
+            <div class="pnl-card">
+                <div style="margin-bottom: 25px;">
+                    <span style="color: var(--blue); font-weight: bold; font-size: 14px;">ANÁLISE DE CARTEIRA: RENDER</span>
+                </div>
+                
+                <div class="pnl-row">
+                    <div><span class="pnl-label">Preço de Custo</span><div class="pnl-value">R$ 9,59</div></div>
+                    <div><span class="pnl-label">Saldo Atual</span><div class="pnl-value" id="pnl-total">R$ 0,00</div></div>
+                </div>
+
+                <div class="pnl-row">
+                    <div><span class="pnl-label">Lucro / Perda</span><div class="pnl-value" id="pnl-lucro">R$ 0,00</div></div>
+                    <div><span class="pnl-label">Performance</span><div class="pnl-value" id="pnl-perc">0.00%</div></div>
+                </div>
+
+                <div id="pnl-inteligencia" style="font-size: 11px; color: var(--green); line-height: 1.5; padding-top: 10px;">
+                    SINCRONIZANDO DADOS DO MERCADO...
+                </div>
+            </div>
+        </div>
     </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
+        // CONFIGURAÇÕES FIXAS S.B.
+        const MEU_PRECO_MEDIO = 9.59;
+        const MINHA_QUANTIDADE = 3.996;
+
+        function mudarTab(evt, nomeTab) {
+            let i, content, links;
+            content = document.getElementsByClassName("tab-content");
+            for (i = 0; i < content.length; i++) content[i].classList.remove("active");
+            links = document.getElementsByClassName("tab-link");
+            for (i = 0; i < links.length; i++) links[i].classList.remove("active");
+            document.getElementById(nomeTab).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
         let audioAtivo = false;
@@ -64,41 +121,25 @@
         let volatilityData = {};
 
         const moedas = [
-            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARUSDT", alvo: 48.00 },
-            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCUSDT", alvo: 450000 },
-            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHUSDT", alvo: 22000 },
-            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLUSDT", alvo: 1200 },
             { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERUSDT", alvo: 26.26 },
-            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADAUSDT", alvo: 5.50 },
-            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", alvo: 15.00 }
+            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARUSDT", alvo: 48.00 },
+            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLUSDT", alvo: 1200 },
+            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADAUSDT", alvo: 5.50 }
         ];
 
-        function speak(text) {
-            if (audioAtivo) {
-                window.speechSynthesis.cancel();
-                const ut = new SpeechSynthesisUtterance(text);
-                ut.lang = 'pt-BR'; ut.rate = 1.2;
-                window.speechSynthesis.speak(ut);
-            }
-        }
-
-        // --- NÚCLEO SÊNIOR: ESTRATÉGIA DE ALTA PROBABILIDADE ---
         function getSemaforoStatus(vol, preco, alvo) {
             const v = parseFloat(vol);
             const absV = Math.abs(v);
             const distAlvo = ((alvo - preco) / preco) * 100;
-
             if (distAlvo < 5) return { text: 'PULA', color: '#666', class: 'led-yellow', msg: 'LUCRO BAIXO' };
             if (v < -2 && absV < 0.75) return { text: 'COMPRA SÊNIOR', color: '#00e5ff', class: 'led-blue', msg: 'EXAUSTÃO VENDEDORA' };
             if (v >= 1.8 && v <= 5.0) return { text: 'ENTRA', color: '#00ff41', class: 'led-green', msg: 'VIGOR CONFIRMADO' };
-            if (v > 5.5) return { text: 'PULA', color: '#ffdf00', class: 'led-yellow', msg: 'MERCADO EUFÓRICO' };
             return { text: 'NÃO ENTRA', color: '#ff3131', class: 'led-red', msg: 'ZONA DE ABSORÇÃO' };
         }
 
         async function fetchPrices() {
             const hb = document.getElementById('heartbeat');
             hb.classList.add('pulse');
-            
             try {
                 const dRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
                 const dData = await dRes.json();
@@ -107,29 +148,49 @@
                 for(let m of moedas) {
                     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
                     const data = await res.json();
-                    
                     if(data.lastPrice) {
                         let valBrl = parseFloat(data.lastPrice) * dolarReal; 
                         lastPrices[m.id] = valBrl;
                         volatilityData[m.id] = parseFloat(data.priceChangePercent);
-                        
-                        const status = getSemaforoStatus(volatilityData[m.id], valBrl, m.alvo);
-                        if (lastStates[m.id] !== status.text && status.text === 'COMPRA SÊNIOR') {
-                            speak(`Bigode, exaustão em ${m.id}. Ponto sênior detectado.`);
-                        }
-                        lastStates[m.id] = status.text;
+                        updateUIValues();
                     }
                 }
-                updateUIValues();
+                atualizarPatrimonio();
             } catch (e) { console.error("ERRO_REFRESH"); }
-            
             setTimeout(() => hb.classList.remove('pulse'), 1000);
+        }
+
+        function atualizarPatrimonio() {
+            const atual = lastPrices['RENDER'];
+            if(!atual) return;
+
+            const saldo = atual * MINHA_QUANTIDADE;
+            const custoTotal = MEU_PRECO_MEDIO * MINHA_QUANTIDADE;
+            const lucroVal = saldo - custoTotal;
+            const lucroPerc = (lucroVal / custoTotal) * 100;
+
+            document.getElementById('pnl-total').innerText = `R$ ${saldo.toFixed(2)}`;
+            document.getElementById('pnl-lucro').innerText = `R$ ${lucroVal.toFixed(2)}`;
+            document.getElementById('pnl-perc').innerText = `${lucroPerc.toFixed(2)}%`;
+            
+            const color = lucroVal >= 0 ? 'var(--green)' : 'var(--red)';
+            document.getElementById('pnl-lucro').style.color = color;
+            document.getElementById('pnl-perc').style.color = color;
+
+            const intel = document.getElementById('pnl-inteligencia');
+            if(lucroVal < 0) {
+                intel.innerHTML = `⚠️ INTELIGÊNCIA: Mercado abaixo do custo. A RENDER precisa subir R$ ${(MEU_PRECO_MEDIO - atual).toFixed(2)} para atingir o ponto de equilíbrio. Mantenha o Vigor.`;
+                intel.style.color = 'var(--yellow)';
+            } else {
+                intel.innerHTML = `✅ INTELIGÊNCIA: Operação em lucro. Alvo principal permanece em R$ 26,26.`;
+                intel.style.color = 'var(--green)';
+            }
         }
 
         function initUI() {
             document.getElementById('main-content').innerHTML = moedas.map(m => `
-                <div class="crypto-section" id="section-${m.id}">
-                    <div class="market-info" id="info-${m.id}">
+                <div class="crypto-section">
+                    <div class="market-info">
                         <div>
                             <span style="color:#666; font-weight:bold; font-size:11px;">${m.id} // ALGO_SÊNIOR</span>
                             <span class="price-big" id="price-${m.id}">R$ ...</span>
@@ -145,36 +206,20 @@
             `).join('');
         }
 
-        function initCharts() {
-            moedas.forEach(m => {
-                new TradingView.widget({
-                    "autosize": true, "symbol": m.pair, "interval": "1",
-                    "theme": "dark", "style": "1", "locale": "br",
-                    "container_id": `chart-${m.id}`, "hide_side_toolbar": true
-                });
-            });
-        }
-
         function updateUIValues() {
             moedas.forEach(m => {
                 const price = lastPrices[m.id];
                 const vol = volatilityData[m.id] || 0;
                 const status = getSemaforoStatus(vol, price, m.alvo);
                 const potencial = price ? (((m.alvo - price) / price) * 100).toFixed(0) : 0;
-
-                const els = {
-                    p: document.getElementById(`price-${m.id}`),
-                    d: document.getElementById(`details-${m.id}`),
-                    s: document.getElementById(`status-${m.id}`),
-                    l: document.getElementById(`led-${m.id}`),
-                    i: document.getElementById(`info-${m.id}`)
-                };
-
-                if(els.p) els.p.innerText = price ? price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) : '...';
-                if(els.d) els.d.innerHTML = `${status.msg} | POTENCIAL: +${potencial}% | VOLAT: ${vol.toFixed(2)}%`;
-                if(els.s) { els.s.innerText = status.text; els.s.style.color = status.color; }
-                if(els.l) els.l.className = `led ${status.class}`;
-                if(els.i) els.i.style.borderLeftColor = status.color;
+                
+                if(document.getElementById(`price-${m.id}`)) {
+                    document.getElementById(`price-${m.id}`).innerText = price ? price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) : '...';
+                    document.getElementById(`details-${m.id}`).innerHTML = `${status.msg} | POTENCIAL: +${potencial}% | VOLAT: ${vol.toFixed(2)}%`;
+                    document.getElementById(`status-${m.id}`).innerText = status.text;
+                    document.getElementById(`status-${m.id}`).style.color = status.color;
+                    document.getElementById(`led-${m.id}`).className = `led ${status.class}`;
+                }
             });
         }
 
@@ -182,12 +227,14 @@
             audioAtivo = true;
             document.getElementById('btn-audio').style.display = 'none';
             initUI();
-            setTimeout(() => {
-                initCharts();
-                fetchPrices();
-                setInterval(fetchPrices, 8000); 
-            }, 1000);
-            speak("Oráculo Sênior Ativado. Botão de Refresh manual disponível na barra superior.");
+            moedas.forEach(m => {
+                new TradingView.widget({
+                    "autosize": true, "symbol": m.pair, "interval": "1",
+                    "theme": "dark", "container_id": `chart-${m.id}`, "hide_side_toolbar": true
+                });
+            });
+            fetchPrices();
+            setInterval(fetchPrices, 10000);
         }
     </script>
 </body>
