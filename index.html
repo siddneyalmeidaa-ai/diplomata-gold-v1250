@@ -8,7 +8,6 @@
         :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; }
         
-        /* NAVEGAÇÃO MANTENDO O PADRÃO */
         .nav-sistema { display: flex; background: #000; border-bottom: 2px solid #222; }
         .tab-link { flex: 1; padding: 15px; border: none; background: none; color: var(--text-gray); cursor: pointer; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         .tab-link.active { color: var(--green); border-bottom: 3px solid var(--green); background: #111; }
@@ -22,7 +21,6 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* CARDS ORIGINAIS */
         .crypto-section { background: var(--card-bg); border-radius: 8px; margin-bottom: 30px; border: 1px solid #222; overflow: hidden; }
         .market-info { padding: 20px; border-left: 8px solid #333; display: flex; justify-content: space-between; align-items: center; background: #151515; }
         .price-big { font-size: 28px; font-weight: bold; color: white; display: block; }
@@ -34,7 +32,6 @@
         .pulse { animation: pulse-animation 1s infinite; }
         @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
-        /* ESTILO DA NOVA ABA (PATRIMÔNIO) */
         .pnl-card { background: var(--card-bg); border: 1px solid #333; border-radius: 8px; padding: 25px; border-left: 8px solid var(--blue); }
         .pnl-row { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
         .pnl-label { color: var(--text-gray); font-size: 11px; text-transform: uppercase; }
@@ -98,21 +95,8 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // CONFIGURAÇÕES FIXAS S.B.
         const MEU_PRECO_MEDIO = 9.59;
         const MINHA_QUANTIDADE = 3.996;
-
-        function mudarTab(evt, nomeTab) {
-            let i, content, links;
-            content = document.getElementsByClassName("tab-content");
-            for (i = 0; i < content.length; i++) content[i].classList.remove("active");
-            links = document.getElementsByClassName("tab-link");
-            for (i = 0; i < links.length; i++) links[i].classList.remove("active");
-            document.getElementById(nomeTab).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
-
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
         let audioAtivo = false;
         let lastStates = {}; 
@@ -126,6 +110,29 @@
             { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLUSDT", alvo: 1200 },
             { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADAUSDT", alvo: 5.50 }
         ];
+
+        // FUNÇÃO DE VOZ DO ORÁCULO
+        function falar(texto) {
+            if (audioAtivo) {
+                window.speechSynthesis.cancel();
+                const mensagem = new SpeechSynthesisUtterance(texto);
+                mensagem.lang = 'pt-BR';
+                mensagem.rate = 1.2; 
+                window.speechSynthesis.speak(mensagem);
+            }
+        }
+
+        function mudarTab(evt, nomeTab) {
+            let i, content, links;
+            content = document.getElementsByClassName("tab-content");
+            for (i = 0; i < content.length; i++) content[i].classList.remove("active");
+            links = document.getElementsByClassName("tab-link");
+            for (i = 0; i < links.length; i++) links[i].classList.remove("active");
+            document.getElementById(nomeTab).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
         function getSemaforoStatus(vol, preco, alvo) {
             const v = parseFloat(vol);
@@ -152,9 +159,21 @@
                         let valBrl = parseFloat(data.lastPrice) * dolarReal; 
                         lastPrices[m.id] = valBrl;
                         volatilityData[m.id] = parseFloat(data.priceChangePercent);
-                        updateUIValues();
+                        
+                        const status = getSemaforoStatus(volatilityData[m.id], valBrl, m.alvo);
+                        
+                        // LÓGICA DE VOZ: SÓ FALA SE O STATUS MUDAR
+                        if (lastStates[m.id] !== status.text) {
+                            if (status.text === 'COMPRA SÊNIOR') {
+                                falar(`Bigode, atenção em ${m.id}. Exaustão vendedora detectada.`);
+                            } else if (status.text === 'ENTRA') {
+                                falar(`Vigor confirmado em ${m.id}. Ponto de entrada liberado.`);
+                            }
+                        }
+                        lastStates[m.id] = status.text;
                     }
                 }
+                updateUIValues();
                 atualizarPatrimonio();
             } catch (e) { console.error("ERRO_REFRESH"); }
             setTimeout(() => hb.classList.remove('pulse'), 1000);
@@ -163,7 +182,6 @@
         function atualizarPatrimonio() {
             const atual = lastPrices['RENDER'];
             if(!atual) return;
-
             const saldo = atual * MINHA_QUANTIDADE;
             const custoTotal = MEU_PRECO_MEDIO * MINHA_QUANTIDADE;
             const lucroVal = saldo - custoTotal;
@@ -179,10 +197,10 @@
 
             const intel = document.getElementById('pnl-inteligencia');
             if(lucroVal < 0) {
-                intel.innerHTML = `⚠️ INTELIGÊNCIA: Mercado abaixo do custo. A RENDER precisa subir R$ ${(MEU_PRECO_MEDIO - atual).toFixed(2)} para atingir o ponto de equilíbrio. Mantenha o Vigor.`;
+                intel.innerHTML = `⚠️ INTELIGÊNCIA: Mercado abaixo do custo. A RENDER precisa subir R$ ${(MEU_PRECO_MEDIO - atual).toFixed(2)} para o zero a zero.`;
                 intel.style.color = 'var(--yellow)';
             } else {
-                intel.innerHTML = `✅ INTELIGÊNCIA: Operação em lucro. Alvo principal permanece em R$ 26,26.`;
+                intel.innerHTML = `✅ INTELIGÊNCIA: Operação lucrativa. Mantenha o alvo em R$ 26,26.`;
                 intel.style.color = 'var(--green)';
             }
         }
@@ -227,6 +245,10 @@
             audioAtivo = true;
             document.getElementById('btn-audio').style.display = 'none';
             initUI();
+            
+            // PRIMEIRA FALA PARA DESTRAVAR O NAVEGADOR
+            falar("Oráculo sênior ativado. Monitorando vigor e patrimônio em tempo real.");
+
             moedas.forEach(m => {
                 new TradingView.widget({
                     "autosize": true, "symbol": m.pair, "interval": "1",
