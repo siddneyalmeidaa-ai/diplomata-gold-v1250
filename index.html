@@ -3,20 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // SOBERANIA_TOTAL</title>
+    <title>SENTINEL_V11.5 // SOBERANIA_SÊNIOR</title>
     <style>
         :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; }
-        .top-bar { background: #000; padding: 15px; font-size: 11px; display: flex; justify-content: space-between; color: var(--text-gray); border-bottom: 2px solid #222; position: sticky; top: 0; z-index: 100; }
+        
+        .top-bar { background: #000; padding: 15px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: var(--text-gray); border-bottom: 2px solid #222; position: sticky; top: 0; z-index: 100; }
         .btn-ativa { background: var(--green); color: black; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase; }
-        .container { padding: 10px; min-height: 100vh; }
+        
+        .btn-refresh { background: #222; color: var(--green); border: 1px solid var(--green); padding: 5px 15px; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; transition: 0.3s; }
+        .btn-refresh:hover { background: var(--green); color: black; }
+        
+        .container { padding: 10px; }
         .crypto-section { background: var(--card-bg); border-radius: 8px; margin-bottom: 30px; border: 1px solid #222; overflow: hidden; }
         .market-info { padding: 20px; border-left: 8px solid #333; display: flex; justify-content: space-between; align-items: center; background: #151515; }
+        
         .price-big { font-size: 28px; font-weight: bold; color: white; display: block; }
         .details { font-size: 10px; color: var(--green); line-height: 1.6; text-transform: uppercase; }
         .chart-container { height: 450px; width: 100%; background: #000; border-top: 1px solid #222; }
+        
         .status-badge { font-weight: bold; padding: 5px 10px; border-radius: 3px; font-size: 12px; }
-        .led { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-left: 10px; }
+        .led { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-left: 10px; transition: 0.5s; }
+        
+        .pulse { animation: pulse-animation 1s infinite; }
+        @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
         .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
@@ -25,23 +36,26 @@
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR ORÁCULO E DESTRAVAR TERMINAL</button>
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR ORÁCULO SÊNIOR & VIGOR DE MERCADO</button>
 
     <div class="top-bar">
-        <span>SENTINEL_V11.5 // SOBERANIA // IPI_V3_BLINDADO</span>
-        <span id="clock">00:00:00</span>
+        <div>
+            <span>SENTINEL_V11.5 // IPI_V3_SENIOR</span>
+            <span id="heartbeat" style="margin-left: 10px; color: var(--green);">●</span>
+        </div>
+        <div>
+            <button class="btn-refresh" onclick="fetchPrices()">REFRESH_DATA ⟳</button>
+            <span id="clock" style="margin-left: 15px;">00:00:00</span>
+        </div>
     </div>
 
     <div class="container" id="main-content">
-        <div style="padding: 20px; text-align: center; color: #444;">AGUARDANDO ATIVAÇÃO DO SISTEMA...</div>
+        <div style="padding: 40px; text-align: center; color: #444; font-size: 12px;">AGUARDANDO ATIVAÇÃO DO PROTOCOLO SÊNIOR...</div>
     </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        setInterval(() => { 
-            const clock = document.getElementById('clock');
-            if(clock) clock.innerText = new Date().toLocaleTimeString('pt-BR'); 
-        }, 1000);
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
         let audioAtivo = false;
         let lastStates = {}; 
@@ -63,22 +77,28 @@
             if (audioAtivo) {
                 window.speechSynthesis.cancel();
                 const ut = new SpeechSynthesisUtterance(text);
-                ut.lang = 'pt-BR';
-                ut.rate = 1.2; 
+                ut.lang = 'pt-BR'; ut.rate = 1.2;
                 window.speechSynthesis.speak(ut);
             }
         }
 
-        function getSemaforoStatus(vol) {
+        // --- NÚCLEO SÊNIOR: ESTRATÉGIA DE ALTA PROBABILIDADE ---
+        function getSemaforoStatus(vol, preco, alvo) {
             const v = parseFloat(vol);
             const absV = Math.abs(v);
-            if (absV < 0.65) return { text: 'ACUMULANDO', color: '#00e5ff', class: 'led-blue', msg: 'EXAUSTÃO VENDEDORA' };
-            if (v >= 1.5 && v <= 5.5) return { text: 'ENTRA', color: '#00ff41', class: 'led-green', msg: 'VIGOR CONFIRMADO' };
-            if (v > 5.5 || v < -7) return { text: 'PULA', color: '#ffdf00', class: 'led-yellow', msg: 'ALTA TENSÃO' };
+            const distAlvo = ((alvo - preco) / preco) * 100;
+
+            if (distAlvo < 5) return { text: 'PULA', color: '#666', class: 'led-yellow', msg: 'LUCRO BAIXO' };
+            if (v < -2 && absV < 0.75) return { text: 'COMPRA SÊNIOR', color: '#00e5ff', class: 'led-blue', msg: 'EXAUSTÃO VENDEDORA' };
+            if (v >= 1.8 && v <= 5.0) return { text: 'ENTRA', color: '#00ff41', class: 'led-green', msg: 'VIGOR CONFIRMADO' };
+            if (v > 5.5) return { text: 'PULA', color: '#ffdf00', class: 'led-yellow', msg: 'MERCADO EUFÓRICO' };
             return { text: 'NÃO ENTRA', color: '#ff3131', class: 'led-red', msg: 'ZONA DE ABSORÇÃO' };
         }
 
         async function fetchPrices() {
+            const hb = document.getElementById('heartbeat');
+            hb.classList.add('pulse');
+            
             try {
                 const dRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
                 const dData = await dRes.json();
@@ -93,26 +113,27 @@
                         lastPrices[m.id] = valBrl;
                         volatilityData[m.id] = parseFloat(data.priceChangePercent);
                         
-                        const status = getSemaforoStatus(volatilityData[m.id]);
-                        if (lastStates[m.id] === 'NÃO ENTRA' && status.text === 'ACUMULANDO') {
-                            speak(`${m.id} em exaustão.`);
+                        const status = getSemaforoStatus(volatilityData[m.id], valBrl, m.alvo);
+                        if (lastStates[m.id] !== status.text && status.text === 'COMPRA SÊNIOR') {
+                            speak(`Bigode, exaustão em ${m.id}. Ponto sênior detectado.`);
                         }
                         lastStates[m.id] = status.text;
                     }
                 }
                 updateUIValues();
-            } catch (e) { console.error("ERRO_SYNC"); }
+            } catch (e) { console.error("ERRO_REFRESH"); }
+            
+            setTimeout(() => hb.classList.remove('pulse'), 1000);
         }
 
         function initUI() {
-            const mainContent = document.getElementById('main-content');
-            mainContent.innerHTML = moedas.map(m => `
+            document.getElementById('main-content').innerHTML = moedas.map(m => `
                 <div class="crypto-section" id="section-${m.id}">
                     <div class="market-info" id="info-${m.id}">
                         <div>
-                            <span style="color:#666; font-weight:bold; font-size:11px;">${m.id} // VIGOR SCAN</span>
+                            <span style="color:#666; font-weight:bold; font-size:11px;">${m.id} // ALGO_SÊNIOR</span>
                             <span class="price-big" id="price-${m.id}">R$ ...</span>
-                            <div class="details" id="details-${m.id}">SINCRONIZANDO...</div>
+                            <div class="details" id="details-${m.id}">CALCULANDO...</div>
                         </div>
                         <div style="text-align:right">
                             <span class="status-badge" id="status-${m.id}">---</span>
@@ -126,22 +147,11 @@
 
         function initCharts() {
             moedas.forEach(m => {
-                const el = document.getElementById(`chart-${m.id}`);
-                if (el) {
-                    new TradingView.widget({
-                        "autosize": true,
-                        "symbol": m.pair,
-                        "interval": "1",
-                        "timezone": "America/Sao_Paulo",
-                        "theme": "dark",
-                        "style": "1",
-                        "locale": "br",
-                        "container_id": `chart-${m.id}`,
-                        "hide_side_toolbar": true,
-                        "allow_symbol_change": false,
-                        "save_image": false
-                    });
-                }
+                new TradingView.widget({
+                    "autosize": true, "symbol": m.pair, "interval": "1",
+                    "theme": "dark", "style": "1", "locale": "br",
+                    "container_id": `chart-${m.id}`, "hide_side_toolbar": true
+                });
             });
         }
 
@@ -149,41 +159,36 @@
             moedas.forEach(m => {
                 const price = lastPrices[m.id];
                 const vol = volatilityData[m.id] || 0;
-                const status = getSemaforoStatus(vol);
+                const status = getSemaforoStatus(vol, price, m.alvo);
                 const potencial = price ? (((m.alvo - price) / price) * 100).toFixed(0) : 0;
 
-                const priceEl = document.getElementById(`price-${m.id}`);
-                const detailsEl = document.getElementById(`details-${m.id}`);
-                const statusEl = document.getElementById(`status-${m.id}`);
-                const ledEl = document.getElementById(`led-${m.id}`);
-                const infoEl = document.getElementById(`info-${m.id}`);
+                const els = {
+                    p: document.getElementById(`price-${m.id}`),
+                    d: document.getElementById(`details-${m.id}`),
+                    s: document.getElementById(`status-${m.id}`),
+                    l: document.getElementById(`led-${m.id}`),
+                    i: document.getElementById(`info-${m.id}`)
+                };
 
-                if(priceEl) priceEl.innerText = price ? price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) : '...';
-                if(detailsEl) detailsEl.innerHTML = `STATUS: ${status.msg} | POTENCIAL: +${potencial}% | VOLAT: ${vol.toFixed(2)}% | USD: R$ ${dolarReal.toFixed(2)}`;
-                if(statusEl) {
-                    statusEl.innerText = status.text;
-                    statusEl.style.color = status.color;
-                }
-                if(ledEl) ledEl.className = `led ${status.class}`;
-                if(infoEl) infoEl.style.borderLeftColor = status.color;
+                if(els.p) els.p.innerText = price ? price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) : '...';
+                if(els.d) els.d.innerHTML = `${status.msg} | POTENCIAL: +${potencial}% | VOLAT: ${vol.toFixed(2)}%`;
+                if(els.s) { els.s.innerText = status.text; els.s.style.color = status.color; }
+                if(els.l) els.l.className = `led ${status.class}`;
+                if(els.i) els.i.style.borderLeftColor = status.color;
             });
         }
 
         function ativarAudio() {
             audioAtivo = true;
             document.getElementById('btn-audio').style.display = 'none';
-            speak("Iniciando reconstrução de interface e gráficos, Bigode.");
-            
-            // Ordem crítica de execução para não travar:
-            initUI(); // 1. Cria o esqueleto HTML
+            initUI();
             setTimeout(() => {
-                initCharts(); // 2. Injeta os gráficos após 1 seg
-                fetchPrices(); // 3. Puxa os preços
-                setInterval(fetchPrices, 5000); // 4. Inicia o loop
+                initCharts();
+                fetchPrices();
+                setInterval(fetchPrices, 8000); 
             }, 1000);
+            speak("Oráculo Sênior Ativado. Botão de Refresh manual disponível na barra superior.");
         }
-
-        // Sistema inicia "limpo" aguardando o clique
     </script>
 </body>
 </html>
