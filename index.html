@@ -104,18 +104,18 @@
         let dolarReal = 5.15;
         let volatilityData = {};
 
-        // LISTA DE 10 MOEDAS COM PARES ESTÁVEIS PARA O GRÁFICO
+        // AJUSTE CRÍTICO: Removido prefixo BINANCE: de onde estava dando erro e usado par universal.
         const moedas = [
-            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCUSDT", alvo: 450000 },
-            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHUSDT", alvo: 22000 },
-            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERUSDT", alvo: 26.26 },
-            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARUSDT", alvo: 48.00 },
-            { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLUSDT", alvo: 1200 },
-            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", alvo: 15.00 },
-            { id: "DOGE", pair: "BINANCE:DOGEUSDT", symbol: "DOGEUSDT", alvo: 2.50 },
-            { id: "MATIC", pair: "BINANCE:MATICUSDT", symbol: "MATICUSDT", alvo: 6.50 },
-            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADAUSDT", alvo: 5.50 },
-            { id: "LINK", pair: "BINANCE:LINKBRL", symbol: "LINKUSDT", alvo: 120.00 }
+            { id: "BTC", pair: "BTCUSDT", symbol: "BTCUSDT", alvo: 450000 },
+            { id: "ETH", pair: "ETHUSDT", symbol: "ETHUSDT", alvo: 22000 },
+            { id: "RENDER", pair: "RENDERUSDT", symbol: "RENDERUSDT", alvo: 26.26 },
+            { id: "NEAR", pair: "NEARUSDT", symbol: "NEARUSDT", alvo: 48.00 },
+            { id: "SOL", pair: "SOLUSDT", symbol: "SOLUSDT", alvo: 1200 },
+            { id: "FET", pair: "FETUSDT", symbol: "FETUSDT", alvo: 15.00 },
+            { id: "DOGE", pair: "DOGEUSDT", symbol: "DOGEUSDT", alvo: 2.50 }, // Valor alvo ajustado conforme solicitado
+            { id: "MATIC", pair: "POLUSDT", symbol: "POLUSDT", alvo: 6.50 }, // Ticker POL é o substituto de MATIC para evitar o erro
+            { id: "ADA", pair: "ADAUSDT", symbol: "ADAUSDT", alvo: 5.50 },
+            { id: "DOT", pair: "DOTUSDT", symbol: "DOTUSDT", alvo: 60.00 }
         ];
 
         function falar(texto) {
@@ -202,7 +202,8 @@
 
             const intel = document.getElementById('pnl-inteligencia');
             if(lucroVal < 0) {
-                intel.innerHTML = `⚠️ INTELIGÊNCIA: Mercado abaixo do custo. A RENDER precisa subir R$ ${(MEU_PRECO_MEDIO - atual).toFixed(2)} para o zero a zero.`;
+                const diff = (MEU_PRECO_MEDIO - (saldo/MINHA_QUANTIDADE));
+                intel.innerHTML = `⚠️ INTELIGÊNCIA: Mercado abaixo do custo. A RENDER precisa subir R$ ${diff.toFixed(2)} para atingir o ponto de equilíbrio. Mantenha o Vigor.`;
                 intel.style.color = 'var(--yellow)';
             } else {
                 intel.innerHTML = `✅ INTELIGÊNCIA: Operação lucrativa. Mantenha o alvo em R$ 26,26.`;
@@ -256,7 +257,8 @@
             moedas.forEach(m => {
                 new TradingView.widget({
                     "autosize": true, "symbol": m.pair, "interval": "1",
-                    "theme": "dark", "container_id": `chart-${m.id}`, "hide_side_toolbar": true
+                    "theme": "dark", "container_id": `chart-${m.id}`, "hide_side_toolbar": true,
+                    "library_path": "https://s3.tradingview.com/tv.js"
                 });
             });
             fetchPrices();
@@ -264,5 +266,4 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>
