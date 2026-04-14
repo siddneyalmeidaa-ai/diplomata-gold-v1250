@@ -104,18 +104,18 @@
         let dolarReal = 5.15;
         let volatilityData = {};
 
-        // ARRAY COMPLETO COM OS 10 ATIVOS SOLICITADOS
+        // LISTA DE 10 MOEDAS COM PARES ESTÁVEIS PARA O GRÁFICO
         const moedas = [
             { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCUSDT", alvo: 450000 },
-            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARUSDT", alvo: 48.00 },
-            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERUSDT", alvo: 26.26 },
             { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHUSDT", alvo: 22000 },
+            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERUSDT", alvo: 26.26 },
+            { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARUSDT", alvo: 48.00 },
             { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLUSDT", alvo: 1200 },
             { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", alvo: 15.00 },
+            { id: "DOGE", pair: "BINANCE:DOGEUSDT", symbol: "DOGEUSDT", alvo: 2.50 },
+            { id: "MATIC", pair: "BINANCE:MATICUSDT", symbol: "MATICUSDT", alvo: 6.50 },
             { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADAUSDT", alvo: 5.50 },
-            { id: "DOT", pair: "BINANCE:DOTBRL", symbol: "DOTUSDT", alvo: 60.00 },
-            { id: "LINK", pair: "BINANCE:LINKBRL", symbol: "LINKUSDT", alvo: 120.00 },
-            { id: "MATIC", pair: "BINANCE:MATICBRL", symbol: "MATICUSDT", alvo: 6.50 }
+            { id: "LINK", pair: "BINANCE:LINKBRL", symbol: "LINKUSDT", alvo: 120.00 }
         ];
 
         function falar(texto) {
