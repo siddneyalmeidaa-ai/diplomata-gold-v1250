@@ -104,14 +104,20 @@
         let dolarReal = 5.15;
         let volatilityData = {};
 
+        // ARRAY COMPLETO COM OS 10 ATIVOS SOLICITADOS
         const moedas = [
-            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERUSDT", alvo: 26.26 },
+            { id: "BTC", pair: "BINANCE:BTCBRL", symbol: "BTCUSDT", alvo: 450000 },
             { id: "NEAR", pair: "BINANCE:NEARBRL", symbol: "NEARUSDT", alvo: 48.00 },
+            { id: "RENDER", pair: "BINANCE:RENDERBRL", symbol: "RENDERUSDT", alvo: 26.26 },
+            { id: "ETH", pair: "BINANCE:ETHBRL", symbol: "ETHUSDT", alvo: 22000 },
             { id: "SOL", pair: "BINANCE:SOLBRL", symbol: "SOLUSDT", alvo: 1200 },
-            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADAUSDT", alvo: 5.50 }
+            { id: "FET", pair: "BINANCE:FETUSDT", symbol: "FETUSDT", alvo: 15.00 },
+            { id: "ADA", pair: "BINANCE:ADABRL", symbol: "ADAUSDT", alvo: 5.50 },
+            { id: "DOT", pair: "BINANCE:DOTBRL", symbol: "DOTUSDT", alvo: 60.00 },
+            { id: "LINK", pair: "BINANCE:LINKBRL", symbol: "LINKUSDT", alvo: 120.00 },
+            { id: "MATIC", pair: "BINANCE:MATICBRL", symbol: "MATICUSDT", alvo: 6.50 }
         ];
 
-        // FUNÇÃO DE VOZ DO ORÁCULO
         function falar(texto) {
             if (audioAtivo) {
                 window.speechSynthesis.cancel();
@@ -162,7 +168,6 @@
                         
                         const status = getSemaforoStatus(volatilityData[m.id], valBrl, m.alvo);
                         
-                        // LÓGICA DE VOZ: SÓ FALA SE O STATUS MUDAR
                         if (lastStates[m.id] !== status.text) {
                             if (status.text === 'COMPRA SÊNIOR') {
                                 falar(`Bigode, atenção em ${m.id}. Exaustão vendedora detectada.`);
@@ -246,8 +251,7 @@
             document.getElementById('btn-audio').style.display = 'none';
             initUI();
             
-            // PRIMEIRA FALA PARA DESTRAVAR O NAVEGADOR
-            falar("Oráculo sênior ativado. Monitorando vigor e patrimônio em tempo real.");
+            falar("Oráculo sênior ativado. Monitorando as dez moedas do portfólio.");
 
             moedas.forEach(m => {
                 new TradingView.widget({
