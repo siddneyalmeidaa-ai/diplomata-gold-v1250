@@ -41,6 +41,8 @@
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
         .led-blue { background: var(--blue); box-shadow: 0 0 15px var(--blue); }
+        
+        .delta-tag { font-size: 9px; background: #222; padding: 2px 6px; border-radius: 4px; margin-left: 8px; color: var(--blue); border: 1px solid #444; }
     </style>
 </head>
 <body>
@@ -97,7 +99,7 @@
     <script>
         const MEU_PRECO_MEDIO = 9.59;
         const MINHA_QUANTIDADE = 3.996;
-        const MARGEM_SEGURANCA = 0.50; // REGRA DE OURO: -50% da projeção
+        const MARGEM_SEGURANCA = 0.50; 
 
         let audioAtivo = false;
         let lastStates = {}; 
@@ -140,28 +142,28 @@
 
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
-        // INJEÇÃO DA LÓGICA DE LUZINHAS SÊNIOR
-        function getSemaforoStatus(vol, preco, alvo) {
+        function getSemaforoStatus(vol, preco, alvo, deltaVigor = 0) {
             const v = parseFloat(vol);
             const absV = Math.abs(v);
             const distAlvo = ((alvo - preco) / preco) * 100;
             
-            // Luz Amarela: Você está posicionado, mercado em hold
+            // LÓGICA DELTA DE VIGOR: Prioridade absoluta
+            if (deltaVigor > 2.0) {
+                return { text: 'VIGOR MÁXIMO', color: 'var(--green)', class: 'led-green pulse', msg: 'ANOMALIA POSITIVA DETECTADA' };
+            }
+
             if (distAlvo > 10 && v < 0 && v > -1.5) {
                 return { text: 'AGUARDAR', color: 'var(--yellow)', class: 'led-yellow', msg: 'HOLD ESTRATÉGICO' };
             }
 
-            // Luz Azul: Exaustão detectada (Compra Sênior)
             if (v < -2 && absV < 0.75) {
                 return { text: 'COMPRA SÊNIOR', color: 'var(--blue)', class: 'led-blue pulse', msg: 'EXAUSTÃO VENDEDORA' };
             }
 
-            // Luz Verde: Vigor Confirmado (Entra)
             if (v >= 1.8 && v <= 5.0) {
                 return { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'VIGOR CONFIRMADO' };
             }
 
-            // Luz Vermelha: Bloqueio ou Zona de Absorção
             return { text: 'NÃO ENTRA', color: 'var(--red)', class: 'led-red', msg: 'ZONA DE ABSORÇÃO' };
         }
 
@@ -173,6 +175,11 @@
                 const dData = await dRes.json();
                 dolarReal = parseFloat(dData.price);
 
+                // Primeiro, pegamos o BTC para servir de base para o Delta
+                const btcRes = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT`);
+                const btcData = await btcRes.json();
+                const btcVol = parseFloat(btcData.priceChangePercent);
+
                 for(let m of moedas) {
                     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
                     const data = await res.json();
@@ -181,16 +188,21 @@
                         lastPrices[m.id] = valBrl;
                         volatilityData[m.id] = parseFloat(data.priceChangePercent);
                         
-                        const status = getSemaforoStatus(volatilityData[m.id], valBrl, m.alvo);
+                        // Cálculo do Delta de Vigor comparado ao BTC
+                        const delta = m.id === 'BTC' ? 0 : (volatilityData[m.id] - btcVol);
+                        const status = getSemaforoStatus(volatilityData[m.id], valBrl, m.alvo, delta);
                         
                         if (lastStates[m.id] !== status.text) {
-                            if (status.text === 'COMPRA SÊNIOR') {
-                                falar(`Bigode, atenção em ${m.id}. Exaustão vendedora detectada.`);
-                            } else if (status.text === 'ENTRA') {
-                                falar(`Vigor confirmado em ${m.id}. Ponto de entrada liberado.`);
+                            if (status.text === 'VIGOR MÁXIMO') {
+                                falar(`Bigode, vigor máximo detectado em ${m.id}. Rompendo a maré do mercado.`);
+                            } else if (status.text === 'AGUARDAR') {
+                                falar(`${m.id} em neutralidade. Oráculo sugere aguardar.`);
                             }
                         }
                         lastStates[m.id] = status.text;
+                        
+                        // Injeção do Delta no HTML
+                        m.currentDelta = delta;
                     }
                 }
                 updateUIValues();
@@ -231,7 +243,7 @@
                 <div class="crypto-section">
                     <div class="market-info">
                         <div>
-                            <span style="color:#666; font-weight:bold; font-size:11px;">${m.id} // ALGO_SÊNIOR</span>
+                            <span style="color:#666; font-weight:bold; font-size:11px;">${m.id} // ALGO_SÊNIOR <span id="delta-tag-${m.id}" class="delta-tag">Δ 0%</span></span>
                             <span class="price-big" id="price-${m.id}">R$ ...</span>
                             <div class="details" id="details-${m.id}">CALCULANDO...</div>
                         </div>
@@ -249,9 +261,9 @@
             moedas.forEach(m => {
                 const price = lastPrices[m.id];
                 const vol = volatilityData[m.id] || 0;
-                const status = getSemaforoStatus(vol, price, m.alvo);
+                const delta = m.currentDelta || 0;
+                const status = getSemaforoStatus(vol, price, m.alvo, delta);
                 
-                // APLICAÇÃO DA REGRA DE OURO: -50% NO CÁLCULO DO POTENCIAL
                 const potencialBruto = price ? (((m.alvo - price) / price) * 100) : 0;
                 const potencialProtegido = (potencialBruto * MARGEM_SEGURANCA).toFixed(0);
                 
@@ -261,6 +273,8 @@
                     document.getElementById(`status-${m.id}`).innerText = status.text;
                     document.getElementById(`status-${m.id}`).style.color = status.color;
                     document.getElementById(`led-${m.id}`).className = `led ${status.class}`;
+                    document.getElementById(`delta-tag-${m.id}`).innerText = `Δ ${delta.toFixed(2)}%`;
+                    document.getElementById(`delta-tag-${m.id}`).style.borderColor = delta > 0 ? 'var(--green)' : 'var(--red)';
                 }
             });
         }
@@ -270,7 +284,7 @@
             document.getElementById('btn-audio').style.display = 'none';
             initUI();
             
-            falar("Oráculo sênior ativado. Blindagem quântica e LEDs operantes.");
+            falar("Oráculo sênior ativado. Monitoramento Delta e Blindagem em vigor.");
 
             moedas.forEach(m => {
                 new TradingView.widget({
