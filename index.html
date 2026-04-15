@@ -97,6 +97,7 @@
     <script>
         const MEU_PRECO_MEDIO = 9.59;
         const MINHA_QUANTIDADE = 3.996;
+        const MARGEM_SEGURANCA = 0.50; // REGRA DE OURO: -50% da projeção
 
         let audioAtivo = false;
         let lastStates = {}; 
@@ -104,7 +105,6 @@
         let dolarReal = 5.15;
         let volatilityData = {};
 
-        // AJUSTE CRÍTICO: Removido prefixo BINANCE: de onde estava dando erro e usado par universal.
         const moedas = [
             { id: "BTC", pair: "BTCUSDT", symbol: "BTCUSDT", alvo: 450000 },
             { id: "ETH", pair: "ETHUSDT", symbol: "ETHUSDT", alvo: 22000 },
@@ -112,8 +112,8 @@
             { id: "NEAR", pair: "NEARUSDT", symbol: "NEARUSDT", alvo: 48.00 },
             { id: "SOL", pair: "SOLUSDT", symbol: "SOLUSDT", alvo: 1200 },
             { id: "FET", pair: "FETUSDT", symbol: "FETUSDT", alvo: 15.00 },
-            { id: "DOGE", pair: "DOGEUSDT", symbol: "DOGEUSDT", alvo: 2.50 }, // Valor alvo ajustado conforme solicitado
-            { id: "MATIC", pair: "POLUSDT", symbol: "POLUSDT", alvo: 6.50 }, // Ticker POL é o substituto de MATIC para evitar o erro
+            { id: "DOGE", pair: "DOGEUSDT", symbol: "DOGEUSDT", alvo: 2.50 }, 
+            { id: "MATIC", pair: "POLUSDT", symbol: "POLUSDT", alvo: 6.50 },
             { id: "ADA", pair: "ADAUSDT", symbol: "ADAUSDT", alvo: 5.50 },
             { id: "DOT", pair: "DOTUSDT", symbol: "DOTUSDT", alvo: 60.00 }
         ];
@@ -140,14 +140,29 @@
 
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
+        // INJEÇÃO DA LÓGICA DE LUZINHAS SÊNIOR
         function getSemaforoStatus(vol, preco, alvo) {
             const v = parseFloat(vol);
             const absV = Math.abs(v);
             const distAlvo = ((alvo - preco) / preco) * 100;
-            if (distAlvo < 5) return { text: 'PULA', color: '#666', class: 'led-yellow', msg: 'LUCRO BAIXO' };
-            if (v < -2 && absV < 0.75) return { text: 'COMPRA SÊNIOR', color: '#00e5ff', class: 'led-blue', msg: 'EXAUSTÃO VENDEDORA' };
-            if (v >= 1.8 && v <= 5.0) return { text: 'ENTRA', color: '#00ff41', class: 'led-green', msg: 'VIGOR CONFIRMADO' };
-            return { text: 'NÃO ENTRA', color: '#ff3131', class: 'led-red', msg: 'ZONA DE ABSORÇÃO' };
+            
+            // Luz Amarela: Você está posicionado, mercado em hold
+            if (distAlvo > 10 && v < 0 && v > -1.5) {
+                return { text: 'AGUARDAR', color: 'var(--yellow)', class: 'led-yellow', msg: 'HOLD ESTRATÉGICO' };
+            }
+
+            // Luz Azul: Exaustão detectada (Compra Sênior)
+            if (v < -2 && absV < 0.75) {
+                return { text: 'COMPRA SÊNIOR', color: 'var(--blue)', class: 'led-blue pulse', msg: 'EXAUSTÃO VENDEDORA' };
+            }
+
+            // Luz Verde: Vigor Confirmado (Entra)
+            if (v >= 1.8 && v <= 5.0) {
+                return { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'VIGOR CONFIRMADO' };
+            }
+
+            // Luz Vermelha: Bloqueio ou Zona de Absorção
+            return { text: 'NÃO ENTRA', color: 'var(--red)', class: 'led-red', msg: 'ZONA DE ABSORÇÃO' };
         }
 
         async function fetchPrices() {
@@ -235,11 +250,14 @@
                 const price = lastPrices[m.id];
                 const vol = volatilityData[m.id] || 0;
                 const status = getSemaforoStatus(vol, price, m.alvo);
-                const potencial = price ? (((m.alvo - price) / price) * 100).toFixed(0) : 0;
+                
+                // APLICAÇÃO DA REGRA DE OURO: -50% NO CÁLCULO DO POTENCIAL
+                const potencialBruto = price ? (((m.alvo - price) / price) * 100) : 0;
+                const potencialProtegido = (potencialBruto * MARGEM_SEGURANCA).toFixed(0);
                 
                 if(document.getElementById(`price-${m.id}`)) {
                     document.getElementById(`price-${m.id}`).innerText = price ? price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) : '...';
-                    document.getElementById(`details-${m.id}`).innerHTML = `${status.msg} | POTENCIAL: +${potencial}% | VOLAT: ${vol.toFixed(2)}%`;
+                    document.getElementById(`details-${m.id}`).innerHTML = `${status.msg} | POTENCIAL_PROTEGIDO: +${potencialProtegido}% | VOLAT: ${vol.toFixed(2)}%`;
                     document.getElementById(`status-${m.id}`).innerText = status.text;
                     document.getElementById(`status-${m.id}`).style.color = status.color;
                     document.getElementById(`led-${m.id}`).className = `led ${status.class}`;
@@ -252,7 +270,7 @@
             document.getElementById('btn-audio').style.display = 'none';
             initUI();
             
-            falar("Oráculo sênior ativado. Monitorando as dez moedas do portfólio.");
+            falar("Oráculo sênior ativado. Blindagem quântica e LEDs operantes.");
 
             moedas.forEach(m => {
                 new TradingView.widget({
