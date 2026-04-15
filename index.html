@@ -32,6 +32,11 @@
         .pulse { animation: pulse-animation 1s infinite; }
         @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
+        /* NOVAS CAMADAS: BARRA DE VOLUME SÊNIOR */
+        .vol-container { width: 100%; background: #222; height: 4px; border-radius: 2px; margin-top: 8px; overflow: hidden; border: 1px solid #333; }
+        .vol-bar { height: 100%; background: var(--blue); width: 0%; transition: width 0.8s ease; }
+        .vol-label { font-size: 8px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; display: block; letter-spacing: 1px; }
+
         .pnl-card { background: var(--card-bg); border: 1px solid #333; border-radius: 8px; padding: 25px; border-left: 8px solid var(--blue); }
         .pnl-row { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
         .pnl-label { color: var(--text-gray); font-size: 11px; text-transform: uppercase; }
@@ -106,6 +111,7 @@
         let lastPrices = {};
         let dolarReal = 5.15;
         let volatilityData = {};
+        let volumeData = {}; // CAMADA DE VOLUME
 
         const moedas = [
             { id: "BTC", pair: "BTCUSDT", symbol: "BTCUSDT", alvo: 450000 },
@@ -147,7 +153,6 @@
             const absV = Math.abs(v);
             const distAlvo = ((alvo - preco) / preco) * 100;
             
-            // LÓGICA DELTA DE VIGOR: Prioridade absoluta
             if (deltaVigor > 2.0) {
                 return { text: 'VIGOR MÁXIMO', color: 'var(--green)', class: 'led-green pulse', msg: 'ANOMALIA POSITIVA DETECTADA' };
             }
@@ -175,7 +180,6 @@
                 const dData = await dRes.json();
                 dolarReal = parseFloat(dData.price);
 
-                // Primeiro, pegamos o BTC para servir de base para o Delta
                 const btcRes = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT`);
                 const btcData = await btcRes.json();
                 const btcVol = parseFloat(btcData.priceChangePercent);
@@ -187,8 +191,8 @@
                         let valBrl = parseFloat(data.lastPrice) * dolarReal; 
                         lastPrices[m.id] = valBrl;
                         volatilityData[m.id] = parseFloat(data.priceChangePercent);
+                        volumeData[m.id] = parseFloat(data.quoteVolume); // US$ Volume
                         
-                        // Cálculo do Delta de Vigor comparado ao BTC
                         const delta = m.id === 'BTC' ? 0 : (volatilityData[m.id] - btcVol);
                         const status = getSemaforoStatus(volatilityData[m.id], valBrl, m.alvo, delta);
                         
@@ -200,8 +204,6 @@
                             }
                         }
                         lastStates[m.id] = status.text;
-                        
-                        // Injeção do Delta no HTML
                         m.currentDelta = delta;
                     }
                 }
@@ -246,6 +248,8 @@
                             <span style="color:#666; font-weight:bold; font-size:11px;">${m.id} // ALGO_SÊNIOR <span id="delta-tag-${m.id}" class="delta-tag">Δ 0%</span></span>
                             <span class="price-big" id="price-${m.id}">R$ ...</span>
                             <div class="details" id="details-${m.id}">CALCULANDO...</div>
+                            <div class="vol-container"><div class="vol-bar" id="vol-bar-${m.id}"></div></div>
+                            <span class="vol-label" id="vol-label-${m.id}">VOLUME: US$ 0M</span>
                         </div>
                         <div style="text-align:right">
                             <span class="status-badge" id="status-${m.id}">---</span>
@@ -262,11 +266,17 @@
                 const price = lastPrices[m.id];
                 const vol = volatilityData[m.id] || 0;
                 const delta = m.currentDelta || 0;
+                const volumeUsd = volumeData[m.id] || 0;
                 const status = getSemaforoStatus(vol, price, m.alvo, delta);
                 
                 const potencialBruto = price ? (((m.alvo - price) / price) * 100) : 0;
                 const potencialProtegido = (potencialBruto * MARGEM_SEGURANCA).toFixed(0);
                 
+                // Lógica da Barra de Volume: Referência 500M para moedas grandes
+                const volMilhoes = (volumeUsd / 1000000).toFixed(0);
+                let volPercent = (volumeUsd / 500000000) * 100;
+                if (volPercent > 100) volPercent = 100;
+
                 if(document.getElementById(`price-${m.id}`)) {
                     document.getElementById(`price-${m.id}`).innerText = price ? price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) : '...';
                     document.getElementById(`details-${m.id}`).innerHTML = `${status.msg} | POTENCIAL_PROTEGIDO: +${potencialProtegido}% | VOLAT: ${vol.toFixed(2)}%`;
@@ -275,6 +285,13 @@
                     document.getElementById(`led-${m.id}`).className = `led ${status.class}`;
                     document.getElementById(`delta-tag-${m.id}`).innerText = `Δ ${delta.toFixed(2)}%`;
                     document.getElementById(`delta-tag-${m.id}`).style.borderColor = delta > 0 ? 'var(--green)' : 'var(--red)';
+                    
+                    // Atualiza Barra e Label de Volume
+                    const vBar = document.getElementById(`vol-bar-${m.id}`);
+                    vBar.style.width = `${volPercent}%`;
+                    vBar.style.background = volPercent > 80 ? 'var(--green)' : 'var(--blue)';
+                    vBar.style.boxShadow = volPercent > 80 ? '0 0 10px var(--green)' : 'none';
+                    document.getElementById(`vol-label-${m.id}`).innerText = `VOLUME: US$ ${volMilhoes}M`;
                 }
             });
         }
@@ -284,7 +301,7 @@
             document.getElementById('btn-audio').style.display = 'none';
             initUI();
             
-            falar("Oráculo sênior ativado. Monitoramento Delta e Blindagem em vigor.");
+            falar("Oráculo sênior ativado. Monitoramento Delta, Volume e Blindagem em vigor.");
 
             moedas.forEach(m => {
                 new TradingView.widget({
@@ -298,4 +315,5 @@
         }
     </script>
 </body>
-</html>
+                                                                       </html>
+    
