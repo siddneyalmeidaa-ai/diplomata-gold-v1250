@@ -27,15 +27,15 @@
         .details { font-size: 10px; color: var(--green); line-height: 1.6; text-transform: uppercase; }
         .chart-container { height: 450px; width: 100%; background: #000; border-top: 1px solid #222; }
         
-        /* BARRA DE VOLUME COM GHOST PEAK */
+        /* CAMADA: BARRA DE VOLUME COM GHOST PEAK */
         .vol-container { width: 100%; background: #222; height: 6px; border-radius: 3px; margin-top: 8px; position: relative; overflow: hidden; border: 1px solid #333; }
         .vol-bar { height: 100%; background: var(--blue); width: 0%; transition: width 0.8s ease; }
         .ghost-peak { position: absolute; top: 0; width: 2px; height: 100%; background: white; box-shadow: 0 0 5px white; transition: left 0.5s ease; }
         .vol-label { font-size: 8px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; display: block; letter-spacing: 1px; }
 
-        /* LOG DE EVENTOS SÊNIOR */
-        .log-sistema { background: #000; border: 1px solid #222; border-radius: 8px; margin: 10px; padding: 10px; height: 100px; overflow-y: auto; font-size: 10px; border-left: 4px solid var(--blue); }
-        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #111; padding-bottom: 2px; display: flex; }
+        /* CAMADA: LOG DE EVENTOS SÊNIOR */
+        .log-sistema { background: #000; border: 1px solid #222; border-radius: 8px; margin: 10px; padding: 10px; height: 110px; overflow-y: auto; font-size: 10px; border-left: 4px solid var(--blue); }
+        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #111; padding-bottom: 2px; display: flex; align-items: flex-start; }
         .log-time { color: var(--blue); font-weight: bold; margin-right: 8px; min-width: 65px; }
 
         .status-badge { font-weight: bold; padding: 5px 10px; border-radius: 3px; font-size: 12px; }
@@ -58,7 +58,7 @@
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL SÊNIOR [GHOST PEAK & LOGS ATIVOS]</button>
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL SÊNIOR [PEAK & LOGS ATIVOS]</button>
 
     <div class="nav-sistema">
         <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 Monitoramento</button>
@@ -82,7 +82,7 @@
                 <div style="padding: 40px; text-align: center; color: #444;">AGUARDANDO ATIVAÇÃO...</div>
             </div>
             <div class="log-sistema" id="log-oraculo">
-                <div class="log-entry"><span class="log-time">[SISTEMA]</span> AGUARDANDO COMANDO PARA INICIALIZAR LOGS...</div>
+                <div class="log-entry"><span class="log-time">[SISTEMA]</span> AGUARDANDO COMANDO PARA SINCRONIZAR LOGS...</div>
             </div>
         </div>
 
@@ -104,10 +104,11 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
+        // CONFIGURAÇÕES BASE - S.B.
         const MEU_PRECO_MEDIO = 9.59;
         const MINHA_QUANTIDADE = 3.996;
         const MARGEM_SEGURANCA = 0.50; 
-        const VOL_REF_GLOBAL = 500000000; // 500M como base de vigor
+        const VOL_REF_GLOBAL = 500000000; 
 
         let audioAtivo = false;
         let lastStates = {}; 
@@ -115,7 +116,7 @@
         let dolarReal = 5.15;
         let volatilityData = {};
         let volumeData = {};
-        let ghostPeaks = {}; // Memória de Picos de Volume
+        let ghostPeaks = {}; 
 
         const moedas = [
             { id: "BTC", pair: "BTCUSDT", symbol: "BTCUSDT", alvo: 450000 },
@@ -130,16 +131,15 @@
             { id: "DOT", pair: "DOTUSDT", symbol: "DOTUSDT", alvo: 60.00 }
         ];
 
+        // FUNÇÃO DE VOZ + LOG ACUMULATIVO
         function falar(texto) {
             const agora = new Date().toLocaleTimeString('pt-BR');
             const logDiv = document.getElementById('log-oraculo');
             
-            // REGISTRO NO LOG
             let cor = texto.includes('máximo') || texto.includes('ENTRA') ? 'var(--green)' : 'var(--text-gray)';
             logDiv.innerHTML += `<div class="log-entry"><span class="log-time">[${agora}]</span> <span style="color:${cor}">${texto.toUpperCase()}</span></div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
 
-            // VOZ DO ORÁCULO
             if (audioAtivo) {
                 window.speechSynthesis.cancel();
                 const mensagem = new SpeechSynthesisUtterance(texto);
@@ -188,7 +188,7 @@
                         volatilityData[m.id] = parseFloat(data.priceChangePercent);
                         volumeData[m.id] = parseFloat(data.quoteVolume);
                         
-                        // CÁLCULO GHOST PEAK
+                        // LÓGICA DE GHOST PEAK ACUMULADO
                         let currentVolPerc = (volumeData[m.id] / VOL_REF_GLOBAL) * 100;
                         if (!ghostPeaks[m.id] || currentVolPerc > ghostPeaks[m.id]) ghostPeaks[m.id] = currentVolPerc;
 
@@ -205,7 +205,7 @@
                 }
                 updateUIValues();
                 atualizarPatrimonio();
-            } catch (e) { console.error("RECONECTANDO..."); }
+            } catch (e) { console.error("OFFLINE/RETRYING"); }
             setTimeout(() => hb.classList.remove('pulse'), 1000);
         }
 
@@ -272,7 +272,6 @@
                     vBar.style.width = `${volPerc}%`;
                     vBar.style.background = volPerc > 80 ? 'var(--green)' : 'var(--blue)';
                     
-                    // Atualiza Ghost Peak (Sombra Branca)
                     document.getElementById(`ghost-${m.id}`).style.left = `${Math.min(ghostPeaks[m.id], 99)}%`;
                     document.getElementById(`vol-label-${m.id}`).innerText = `VOLUME: US$ ${(volumeUsd/1000000).toFixed(0)}M`;
                 }
