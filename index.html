@@ -47,7 +47,7 @@
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL V12 [PÁTIO FILTRADO S.P.A. ATIVO]</button>
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL V12 [PÁTIO FILTRADO R$ 1,10+]</button>
 
     <div class="nav-sistema">
         <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 Monitoramento</button>
@@ -102,14 +102,16 @@
         const moedas = [
             { id: "BTC", pair: "BTCUSDT", symbol: "BTCUSDT" },
             { id: "ETH", pair: "ETHUSDT", symbol: "ETHUSDT" },
-            { id: "RENDER", pair: "RENDERUSDT", symbol: "RENDERUSDT" },
             { id: "SOL", pair: "SOLUSDT", symbol: "SOLUSDT" },
-            { id: "PEPE", pair: "PEPEUSDT", symbol: "PEPEUSDT" },
+            { id: "RENDER", pair: "RENDERUSDT", symbol: "RENDERUSDT" },
+            { id: "NEAR", pair: "NEARUSDT", symbol: "NEARUSDT" },
             { id: "SEI", pair: "SEIUSDT", symbol: "SEIUSDT" },
-            { id: "GALA", pair: "GALAUSDT", symbol: "GALAUSDT" },
-            { id: "FLOKI", pair: "FLOKIUSDT", symbol: "FLOKIUSDT" },
-            { id: "VET", pair: "VETUSDT", symbol: "VETUSDT" },
-            { id: "FET", pair: "FETUSDT", symbol: "FETUSDT" }
+            { id: "POL", pair: "POLUSDT", symbol: "POLUSDT" },
+            { id: "ADA", pair: "ADAUSDT", symbol: "ADAUSDT" },
+            { id: "DOT", pair: "DOTUSDT", symbol: "DOTUSDT" },
+            { id: "LINK", pair: "LINKUSDT", symbol: "LINKUSDT" },
+            { id: "APT", pair: "APTUSDT", symbol: "APTUSDT" },
+            { id: "ALGO", pair: "ALGOUSDT", symbol: "ALGOUSDT" }
         ];
 
         function logTecnico(texto, cor = 'var(--text-gray)') {
@@ -141,21 +143,23 @@
                     lastPrices[m.id] = precoBRL;
                     const var24h = parseFloat(data.priceChangePercent);
                     const delta = m.id === 'BTC' ? 0 : (var24h - btcVar24h);
+                    
+                    // ALVO S.P.A.: -50% da projeção de variação
                     const alvoSPA = precoBRL + ((precoBRL * (Math.abs(var24h)/100)) * 0.5);
 
                     let status = { text: 'PULA', color: 'var(--red)', class: 'led-red', msg: 'GRÁFICO ENFERMEIRO' };
                     if (precoAtualUSD >= parseFloat(data.openPrice)) {
                         status = { text: 'AGUARDE', color: 'var(--blue)', class: 'led-blue', msg: 'LATERALIZADO' };
-                        if (acceleration > 0.02 && delta > 0) status = { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'EXPLOSÃO VALIDADA' };
+                        if (acceleration > 0.015 && delta > 0) status = { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'EXPLOSÃO VALIDADA' };
                     } else if (var24h < -2.0) status = { text: 'PULA', color: 'var(--yellow)', class: 'led-yellow', msg: 'DIVERGÊNCIA DE FLUXO' };
 
-                    if (lastStates[m.id] !== status.text && status.text === 'ENTRA') logTecnico(`${m.id}: ENTRADA CONFIRMADA | ALVO: R$ ${alvoSPA.toFixed(2)}`, 'var(--green)');
+                    if (lastStates[m.id] !== status.text && status.text === 'ENTRA') logTecnico(`${m.id}: ENTRADA CONFIRMADA | ALVO: R$ ${alvoSPA.toFixed(3)}`, 'var(--green)');
                     lastStates[m.id] = status.text;
 
                     const elPrice = document.getElementById(`price-${m.id}`);
                     if(elPrice) {
                         elPrice.innerText = `R$ ${precoBRL.toFixed(3)}`;
-                        document.getElementById(`details-${m.id}`).innerHTML = `${status.msg} | ALVO: R$ ${alvoSPA.toFixed(2)}`;
+                        document.getElementById(`details-${m.id}`).innerHTML = `${status.msg} | ALVO: R$ ${alvoSPA.toFixed(3)}`;
                         document.getElementById(`status-${m.id}`).innerText = status.text;
                         document.getElementById(`status-${m.id}`).style.color = status.color;
                         document.getElementById(`led-${m.id}`).className = `led ${status.class}`;
