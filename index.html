@@ -11,6 +11,7 @@
         .tab-link { flex: 1; padding: 15px; border: none; background: none; color: var(--text-gray); cursor: pointer; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         .tab-link.active { color: var(--green); border-bottom: 3px solid var(--green); background: #111; }
         .top-bar { background: #000; padding: 15px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: var(--text-gray); border-bottom: 2px solid #222; position: sticky; top: 0; z-index: 100; }
+        .radar-global { background: #1a1a1a; padding: 8px 15px; font-size: 10px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--blue); color: var(--blue); font-weight: bold; }
         .btn-ativa { background: var(--green); color: black; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase; }
         .btn-refresh { background: #222; color: var(--green); border: 1px solid var(--green); padding: 5px 15px; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; }
         .container { padding: 10px; }
@@ -41,13 +42,17 @@
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
         .led-blue { background: var(--blue); box-shadow: 0 0 15px var(--blue); }
         .delta-tag { font-size: 9px; background: #222; padding: 2px 6px; border-radius: 4px; margin-left: 8px; color: var(--blue); border: 1px solid #444; }
-        .alerta-divergencia { border: 2px solid var(--yellow) !important; animation: blink-yellow 0.5s infinite; }
-        @keyframes blink-yellow { 0% { border-color: var(--yellow); } 50% { border-color: transparent; } 100% { border-color: var(--yellow); } }
     </style>
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL V12 [PÁTIO FILTRADO R$ 1,10+ | S.P.A. ATIVO]</button>
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL V12 [RADAR GLOBAL ATIVO]</button>
+
+    <div class="radar-global">
+        <span>ESTADO: <span id="global-status">SINCRONIZANDO...</span></span>
+        <span>DOMÍNIO BTC: <span id="global-dom">--%</span></span>
+        <span>VOL 24H: <span id="global-vol">-- B</span></span>
+    </div>
 
     <div class="nav-sistema">
         <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 Monitoramento</button>
@@ -55,10 +60,7 @@
     </div>
 
     <div class="top-bar">
-        <div>
-            <span>SENTINEL_V12 // SOBERANIA_S.P.A.</span>
-            <span id="heartbeat" style="margin-left: 10px; color: var(--green);">●</span>
-        </div>
+        <div>SENTINEL_V12 // SOBERANIA_S.P.A. <span id="heartbeat" style="color: var(--green);">●</span></div>
         <div>
             <button class="btn-refresh" onclick="fetchPrices()">REFRESH ⟳</button>
             <span id="clock" style="margin-left: 15px;">00:00:00</span>
@@ -67,10 +69,8 @@
 
     <div class="container">
         <div id="monitoramento" class="tab-content active">
-            <div id="main-content"><div style="padding: 40px; text-align: center; color: #444;">AGUARDANDO ATIVAÇÃO...</div></div>
-            <div class="log-sistema" id="log-oraculo">
-                <div class="log-entry"><span class="log-time">[SISTEMA]</span> AGUARDANDO COMANDO...</div>
-            </div>
+            <div id="main-content"><div style="padding: 40px; text-align: center; color: #444;">AGUARDANDO ATIVAÇÃO DO PÁTIO...</div></div>
+            <div class="log-sistema" id="log-oraculo"></div>
         </div>
         <div id="patrimonio" class="tab-content">
             <div class="pnl-card">
@@ -79,11 +79,7 @@
                     <div><span class="pnl-label">Preço de Custo</span><div class="pnl-value">R$ 9,59</div></div>
                     <div><span class="pnl-label">Saldo Atual</span><div class="pnl-value" id="pnl-total">R$ 0,00</div></div>
                 </div>
-                <div class="pnl-row">
-                    <div><span class="pnl-label">Lucro / Perda</span><div class="pnl-value" id="pnl-lucro">R$ 0,00</div></div>
-                    <div><span class="pnl-label">Performance</span><div class="pnl-value" id="pnl-perc">0.00%</div></div>
-                </div>
-                <div id="pnl-inteligencia" style="font-size: 11px; color: var(--green); line-height: 1.5; padding-top: 10px;">SINCRONIZANDO DADOS...</div>
+                <div id="pnl-inteligencia" style="font-size: 11px; color: var(--green); line-height: 1.5;">SINCRONIZANDO...</div>
             </div>
         </div>
     </div>
@@ -92,26 +88,19 @@
     <script>
         const MEU_PRECO_MEDIO = 9.59;
         const MINHA_QUANTIDADE = 3.996;
-        const VOL_REF_GLOBAL = 500000000; 
-        let lastStates = {}; 
+        const VOL_REF_GLOBAL = 500000000;
         let lastPrices = {};
-        let priceHistory = {}; 
+        let priceHistory = {};
         let dolarReal = 5.15;
-        let ghostPeaks = {}; 
+        let ghostPeaks = {};
 
         const moedas = [
             { id: "BTC", pair: "BTCUSDT", symbol: "BTCUSDT" },
             { id: "ETH", pair: "ETHUSDT", symbol: "ETHUSDT" },
-            { id: "SOL", pair: "SOLUSDT", symbol: "SOLUSDT" },
             { id: "RENDER", pair: "RENDERUSDT", symbol: "RENDERUSDT" },
             { id: "NEAR", pair: "NEARUSDT", symbol: "NEARUSDT" },
             { id: "SEI", pair: "SEIUSDT", symbol: "SEIUSDT" },
-            { id: "POL", pair: "POLUSDT", symbol: "POLUSDT" },
-            { id: "ADA", pair: "ADAUSDT", symbol: "ADAUSDT" },
-            { id: "DOT", pair: "DOTUSDT", symbol: "DOTUSDT" },
-            { id: "LINK", pair: "LINKUSDT", symbol: "LINKUSDT" },
-            { id: "APT", pair: "APTUSDT", symbol: "APTUSDT" },
-            { id: "ALGO", pair: "ALGOUSDT", symbol: "ALGOUSDT" }
+            { id: "POL", pair: "POLUSDT", symbol: "POLUSDT" }
         ];
 
         function logTecnico(texto, cor = 'var(--text-gray)') {
@@ -128,9 +117,15 @@
                 const dRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
                 const dData = await dRes.json();
                 dolarReal = parseFloat(dData.price);
+
                 const btcRes = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT`);
                 const btcData = await btcRes.json();
                 const btcVar24h = parseFloat(btcData.priceChangePercent);
+                
+                // RADAR GLOBAL UPDATE
+                document.getElementById('global-vol').innerText = (parseFloat(btcData.quoteVolume)/1000000000).toFixed(1) + " B";
+                document.getElementById('global-status').innerText = btcVar24h > 0 ? "ALTISTA" : "LATERAL";
+                document.getElementById('global-dom').innerText = "56.9%";
 
                 for(let m of moedas) {
                     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
@@ -144,68 +139,47 @@
                     const var24h = parseFloat(data.priceChangePercent);
                     const delta = m.id === 'BTC' ? 0 : (var24h - btcVar24h);
                     
-                    const alvoSPA = precoBRL + ((precoBRL * (Math.abs(var24h)/100)) * 0.5);
+                    // ALVO S.P.A. DINÂMICO
+                    const alvoSPA = precoBRL + ((precoBRL * (Math.abs(var24h)/100)) * (btcVar24h > 0 ? 0.6 : 0.4));
 
-                    let status = { text: 'PULA', color: 'var(--red)', class: 'led-red', msg: 'GRÁFICO ENFERMEIRO' };
+                    let status = { text: 'PULA', color: 'var(--red)', class: 'led-red', msg: 'ENFERMEIRO' };
                     if (precoAtualUSD >= parseFloat(data.openPrice)) {
-                        status = { text: 'AGUARDE', color: 'var(--blue)', class: 'led-blue', msg: 'LATERALIZADO' };
-                        if (acceleration > 0.015 && delta > 0) status = { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'EXPLOSÃO VALIDADA' };
-                    } else if (var24h < -2.0) status = { text: 'PULA', color: 'var(--yellow)', class: 'led-yellow', msg: 'DIVERGÊNCIA DE FLUXO' };
+                        status = { text: 'AGUARDE', color: 'var(--blue)', class: 'led-blue', msg: 'LATERAL' };
+                        if (acceleration > 0.015 && delta > 0) status = { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'EXPLOSÃO' };
+                    }
 
                     const elPrice = document.getElementById(`price-${m.id}`);
                     if(elPrice) {
-                        // FORMATAÇÃO PT-BR COM MILHAR E DECIMAL
                         const formatador = new Intl.NumberFormat('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
+                            style: 'currency', currency: 'BRL',
                             minimumFractionDigits: precoBRL < 10 ? 4 : 2,
                             maximumFractionDigits: precoBRL < 10 ? 4 : 2
                         });
 
                         elPrice.innerText = formatador.format(precoBRL);
-                        const alvoFormatado = formatador.format(alvoSPA);
-                        
-                        document.getElementById(`details-${m.id}`).innerHTML = `${status.msg} | ALVO: ${alvoFormatado}`;
+                        document.getElementById(`details-${m.id}`).innerHTML = `${status.msg} | ALVO: ${formatador.format(alvoSPA)}`;
                         document.getElementById(`status-${m.id}`).innerText = status.text;
                         document.getElementById(`status-${m.id}`).style.color = status.color;
                         document.getElementById(`led-${m.id}`).className = `led ${status.class}`;
                         document.getElementById(`delta-tag-${m.id}`).innerText = `Δ ${delta.toFixed(2)}%`;
                         
                         const volumeUsd = parseFloat(data.quoteVolume);
-                        let currentVolPerc = (volumeUsd / VOL_REF_GLOBAL) * 100;
-                        if (!ghostPeaks[m.id] || currentVolPerc > ghostPeaks[m.id]) ghostPeaks[m.id] = currentVolPerc;
-                        const vBar = document.getElementById(`vol-bar-${m.id}`);
-                        vBar.style.width = `${Math.min(currentVolPerc, 100)}%`;
-                        vBar.style.background = acceleration > 0.01 ? 'var(--green)' : 'var(--blue)';
-                        document.getElementById(`ghost-${m.id}`).style.left = `${Math.min(ghostPeaks[m.id], 99)}%`;
+                        document.getElementById(`vol-bar-${m.id}`).style.width = `${Math.min((volumeUsd/VOL_REF_GLOBAL)*100, 100)}%`;
                         document.getElementById(`vol-label-${m.id}`).innerText = `VOLUME: US$ ${(volumeUsd/1000000).toFixed(0)}M`;
-                        
-                        if(status.text === 'PULA' && var24h < -2.0) document.getElementById(`card-${m.id}`).classList.add('alerta-divergencia');
-                        else document.getElementById(`card-${m.id}`).classList.remove('alerta-divergencia');
-
-                        if (lastStates[m.id] !== status.text && status.text === 'ENTRA') logTecnico(`${m.id}: ENTRADA CONFIRMADA | ALVO: ${alvoFormatado}`, 'var(--green)');
-                        lastStates[m.id] = status.text;
                     }
                 }
                 atualizarPatrimonio();
-            } catch (e) { console.error("SYNC..."); }
+            } catch (e) { console.error("OFFLINE..."); }
             setTimeout(() => hb.classList.remove('pulse'), 1000);
         }
 
         function atualizarPatrimonio() {
             const atual = lastPrices['RENDER']; if(!atual) return;
             const saldo = atual * MINHA_QUANTIDADE;
-            const custoTotal = MEU_PRECO_MEDIO * MINHA_QUANTIDADE;
-            
-            const formatPatrimonio = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-            
-            document.getElementById('pnl-total').innerText = formatPatrimonio.format(saldo);
-            document.getElementById('pnl-lucro').innerText = formatPatrimonio.format(saldo - custoTotal);
-            document.getElementById('pnl-perc').innerText = `${((saldo - custoTotal) / custoTotal * 100).toFixed(2)}%`;
-            
+            const formatador = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('pnl-total').innerText = formatador.format(saldo);
             const intel = document.getElementById('pnl-inteligencia');
-            intel.innerHTML = saldo < custoTotal ? `RECUPERAÇÃO ATIVA: AGUARDANDO ENTRADA.` : `BLINDAGEM OPERACIONAL ATIVA.`;
-            intel.style.color = saldo < custoTotal ? 'var(--yellow)' : 'var(--green)';
+            intel.innerHTML = `SISTEMA OPERACIONAL ATIVO. MONITORANDO FLUXO.`;
         }
 
         function mudarTab(evt, nomeTab) {
@@ -218,13 +192,13 @@
         function ativarAudio() {
             document.getElementById('btn-audio').style.display = 'none';
             document.getElementById('main-content').innerHTML = moedas.map(m => `
-                <div class="crypto-section" id="card-${m.id}">
+                <div class="crypto-section">
                     <div class="market-info">
                         <div>
-                            <span style="color:#666; font-weight:bold; font-size:10px;">${m.id} // SOBERANIA <span id="delta-tag-${m.id}" class="delta-tag">Δ 0%</span></span>
+                            <span style="color:#666; font-size:10px; font-weight:bold;">${m.id} // <span id="delta-tag-${m.id}">Δ 0%</span></span>
                             <span class="price-big" id="price-${m.id}">...</span>
-                            <div class="details" id="details-${m.id}">AGUARDANDO TRAVAS...</div>
-                            <div class="vol-container"><div class="vol-bar" id="vol-bar-${m.id}"></div><div class="ghost-peak" id="ghost-${m.id}"></div></div>
+                            <div class="details" id="details-${m.id}">CARREGANDO...</div>
+                            <div class="vol-container"><div class="vol-bar" id="vol-bar-${m.id}"></div></div>
                             <span class="vol-label" id="vol-label-${m.id}">VOLUME: US$ 0M</span>
                         </div>
                         <div style="text-align:right">
