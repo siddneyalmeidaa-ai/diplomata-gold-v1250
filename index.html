@@ -3,265 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V17.5 // FULL_POWER_S.P.A.</title>
+    <title>SENTINEL_V19 // BLINDAGEM_S.P.A.</title>
     <style>
         :root { 
-            --bg: #050505; --card: #111; --header: #000;
-            --green: #00ff41; --red: #ff3131; --blue: #00e5ff; 
-            --gold: #ffdf00; --purple: #bc13fe; --gray: #444;
+            --bg: #030303; --card: #0d0d0d; --green: #00ff41; --red: #ff3131; 
+            --blue: #00e5ff; --gold: #d4af37; --warn: #ff8c00; --gray: #222;
         }
-        body { background: var(--bg); color: #fff; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; overflow-x: hidden; }
+        body { background: var(--bg); color: #fff; font-family: 'Courier New', Courier, monospace; margin: 0; font-size: 13px; }
         
-        .top-nav { background: var(--header); padding: 15px 25px; border-bottom: 2px solid #222; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-        .system-title { font-size: 14px; font-weight: bold; letter-spacing: 2px; color: var(--gold); }
-        .clock-box { font-size: 12px; color: var(--blue); border: 1px solid var(--blue); padding: 5px 10px; border-radius: 4px; }
-
-        .tabs { display: flex; background: #000; border-bottom: 1px solid #333; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: var(--gray); cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
-        .tab-btn.active { color: var(--green); border-bottom: 3px solid var(--green); background: #0a0a0a; }
-
-        .master-trigger { background: var(--green); color: #000; border: none; padding: 25px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; text-transform: uppercase; letter-spacing: 3px; }
-
-        .container { padding: 15px; }
-        .content-section { display: none; }
-        .content-section.active { display: block; }
-
-        .market-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; }
+        .header-soberano { background: #000; padding: 20px; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 999; }
+        .system-status { display: flex; gap: 20px; font-size: 10px; color: var(--gold); }
         
-        .card { background: var(--card); border: 1px solid #222; border-radius: 12px; overflow: hidden; position: relative; transition: 0.4s; }
-        .card.breakout { border: 2px solid var(--green); box-shadow: 0 0 40px rgba(0, 255, 65, 0.15); }
-        .card.danger { border: 2px solid var(--red); }
+        .tabs { display: flex; background: #050505; border-bottom: 1px solid var(--gray); }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #555; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .tab-btn.active { color: var(--green); border-bottom: 2px solid var(--green); background: #0a0a0a; }
 
-        .card-header { padding: 20px; background: #151515; display: flex; justify-content: space-between; border-bottom: 1px solid #222; }
-        .symbol-info { display: flex; flex-direction: column; }
-        .symbol-name { font-size: 24px; font-weight: bold; }
-        .symbol-delta { font-size: 10px; color: var(--blue); margin-top: 5px; }
+        .btn-full { background: var(--green); color: #000; border: none; padding: 25px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; letter-spacing: 5px; }
 
-        .price-display { padding: 20px; }
-        .price-brl { font-size: 36px; font-weight: bold; display: block; }
-        .price-target { font-size: 11px; color: var(--gold); margin-top: 8px; font-weight: bold; }
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px; padding: 15px; }
+        .card { background: var(--card); border: 1px solid var(--gray); border-radius: 8px; overflow: hidden; position: relative; transition: 0.3s; }
+        .blindado { border-top: 4px solid var(--green); box-shadow: 0 0 30px rgba(0, 255, 65, 0.05); }
+        .alerta { border-top: 4px solid var(--warn); }
 
-        .sensor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 20px 20px; }
-        .sensor { background: #080808; padding: 12px; border-radius: 8px; border: 1px solid #222; text-align: center; }
-        .sensor label { font-size: 7px; color: #666; display: block; text-transform: uppercase; margin-bottom: 4px; }
-        .sensor span { font-size: 12px; font-weight: bold; }
+        .price-box { padding: 15px; background: #111; }
+        .price-brl { font-size: 32px; font-weight: bold; }
+        .alvo-seguro { font-size: 11px; color: var(--gold); margin-top: 5px; font-weight: bold; }
 
-        .chart-container { height: 450px; background: #000; border-top: 1px solid #222; }
+        .sensor-matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
+        .sensor-item { background: #050505; padding: 8px; border-radius: 4px; font-size: 10px; border: 1px solid #1a1a1a; }
+        .sensor-item label { color: #444; display: block; font-size: 7px; margin-bottom: 2px; text-transform: uppercase; }
 
-        .favelinha-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #000; font-size: 11px; border: 1px solid #333; }
-        .favelinha-table th { background: #111; padding: 12px; text-align: left; border-bottom: 2px solid var(--blue); color: var(--blue); }
-        .favelinha-table td { padding: 10px; border-bottom: 1px solid #1a1a1a; }
+        .favelinha-container { padding: 15px; overflow-x: auto; }
+        .favelinha-table { width: 100%; border-collapse: collapse; background: #000; border: 1px solid var(--gray); }
+        .favelinha-table th { background: #0a0a0a; padding: 12px; color: var(--blue); font-size: 10px; text-align: left; }
+        .favelinha-table td { padding: 10px; border-bottom: 1px solid #111; font-size: 11px; }
 
-        .terminal { background: #000; border-left: 4px solid var(--blue); margin: 15px; padding: 15px; height: 150px; overflow-y: auto; font-size: 11px; color: #888; }
-        .log-line { margin-bottom: 5px; display: flex; }
-        .log-time { color: var(--blue); margin-right: 10px; min-width: 70px; }
+        .terminal-analista { background: #000; border-left: 5px solid var(--blue); height: 140px; margin: 15px; padding: 15px; overflow-y: auto; color: #aaa; font-size: 11px; line-height: 1.4; }
+        .time-tag { color: var(--blue); font-weight: bold; margin-right: 10px; }
     </style>
 </head>
 <body>
 
-<button id="btn-init" class="master-trigger" onclick="ativarSoberania()">🔱 INJETAR ARQUITETURA COMPLETA V17.5 // S.P.A.</button>
+<button id="trigger" class="btn-full" onclick="bootV19()">🔱 INJETAR MATRIZ DE BLINDAGEM V19.0 // S.P.A.</button>
 
-<div class="top-nav">
-    <div class="system-title">SENTINEL_V17.5 // SOBERANIA_TOTAL</div>
-    <div class="clock-box" id="sys-clock">00:00:00</div>
+<div class="header-soberano">
+    <div>SENTINEL_V19 // ANALISTA_S.P.A.</div>
+    <div class="system-status">
+        <span>DÓLAR: <b id="val-dolar">R$ 5.15</b></span>
+        <span>BTC VAR: <b id="val-btc">0.00%</b></span>
+        <span>DOMINÂNCIA: <b id="val-dom">OK</b></span>
+    </div>
+    <div id="sys-clock" style="color: var(--blue)">00:00:00</div>
 </div>
 
 <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab(event, 'monitor')">Monitoramento</button>
-    <button class="tab-btn" onclick="switchTab(event, 'favelinha')">Tabela Favelinha</button>
-    <button class="tab-btn" onclick="switchTab(event, 'pnl')">Gestão P&L</button>
+    <button class="tab-btn active" onclick="tab(event, 'pátio')">Pátio de Ativos</button>
+    <button class="tab-btn" onclick="tab(event, 'favelinha')">Matriz Favelinha</button>
 </div>
 
-<div class="container">
-    <div id="monitor" class="content-section active">
-        <div class="market-grid" id="market-display"></div>
-    </div>
+<div id="pátio" class="content-tab" style="display:block;">
+    <div class="market-grid" id="grid-ativos"></div>
+</div>
 
-    <div id="favelinha" class="content-section">
+<div id="favelinha" class="content-tab" style="display:none;">
+    <div class="favelinha-container">
         <table class="favelinha-table">
             <thead>
                 <tr>
                     <th>ATIVO</th>
                     <th>PREÇO (BRL)</th>
-                    <th>DIVERGÊNCIA Δ</th>
-                    <th>PROJEÇÃO -50%</th>
-                    <th>SENTIMENTO IA</th>
-                    <th>STATUS</th>
+                    <th>Δ DELTA</th>
+                    <th>ALVO -50%</th>
+                    <th>VOL/VSA</th>
+                    <th>BLINDAGEM</th>
                 </tr>
             </thead>
-            <tbody id="favelinha-body"></tbody>
+            <tbody id="fav-body"></tbody>
         </table>
-    </div>
-
-    <div id="pnl" class="content-section">
-        <div style="padding: 30px; background: #111; border-radius: 12px; border-left: 8px solid var(--purple);">
-            <h2 style="color: var(--purple)">ANÁLISE DE PATRIMÔNIO: RENDER</h2>
-            <p>Preço de Custo: R$ 9,59 | Quantidade: 3.996</p>
-            <div id="pnl-data" style="font-size: 24px; font-weight: bold;">SINCRONIZANDO...</div>
-        </div>
     </div>
 </div>
 
-<div class="terminal" id="oraculo-console">
-    <div class="log-line"><span class="log-time">[SISTEMA]</span> AGUARDANDO COMANDO PARA SINCRONIZAR ARQUITETURA...</div>
+<div class="terminal-analista" id="log-analista">
+    <div style="color:var(--gold)">AGUARDANDO CONEXÃO COM A REDE SOBERANA...</div>
 </div>
 
 <script src="https://s3.tradingview.com/tv.js"></script>
 <script>
     let soberano = false;
-    let memoriaPrecos = {};
-    let tetosVidro = {};
-    let dolarBRL = 5.15;
+    let database = {};
+    let tetos = {};
+    let dolarReal = 5.15;
 
-    const ativos = [
-        { id: "BTC", pair: "BTCUSDT" },
-        { id: "ETH", pair: "ETHUSDT" },
-        { id: "RENDER", pair: "RENDERUSDT" },
-        { id: "NEAR", pair: "NEARUSDT" },
-        { id: "SOL", pair: "SOLUSDT" },
-        { id: "FET", pair: "FETUSDT" },
-        { id: "DOGE", pair: "DOGEUSDT" },
-        { id: "POL", pair: "POLUSDT" },
-        { id: "ADA", pair: "ADAUSDT" },
-        { id: "DOT", pair: "DOTUSDT" }
+    const ativosOriginais = [
+        { id: "BTC", pair: "BTCUSDT" }, { id: "ETH", pair: "ETHUSDT" },
+        { id: "RENDER", pair: "RENDERUSDT" }, { id: "NEAR", pair: "NEARUSDT" },
+        { id: "SOL", pair: "SOLUSDT" }, { id: "FET", pair: "FETUSDT" },
+        { id: "DOGE", pair: "DOGEUSDT" }, { id: "POL", pair: "POLUSDT" },
+        { id: "ADA", pair: "ADAUSDT" }, { id: "DOT", pair: "DOTUSDT" }
     ];
 
-    function oraculo(txt, cor = "var(--blue)") {
-        const console = document.getElementById('oraculo-console');
-        const agora = new Date().toLocaleTimeString();
-        console.innerHTML += `<div class="log-line"><span class="log-time">[${agora}]</span> <span style="color:${cor}">${txt.toUpperCase()}</span></div>`;
-        console.scrollTop = console.scrollHeight;
+    function logAnalista(msg, cor = "#aaa") {
+        const log = document.getElementById('log-analista');
+        const t = new Date().toLocaleTimeString();
+        // FILTRO DE ANALISTA FINANCEIRO
+        let report = msg.replace("EXPLOSÃO", "ROMPIMENTO DE ESTRUTURA")
+                        .replace("ENTRA", "ENTRADA TÉCNICA VALIDADA")
+                        .replace("PULA", "RECUO ESTRUTURAL");
+
+        log.innerHTML += `<div><span class="time-tag">[${t}]</span> <span style="color:${cor}">${report.toUpperCase()}</span></div>`;
+        log.scrollTop = log.scrollHeight;
         if(soberano) {
             window.speechSynthesis.cancel();
-            const fala = new SpeechSynthesisUtterance(txt);
-            fala.lang = 'pt-BR';
-            window.speechSynthesis.speak(fala);
+            const f = new SpeechSynthesisUtterance(report);
+            f.lang = 'pt-BR';
+            f.rate = 0.95;
+            window.speechSynthesis.speak(f);
         }
     }
 
-    async function update() {
+    async function syncMatriz() {
         try {
             const dRes = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
             const dData = await dRes.json();
-            dolarBRL = parseFloat(dData.price);
+            dolarReal = parseFloat(dData.price);
+            document.getElementById('val-dolar').innerText = `R$ ${dolarReal.toFixed(2)}`;
 
             const btcRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
             const btcData = await btcRes.json();
             const btcVar = parseFloat(btcData.priceChangePercent);
+            document.getElementById('val-btc').innerText = `${btcVar.toFixed(2)}%`;
 
             let favHTML = "";
 
-            for(let a of ativos) {
+            for(let a of ativosOriginais) {
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${a.pair}`);
                 const data = await res.json();
                 
-                const pUSD = parseFloat(data.lastPrice);
-                const pBRL = pUSD * dolarBRL;
-                const openBRL = parseFloat(data.openPrice) * dolarBRL;
-                const last = memoriaPrecos[a.id] || pBRL;
-                const acel = ((pBRL - last) / last) * 100;
-                memoriaPrecos[a.id] = pBRL;
+                const precoUSD = parseFloat(data.lastPrice);
+                const precoBRL = precoUSD * dolarReal;
+                const last = database[a.id] || precoBRL;
+                const acel = ((precoBRL - last) / last) * 100;
+                database[a.id] = precoBRL;
 
-                if(!tetosVidro[a.id] || pBRL > tetosVidro[a.id]) tetosVidro[a.id] = pBRL;
+                if(!tetos[a.id] || precoBRL > tetos[a.id]) tetos[a.id] = precoBRL;
 
-                const v24 = parseFloat(data.priceChangePercent);
-                const delta = a.id === 'BTC' ? 0 : (v24 - btcVar);
-                
-                const range = pBRL * (Math.abs(v24)/100);
-                const alvo = pBRL + (range * 0.5);
+                const var24 = parseFloat(data.priceChangePercent);
+                const delta = a.id === 'BTC' ? 0 : (var24 - btcVar);
+                const alvo = precoBRL + ((precoBRL * (Math.abs(var24)/100)) * 0.5);
 
-                const card = document.getElementById(`card-${a.id}`);
-                const stat = document.getElementById(`stat-${a.id}`);
-                let statusMsg = "AGUARDE";
+                // LÓGICA DE BLINDAGEM
+                let status = "AGUARDE";
+                let corStatus = "#555";
+                let blindado = false;
 
-                if (pBRL < openBRL) {
-                    statusMsg = "PULA";
-                    if(card) card.className = "card danger";
-                } else if (pBRL >= (tetosVidro[a.id] * 0.999) && acel > 0.02) {
-                    statusMsg = "ENTRA";
-                    if(card) card.className = "card breakout";
-                    if(acel > 0.04) oraculo(`EXPLOSÃO EM ${a.id}! ALVO EM R$ ${alvo.toFixed(2)}`, "var(--green)");
+                if (precoBRL >= (tetos[a.id] * 0.999) && acel > 0.03 && delta > 0) {
+                    status = "BLINDADO";
+                    corStatus = "var(--green)";
+                    blindado = true;
+                    if(acel > 0.05) logAnalista(`${a.id}: Confirmação de rompimento. Delta positivo em ${delta.toFixed(2)}%. Alvo técnico em R$ ${alvo.toFixed(2)}.`, "var(--green)");
+                } else if (precoBRL < (parseFloat(data.openPrice) * dolarReal)) {
+                    status = "RISCO";
+                    corStatus = "var(--red)";
                 }
 
+                // ATUALIZA UI CARD
+                const card = document.getElementById(`card-${a.id}`);
                 if(card) {
-                    document.getElementById(`brl-${a.id}`).innerText = `R$ ${pBRL.toFixed(3)}`;
-                    document.getElementById(`proj-${a.id}`).innerText = `ALVO S.P.A.: R$ ${alvo.toFixed(3)}`;
+                    card.className = blindado ? "card blindado" : (status === "RISCO" ? "card alerta" : "card");
+                    document.getElementById(`brl-${a.id}`).innerText = `R$ ${precoBRL.toFixed(3)}`;
+                    document.getElementById(`alvo-${a.id}`).innerText = `ALVO S.P.A.: R$ ${alvo.toFixed(3)}`;
                     document.getElementById(`acc-${a.id}`).innerText = `${acel.toFixed(3)}%`;
-                    document.getElementById(`delta-${a.id}`).innerText = `Δ ${delta.toFixed(2)}%`;
-                    stat.innerText = statusMsg;
+                    document.getElementById(`delta-${a.id}`).innerText = `${delta.toFixed(2)}%`;
                 }
 
                 favHTML += `<tr>
                     <td><b>${a.id}</b></td>
-                    <td>R$ ${pBRL.toFixed(2)}</td>
+                    <td>R$ ${precoBRL.toFixed(2)}</td>
                     <td style="color:var(--blue)">${delta.toFixed(2)}%</td>
                     <td style="color:var(--gold)">R$ ${alvo.toFixed(2)}</td>
-                    <td>${acel > 0.02 ? 'EUFORIA' : 'ESTÁVEL'}</td>
-                    <td style="font-weight:bold; color:${statusMsg === 'ENTRA' ? 'var(--green)' : 'var(--red)'}">${statusMsg}</td>
+                    <td>${acel > 0.03 ? 'ALTO' : 'NORMAL'}</td>
+                    <td style="color:${corStatus}; font-weight:bold">${status}</td>
                 </tr>`;
             }
-            document.getElementById('favelinha-body').innerHTML = favHTML;
-            atualizarPatrimonio();
-        } catch(e) { console.log("SYNC..."); }
+            document.getElementById('fav-body').innerHTML = favHTML;
+        } catch(e) { console.log("RETRY..."); }
     }
 
-    function atualizarPatrimonio() {
-        const render = memoriaPrecos['RENDER'];
-        if(!render) return;
-        const total = render * 3.996;
-        const custo = 9.59 * 3.996;
-        const pnl = total - custo;
-        const perc = (pnl / custo) * 100;
-        document.getElementById('pnl-data').innerHTML = `
-            SALDO: R$ ${total.toFixed(2)} | 
-            <span style="color:${pnl >= 0 ? 'var(--green)' : 'var(--red)'}">
-                ${pnl >= 0 ? '+' : ''}R$ ${pnl.toFixed(2)} (${perc.toFixed(2)}%)
-            </span>
-        `;
-    }
-
-    function switchTab(evt, tabId) {
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    function tab(e, id) {
+        document.querySelectorAll('.content-tab').forEach(t => t.style.display = 'none');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        evt.currentTarget.classList.add('active');
+        document.getElementById(id).style.display = 'block';
+        e.currentTarget.classList.add('active');
     }
 
-    function initUI() {
-        document.getElementById('market-display').innerHTML = ativos.map(a => `
+    function bootV19() {
+        soberano = true;
+        document.getElementById('trigger').style.display = 'none';
+        document.getElementById('grid-ativos').innerHTML = ativosOriginais.map(a => `
             <div class="card" id="card-${a.id}">
-                <div class="card-header">
-                    <div class="symbol-info">
-                        <span class="symbol-name">${a.id}</span>
-                        <span class="symbol-delta" id="delta-${a.id}">Δ 0.00%</span>
-                    </div>
-                    <div id="stat-${a.id}" class="status-pill">SCANNING</div>
+                <div class="price-box">
+                    <span style="font-size:9px; color:var(--gold)">${a.id} // MATRIZ S.P.A.</span>
+                    <div class="price-brl" id="brl-${a.id}">R$ ...</div>
+                    <div class="alvo-seguro" id="alvo-${a.id}">PROCESSANDO ALVO...</div>
                 </div>
-                <div class="price-display">
-                    <span class="price-brl" id="brl-${a.id}">R$ ...</span>
-                    <div class="price-target" id="proj-${a.id}">CALCULANDO ALVO...</div>
-                </div>
-                <div class="sensor-grid">
-                    <div class="sensor"><label>ACELERAÇÃO</label><span id="acc-${a.id}">0.00%</span></div>
-                    <div class="sensor"><label>TETO HIST.</label><span>R$ ...</span></div>
-                    <div class="sensor"><label>VIGOR</label><span>---</span></div>
+                <div class="sensor-matrix">
+                    <div class="sensor-item"><label>Aceleração</label><span id="acc-${a.id}">0.00%</span></div>
+                    <div class="sensor-item"><label>Delta (BTC)</label><span id="delta-${a.id}">0.00%</span></div>
                 </div>
                 <div class="chart-container" id="chart-${a.id}"></div>
             </div>
         `).join('');
-    }
 
-    function ativarSoberania() {
-        soberano = true;
-        document.getElementById('btn-init').style.display = 'none';
-        initUI();
-        oraculo("Arquitetura V17.5 Completa. 10 Ativos Originais Restaurados. Padrão Ouro Ativo.", "var(--gold)");
-        ativos.forEach(a => {
+        logAnalista("Sistema V19.0 Operacional. Matriz de Blindagem e Cruzamento de Dados Ativada.", "var(--gold)");
+        ativosOriginais.forEach(a => {
             new TradingView.widget({
                 "autosize": true, "symbol": a.pair, "interval": "1", "theme": "dark", "container_id": `chart-${a.id}`, "hide_side_toolbar": true, "library_path": "https://s3.tradingview.com/tv.js"
             });
         });
-        setInterval(update, 6000);
+        setInterval(syncMatriz, 6000);
         setInterval(() => { document.getElementById('sys-clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
     }
 </script>
