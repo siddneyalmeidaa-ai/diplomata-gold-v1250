@@ -7,50 +7,39 @@
     <style>
         :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; }
-        
         .nav-sistema { display: flex; background: #000; border-bottom: 2px solid #222; }
         .tab-link { flex: 1; padding: 15px; border: none; background: none; color: var(--text-gray); cursor: pointer; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         .tab-link.active { color: var(--green); border-bottom: 3px solid var(--green); background: #111; }
-
         .top-bar { background: #000; padding: 15px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: var(--text-gray); border-bottom: 2px solid #222; position: sticky; top: 0; z-index: 100; }
         .btn-ativa { background: var(--green); color: black; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase; }
-        
         .btn-refresh { background: #222; color: var(--green); border: 1px solid var(--green); padding: 5px 15px; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; }
-        
         .container { padding: 10px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-
         .crypto-section { background: var(--card-bg); border-radius: 8px; margin-bottom: 30px; border: 1px solid #222; overflow: hidden; }
         .market-info { padding: 20px; border-left: 8px solid #333; display: flex; justify-content: space-between; align-items: center; background: #151515; }
         .price-big { font-size: 28px; font-weight: bold; color: white; display: block; }
         .details { font-size: 10px; color: var(--green); line-height: 1.6; text-transform: uppercase; }
         .chart-container { height: 450px; width: 100%; background: #000; border-top: 1px solid #222; }
-        
         .vol-container { width: 100%; background: #222; height: 6px; border-radius: 3px; margin-top: 8px; position: relative; overflow: hidden; border: 1px solid #333; }
         .vol-bar { height: 100%; background: var(--blue); width: 0%; transition: width 0.8s ease; }
         .ghost-peak { position: absolute; top: 0; width: 2px; height: 100%; background: white; box-shadow: 0 0 5px white; transition: left 0.5s ease; }
         .vol-label { font-size: 8px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; display: block; letter-spacing: 1px; }
-
         .log-sistema { background: #000; border: 1px solid #222; border-radius: 8px; margin: 10px; padding: 10px; height: 110px; overflow-y: auto; font-size: 10px; border-left: 4px solid var(--blue); }
         .log-entry { margin-bottom: 4px; border-bottom: 1px solid #111; padding-bottom: 2px; display: flex; align-items: flex-start; }
         .log-time { color: var(--blue); font-weight: bold; margin-right: 8px; min-width: 65px; }
-
         .status-badge { font-weight: bold; padding: 5px 10px; border-radius: 3px; font-size: 12px; }
         .led { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-left: 10px; }
         .pulse { animation: pulse-animation 1s infinite; }
         @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-
         .pnl-card { background: var(--card-bg); border: 1px solid #333; border-radius: 8px; padding: 25px; border-left: 8px solid var(--blue); }
         .pnl-row { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
         .pnl-label { color: var(--text-gray); font-size: 11px; text-transform: uppercase; }
         .pnl-value { font-size: 20px; font-weight: bold; }
-
         .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
         .led-yellow { background: var(--yellow); box-shadow: 0 0 15px var(--yellow); }
         .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
         .led-blue { background: var(--blue); box-shadow: 0 0 15px var(--blue); }
-        
         .delta-tag { font-size: 9px; background: #222; padding: 2px 6px; border-radius: 4px; margin-left: 8px; color: var(--blue); border: 1px solid #444; }
         .alerta-divergencia { border: 2px solid var(--yellow) !important; animation: blink-yellow 0.5s infinite; }
         @keyframes blink-yellow { 0% { border-color: var(--yellow); } 50% { border-color: transparent; } 100% { border-color: var(--yellow); } }
@@ -58,7 +47,7 @@
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL V12 [TRAVAS S.P.A. ATIVAS]</button>
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL V12 [PÁTIO FILTRADO S.P.A. ATIVO]</button>
 
     <div class="nav-sistema">
         <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 Monitoramento</button>
@@ -78,14 +67,11 @@
 
     <div class="container">
         <div id="monitoramento" class="tab-content active">
-            <div id="main-content">
-                <div style="padding: 40px; text-align: center; color: #444;">AGUARDANDO ATIVAÇÃO...</div>
-            </div>
+            <div id="main-content"><div style="padding: 40px; text-align: center; color: #444;">AGUARDANDO ATIVAÇÃO...</div></div>
             <div class="log-sistema" id="log-oraculo">
                 <div class="log-entry"><span class="log-time">[SISTEMA]</span> AGUARDANDO COMANDO...</div>
             </div>
         </div>
-
         <div id="patrimonio" class="tab-content">
             <div class="pnl-card">
                 <div style="margin-bottom: 25px;"><span style="color: var(--blue); font-weight: bold; font-size: 14px;">ANÁLISE DE CARTEIRA: RENDER</span></div>
@@ -107,8 +93,6 @@
         const MEU_PRECO_MEDIO = 9.59;
         const MINHA_QUANTIDADE = 3.996;
         const VOL_REF_GLOBAL = 500000000; 
-
-        let audioAtivo = false;
         let lastStates = {}; 
         let lastPrices = {};
         let priceHistory = {}; 
@@ -119,13 +103,13 @@
             { id: "BTC", pair: "BTCUSDT", symbol: "BTCUSDT" },
             { id: "ETH", pair: "ETHUSDT", symbol: "ETHUSDT" },
             { id: "RENDER", pair: "RENDERUSDT", symbol: "RENDERUSDT" },
-            { id: "NEAR", pair: "NEARUSDT", symbol: "NEARUSDT" },
             { id: "SOL", pair: "SOLUSDT", symbol: "SOLUSDT" },
-            { id: "FET", pair: "FETUSDT", symbol: "FETUSDT" },
-            { id: "DOGE", pair: "DOGEUSDT", symbol: "DOGEUSDT" }, 
-            { id: "POL", pair: "POLUSDT", symbol: "POLUSDT" },
-            { id: "ADA", pair: "ADAUSDT", symbol: "ADAUSDT" },
-            { id: "DOT", pair: "DOTUSDT", symbol: "DOTUSDT" }
+            { id: "PEPE", pair: "PEPEUSDT", symbol: "PEPEUSDT" },
+            { id: "SEI", pair: "SEIUSDT", symbol: "SEIUSDT" },
+            { id: "GALA", pair: "GALAUSDT", symbol: "GALAUSDT" },
+            { id: "FLOKI", pair: "FLOKIUSDT", symbol: "FLOKIUSDT" },
+            { id: "VET", pair: "VETUSDT", symbol: "VETUSDT" },
+            { id: "FET", pair: "FETUSDT", symbol: "FETUSDT" }
         ];
 
         function logTecnico(texto, cor = 'var(--text-gray)') {
@@ -142,7 +126,6 @@
                 const dRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
                 const dData = await dRes.json();
                 dolarReal = parseFloat(dData.price);
-
                 const btcRes = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT`);
                 const btcData = await btcRes.json();
                 const btcVar24h = parseFloat(btcData.priceChangePercent);
@@ -150,40 +133,25 @@
                 for(let m of moedas) {
                     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
                     const data = await res.json();
-                    
                     const precoAtualUSD = parseFloat(data.lastPrice);
                     const lastPriceRecord = priceHistory[m.id] || precoAtualUSD;
                     const acceleration = ((precoAtualUSD - lastPriceRecord) / lastPriceRecord) * 100;
                     priceHistory[m.id] = precoAtualUSD;
-
                     const precoBRL = precoAtualUSD * dolarReal;
                     lastPrices[m.id] = precoBRL;
                     const var24h = parseFloat(data.priceChangePercent);
                     const delta = m.id === 'BTC' ? 0 : (var24h - btcVar24h);
-                    
-                    // REGRA DE PROJEÇÃO: -50% da projeção baseada na variação
                     const alvoSPA = precoBRL + ((precoBRL * (Math.abs(var24h)/100)) * 0.5);
 
-                    // TRAVAS DE STATUS
                     let status = { text: 'PULA', color: 'var(--red)', class: 'led-red', msg: 'GRÁFICO ENFERMEIRO' };
-                    const isVerde = precoAtualUSD >= parseFloat(data.openPrice);
-
-                    if (isVerde) {
+                    if (precoAtualUSD >= parseFloat(data.openPrice)) {
                         status = { text: 'AGUARDE', color: 'var(--blue)', class: 'led-blue', msg: 'LATERALIZADO' };
-                        // REGRA: ENTRA APENAS COM ACELERAÇÃO E DELTA POSITIVO
-                        if (acceleration > 0.02 && delta > 0) {
-                            status = { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'EXPLOSÃO VALIDADA' };
-                        }
-                    } else if (var24h < -2.0) {
-                        status = { text: 'PULA', color: 'var(--yellow)', class: 'led-yellow', msg: 'DIVERGÊNCIA DE FLUXO' };
-                    }
+                        if (acceleration > 0.02 && delta > 0) status = { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'EXPLOSÃO VALIDADA' };
+                    } else if (var24h < -2.0) status = { text: 'PULA', color: 'var(--yellow)', class: 'led-yellow', msg: 'DIVERGÊNCIA DE FLUXO' };
 
-                    if (lastStates[m.id] !== status.text && status.text === 'ENTRA') {
-                        logTecnico(`${m.id}: ENTRADA CONFIRMADA. DELTA: ${delta.toFixed(2)}% | ALVO: R$ ${alvoSPA.toFixed(2)}`, 'var(--green)');
-                    }
+                    if (lastStates[m.id] !== status.text && status.text === 'ENTRA') logTecnico(`${m.id}: ENTRADA CONFIRMADA | ALVO: R$ ${alvoSPA.toFixed(2)}`, 'var(--green)');
                     lastStates[m.id] = status.text;
 
-                    // UI UPDATE
                     const elPrice = document.getElementById(`price-${m.id}`);
                     if(elPrice) {
                         elPrice.innerText = `R$ ${precoBRL.toFixed(3)}`;
@@ -192,17 +160,14 @@
                         document.getElementById(`status-${m.id}`).style.color = status.color;
                         document.getElementById(`led-${m.id}`).className = `led ${status.class}`;
                         document.getElementById(`delta-tag-${m.id}`).innerText = `Δ ${delta.toFixed(2)}%`;
-                        
                         const volumeUsd = parseFloat(data.quoteVolume);
                         let currentVolPerc = (volumeUsd / VOL_REF_GLOBAL) * 100;
                         if (!ghostPeaks[m.id] || currentVolPerc > ghostPeaks[m.id]) ghostPeaks[m.id] = currentVolPerc;
-
                         const vBar = document.getElementById(`vol-bar-${m.id}`);
                         vBar.style.width = `${Math.min(currentVolPerc, 100)}%`;
                         vBar.style.background = acceleration > 0.01 ? 'var(--green)' : 'var(--blue)';
                         document.getElementById(`ghost-${m.id}`).style.left = `${Math.min(ghostPeaks[m.id], 99)}%`;
                         document.getElementById(`vol-label-${m.id}`).innerText = `VOLUME: US$ ${(volumeUsd/1000000).toFixed(0)}M`;
-                        
                         if(status.text === 'PULA' && var24h < -2.0) document.getElementById(`card-${m.id}`).classList.add('alerta-divergencia');
                         else document.getElementById(`card-${m.id}`).classList.remove('alerta-divergencia');
                     }
@@ -220,13 +185,8 @@
             document.getElementById('pnl-lucro').innerText = `R$ ${(saldo - custoTotal).toFixed(2)}`;
             document.getElementById('pnl-perc').innerText = `${((saldo - custoTotal) / custoTotal * 100).toFixed(2)}%`;
             const intel = document.getElementById('pnl-inteligencia');
-            if(saldo < custoTotal) {
-                intel.innerHTML = `TRAVA DE RECUPERAÇÃO ATIVA: AGUARDANDO SINAL DE ENTRADA.`;
-                intel.style.color = 'var(--yellow)';
-            } else {
-                intel.innerHTML = `POSIÇÃO EM LUCRO: BLINDAGEM OPERACIONAL ATIVA.`;
-                intel.style.color = 'var(--green)';
-            }
+            intel.innerHTML = saldo < custoTotal ? `RECUPERAÇÃO ATIVA: AGUARDANDO ENTRADA.` : `BLINDAGEM OPERACIONAL ATIVA.`;
+            intel.style.color = saldo < custoTotal ? 'var(--yellow)' : 'var(--green)';
         }
 
         function mudarTab(evt, nomeTab) {
