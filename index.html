@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V11.5 // SOBERANIA_SÊNIOR</title>
+    <title>SENTINEL_V12 // SOBERANIA_S.P.A.</title>
     <style>
         :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; }
@@ -27,13 +27,11 @@
         .details { font-size: 10px; color: var(--green); line-height: 1.6; text-transform: uppercase; }
         .chart-container { height: 450px; width: 100%; background: #000; border-top: 1px solid #222; }
         
-        /* CAMADA: BARRA DE VOLUME COM GHOST PEAK */
         .vol-container { width: 100%; background: #222; height: 6px; border-radius: 3px; margin-top: 8px; position: relative; overflow: hidden; border: 1px solid #333; }
         .vol-bar { height: 100%; background: var(--blue); width: 0%; transition: width 0.8s ease; }
         .ghost-peak { position: absolute; top: 0; width: 2px; height: 100%; background: white; box-shadow: 0 0 5px white; transition: left 0.5s ease; }
         .vol-label { font-size: 8px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; display: block; letter-spacing: 1px; }
 
-        /* CAMADA: LOG DE EVENTOS SÊNIOR */
         .log-sistema { background: #000; border: 1px solid #222; border-radius: 8px; margin: 10px; padding: 10px; height: 110px; overflow-y: auto; font-size: 10px; border-left: 4px solid var(--blue); }
         .log-entry { margin-bottom: 4px; border-bottom: 1px solid #111; padding-bottom: 2px; display: flex; align-items: flex-start; }
         .log-time { color: var(--blue); font-weight: bold; margin-right: 8px; min-width: 65px; }
@@ -54,11 +52,13 @@
         .led-blue { background: var(--blue); box-shadow: 0 0 15px var(--blue); }
         
         .delta-tag { font-size: 9px; background: #222; padding: 2px 6px; border-radius: 4px; margin-left: 8px; color: var(--blue); border: 1px solid #444; }
+        .alerta-divergencia { border: 2px solid var(--yellow) !important; animation: blink-yellow 0.5s infinite; }
+        @keyframes blink-yellow { 0% { border-color: var(--yellow); } 50% { border-color: transparent; } 100% { border-color: var(--yellow); } }
     </style>
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL SÊNIOR [PEAK & LOGS ATIVOS]</button>
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL V12 [TRAVAS S.P.A. ATIVAS]</button>
 
     <div class="nav-sistema">
         <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 Monitoramento</button>
@@ -67,7 +67,7 @@
 
     <div class="top-bar">
         <div>
-            <span>SENTINEL_V11.5 // SOBERANIA</span>
+            <span>SENTINEL_V12 // SOBERANIA_S.P.A.</span>
             <span id="heartbeat" style="margin-left: 10px; color: var(--green);">●</span>
         </div>
         <div>
@@ -104,15 +104,14 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // CONFIGURAÇÕES BASE - S.B.
         const MEU_PRECO_MEDIO = 9.59;
         const MINHA_QUANTIDADE = 3.996;
-        const MARGEM_SEGURANCA = 0.50; 
         const VOL_REF_GLOBAL = 500000000; 
 
         let audioAtivo = false;
         let lastStates = {}; 
         let lastPrices = {};
+        let priceHistory = {}; // Para cálculo de aceleração
         let dolarReal = 5.15;
         let volatilityData = {};
         let volumeData = {};
@@ -131,12 +130,12 @@
             { id: "DOT", pair: "DOTUSDT", symbol: "DOTUSDT", alvo: 60.00 }
         ];
 
-        // FUNÇÃO DE VOZ + LOG ACUMULATIVO
         function falar(texto) {
             const agora = new Date().toLocaleTimeString('pt-BR');
             const logDiv = document.getElementById('log-oraculo');
+            let cor = texto.includes('EXPLOSÃO') || texto.includes('VERDE') ? 'var(--green)' : 'var(--text-gray)';
+            if (texto.includes('DIVERGÊNCIA')) cor = 'var(--yellow)';
             
-            let cor = texto.includes('máximo') || texto.includes('ENTRA') ? 'var(--green)' : 'var(--text-gray)';
             logDiv.innerHTML += `<div class="log-entry"><span class="log-time">[${agora}]</span> <span style="color:${cor}">${texto.toUpperCase()}</span></div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
 
@@ -161,11 +160,25 @@
 
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
-        function getSemaforoStatus(vol, preco, alvo, deltaVigor = 0) {
-            if (deltaVigor > 2.0) return { text: 'VIGOR MÁXIMO', color: 'var(--green)', class: 'led-green pulse', msg: 'ANOMALIA POSITIVA' };
-            if (vol >= 1.8 && vol <= 5.0) return { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'VIGOR CONFIRMADO' };
-            if (vol < -2) return { text: 'COMPRA SÊNIOR', color: 'var(--blue)', class: 'led-blue pulse', msg: 'EXAUSTÃO VENDEDORA' };
-            return { text: 'NÃO ENTRA', color: 'var(--red)', class: 'led-red', msg: 'AGUARDAR FLUXO' };
+        function getSemaforoStatus(m_id, vol, preco, candleColor, acceleration) {
+            // REGRA 1: TRAVA DE POLARIDADE (CANDLE VERMELHO = PULA)
+            if (candleColor === 'VERMELHO') {
+                if (vol > 2.0) return { text: 'PULA', color: 'var(--yellow)', class: 'led-yellow', msg: 'DIVERGÊNCIA: QUEDA COM VOLUME' };
+                return { text: 'PULA', color: 'var(--red)', class: 'led-red', msg: 'GRÁFICO ENFERMEIRO' };
+            }
+
+            // REGRA 2: TRAVA DE ACELERAÇÃO (CANDLE VERDE MAS PREÇO PARADO)
+            if (candleColor === 'VERDE' && acceleration <= 0.01) {
+                return { text: 'AGUARDE', color: 'var(--blue)', class: 'led-blue', msg: 'LATERALIZADO / SEM EXPLOSÃO' };
+            }
+
+            // REGRA 3: CONFIRMAÇÃO DE ENTRADA (VERDE + ACELERAÇÃO)
+            if (candleColor === 'VERDE' && acceleration > 0.01) {
+                if (vol > 2.0) return { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'EXPLOSÃO DETECTADA!' };
+                return { text: 'OBSERVAR', color: 'var(--green)', class: 'led-green', msg: 'VERDE EM ASCENSÃO' };
+            }
+
+            return { text: 'PULA', color: 'var(--text-gray)', class: 'led', msg: 'FLUXO INSUFICIENTE' };
         }
 
         async function fetchPrices() {
@@ -184,28 +197,39 @@
                     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
                     const data = await res.json();
                     if(data.lastPrice) {
-                        lastPrices[m.id] = parseFloat(data.lastPrice) * dolarReal;
+                        const precoAtual = parseFloat(data.lastPrice);
+                        const openPrice = parseFloat(data.openPrice);
+                        const candleColor = precoAtual >= openPrice ? 'VERDE' : 'VERMELHO';
+                        
+                        // Cálculo de Aceleração (Comparando com última checagem)
+                        const lastPriceRecord = priceHistory[m.id] || precoAtual;
+                        const acceleration = ((precoAtual - lastPriceRecord) / lastPriceRecord) * 100;
+                        priceHistory[m.id] = precoAtual;
+
+                        lastPrices[m.id] = precoAtual * dolarReal;
                         volatilityData[m.id] = parseFloat(data.priceChangePercent);
                         volumeData[m.id] = parseFloat(data.quoteVolume);
                         
-                        // LÓGICA DE GHOST PEAK ACUMULADO
                         let currentVolPerc = (volumeData[m.id] / VOL_REF_GLOBAL) * 100;
                         if (!ghostPeaks[m.id] || currentVolPerc > ghostPeaks[m.id]) ghostPeaks[m.id] = currentVolPerc;
 
                         const delta = m.id === 'BTC' ? 0 : (volatilityData[m.id] - btcVol);
-                        const status = getSemaforoStatus(volatilityData[m.id], lastPrices[m.id], m.alvo, delta);
+                        const status = getSemaforoStatus(m.id, volatilityData[m.id], lastPrices[m.id], candleColor, acceleration);
                         
+                        // Lógica de Voz Inteligente S.P.A.
                         if (lastStates[m.id] !== status.text) {
-                            if (status.text === 'VIGOR MÁXIMO') falar(`Vigor máximo detectado em ${m.id}. Delta de ${delta.toFixed(2)}%.`);
-                            else if (status.text === 'ENTRA') falar(`${m.id} confirmou vigor. Entrada autorizada.`);
+                            if (status.text === 'ENTRA') falar(`${m.id} EXPLODINDO! ACELERAÇÃO DE ${acceleration.toFixed(2)}%. ENTRA!`);
+                            if (status.msg.includes('DIVERGÊNCIA')) falar(`Alerta em ${m.id}. Gráfico caindo com volume alto. Pula!`);
                         }
                         lastStates[m.id] = status.text;
                         m.currentDelta = delta;
+                        m.currentStatus = status;
+                        m.currentAccel = acceleration;
                     }
                 }
                 updateUIValues();
                 atualizarPatrimonio();
-            } catch (e) { console.error("OFFLINE/RETRYING"); }
+            } catch (e) { console.error("SYNC ERROR - RETRYING"); }
             setTimeout(() => hb.classList.remove('pulse'), 1000);
         }
 
@@ -218,22 +242,22 @@
             document.getElementById('pnl-perc').innerText = `${((saldo - custoTotal) / custoTotal * 100).toFixed(2)}%`;
             const intel = document.getElementById('pnl-inteligencia');
             if(saldo < custoTotal) {
-                intel.innerHTML = `⚠️ ALERTA: Abaixo do custo. Vigor necessário para recuperação.`;
+                intel.innerHTML = `⚠️ ALERTA: Abaixo do custo. Aguardando sinal de EXPLOSÃO para recuperação.`;
                 intel.style.color = 'var(--yellow)';
             } else {
-                intel.innerHTML = `✅ SOBERANIA: Operação no lucro. Alvo principal: R$ 26,26.`;
+                intel.innerHTML = `✅ SOBERANIA: Operação no lucro. Mantenha posição enquanto o sinal for VERDE.`;
                 intel.style.color = 'var(--green)';
             }
         }
 
         function initUI() {
             document.getElementById('main-content').innerHTML = moedas.map(m => `
-                <div class="crypto-section">
-                    <div class="market-info">
+                <div class="crypto-section" id="card-${m.id}">
+                    <div class="market-info" id="info-${m.id}">
                         <div>
                             <span style="color:#666; font-weight:bold; font-size:10px;">${m.id} // SOBERANIA <span id="delta-tag-${m.id}" class="delta-tag">Δ 0%</span></span>
                             <span class="price-big" id="price-${m.id}">R$ ...</span>
-                            <div class="details" id="details-${m.id}">CALCULANDO...</div>
+                            <div class="details" id="details-${m.id}">CALCULANDO ACELERAÇÃO...</div>
                             <div class="vol-container">
                                 <div class="vol-bar" id="vol-bar-${m.id}"></div>
                                 <div class="ghost-peak" id="ghost-${m.id}"></div>
@@ -254,23 +278,27 @@
             moedas.forEach(m => {
                 const price = lastPrices[m.id];
                 const delta = m.currentDelta || 0;
+                const accel = m.currentAccel || 0;
                 const volumeUsd = volumeData[m.id] || 0;
-                const status = getSemaforoStatus(volatilityData[m.id], price, m.alvo, delta);
+                const status = m.currentStatus;
                 
-                let volPerc = (volumeUsd / VOL_REF_GLOBAL) * 100;
-                if (volPerc > 100) volPerc = 100;
-
                 if(document.getElementById(`price-${m.id}`)) {
+                    const card = document.getElementById(`card-${m.id}`);
                     document.getElementById(`price-${m.id}`).innerText = price ? price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) : '...';
-                    document.getElementById(`details-${m.id}`).innerHTML = `${status.msg} | VOLAT: ${volatilityData[m.id].toFixed(2)}%`;
+                    document.getElementById(`details-${m.id}`).innerHTML = `${status.msg} | ACCEL: ${accel.toFixed(3)}%`;
                     document.getElementById(`status-${m.id}`).innerText = status.text;
                     document.getElementById(`status-${m.id}`).style.color = status.color;
                     document.getElementById(`led-${m.id}`).className = `led ${status.class}`;
                     document.getElementById(`delta-tag-${m.id}`).innerText = `Δ ${delta.toFixed(2)}%`;
                     
+                    // Alerta Visual de Divergência
+                    if(status.msg.includes('DIVERGÊNCIA')) card.classList.add('alerta-divergencia');
+                    else card.classList.remove('alerta-divergencia');
+
                     const vBar = document.getElementById(`vol-bar-${m.id}`);
-                    vBar.style.width = `${volPerc}%`;
-                    vBar.style.background = volPerc > 80 ? 'var(--green)' : 'var(--blue)';
+                    let volPerc = (volumeUsd / VOL_REF_GLOBAL) * 100;
+                    vBar.style.width = `${Math.min(volPerc, 100)}%`;
+                    vBar.style.background = accel > 0.01 ? 'var(--green)' : 'var(--blue)';
                     
                     document.getElementById(`ghost-${m.id}`).style.left = `${Math.min(ghostPeaks[m.id], 99)}%`;
                     document.getElementById(`vol-label-${m.id}`).innerText = `VOLUME: US$ ${(volumeUsd/1000000).toFixed(0)}M`;
@@ -282,7 +310,7 @@
             audioAtivo = true;
             document.getElementById('btn-audio').style.display = 'none';
             initUI();
-            falar("Sentinel V11.5 Ativado. Tríade, Ghost Peak e Log de Eventos em vigor.");
+            falar("Sentinel V12 S.P.A. Ativado. Travas de polaridade e acelerômetro de preço em vigor.");
             moedas.forEach(m => {
                 new TradingView.widget({
                     "autosize": true, "symbol": m.pair, "interval": "1", "theme": "dark", 
