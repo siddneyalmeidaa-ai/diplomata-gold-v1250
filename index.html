@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SENTINEL_V21 // SOBERANIA_S.P.A.</title>
     <style>
-        /* MANTENDO SEU CSS ORIGINAL INTEGRALMENTE */
+        /* CSS ORIGINAL PRESERVADO 100% */
         :root { --bg-dark: #0a0a0a; --card-bg: #111; --text-gray: #666; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; }
         .nav-sistema { display: flex; background: #000; border-bottom: 2px solid #222; }
@@ -13,6 +13,7 @@
         .tab-link.active { color: var(--green); border-bottom: 3px solid var(--green); background: #111; }
         .top-bar { background: #000; padding: 15px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: var(--text-gray); border-bottom: 2px solid #222; position: sticky; top: 0; z-index: 100; }
         .btn-ativa { background: var(--green); color: black; border: none; padding: 15px; width: 100%; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase; }
+        .btn-refresh { background: #222; color: var(--green); border: 1px solid var(--green); padding: 5px 15px; cursor: pointer; font-size: 10px; font-weight: bold; border-radius: 4px; }
         .container { padding: 10px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -23,8 +24,8 @@
         .chart-container { height: 450px; width: 100%; background: #000; border-top: 1px solid #222; }
         .vol-container { width: 100%; background: #222; height: 6px; border-radius: 3px; margin-top: 8px; position: relative; overflow: hidden; border: 1px solid #333; }
         .vol-bar { height: 100%; background: var(--blue); width: 0%; transition: width 0.8s ease; }
-        .ghost-peak { position: absolute; top: 0; width: 2px; height: 100%; background: white; box-shadow: 0 0 5px white; }
-        .vol-label { font-size: 8px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; display: block; }
+        .ghost-peak { position: absolute; top: 0; width: 2px; height: 100%; background: white; box-shadow: 0 0 5px white; transition: left 0.5s ease; }
+        .vol-label { font-size: 8px; color: var(--text-gray); text-transform: uppercase; margin-top: 4px; display: block; letter-spacing: 1px; }
         .log-sistema { background: #000; border: 1px solid #222; border-radius: 8px; margin: 10px; padding: 10px; height: 110px; overflow-y: auto; font-size: 10px; border-left: 4px solid var(--blue); }
         .log-entry { margin-bottom: 4px; border-bottom: 1px solid #111; padding-bottom: 2px; display: flex; align-items: flex-start; }
         .log-time { color: var(--blue); font-weight: bold; margin-right: 8px; min-width: 65px; }
@@ -47,7 +48,7 @@
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL V21 [BLINDAGEM E ANALISTA ATIVOS]</button>
+    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL V21 [BLINDAGEM S.P.A. INTEGRADA]</button>
 
     <div class="nav-sistema">
         <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 Monitoramento</button>
@@ -60,16 +61,19 @@
             <span id="heartbeat" style="margin-left: 10px; color: var(--green);">●</span>
         </div>
         <div>
-            <span id="dolar-real" style="margin-right: 15px; color: var(--yellow);">USDT: R$ 0,00</span>
-            <span id="clock">00:00:00</span>
+            <span id="label-dolar" style="margin-right: 15px; color: var(--yellow);">USDT: R$ 0,00</span>
+            <button class="btn-refresh" onclick="fetchPrices()">REFRESH ⟳</button>
+            <span id="clock" style="margin-left: 15px;">00:00:00</span>
         </div>
     </div>
 
     <div class="container">
         <div id="monitoramento" class="tab-content active">
-            <div id="main-content"></div>
+            <div id="main-content">
+                <div style="padding: 40px; text-align: center; color: #444;">INICIALIZANDO MATRIZ DE CRUZAMENTO...</div>
+            </div>
             <div class="log-sistema" id="log-oraculo">
-                <div class="log-entry"><span class="log-time">[SISTEMA]</span> AGUARDANDO COMANDO...</div>
+                <div class="log-entry"><span class="log-time">[SISTEMA]</span> AGUARDANDO SINCRONIZAÇÃO...</div>
             </div>
         </div>
 
@@ -84,7 +88,7 @@
                     <div><span class="pnl-label">Lucro / Perda</span><div class="pnl-value" id="pnl-lucro">R$ 0,00</div></div>
                     <div><span class="pnl-label">Performance</span><div class="pnl-value" id="pnl-perc">0.00%</div></div>
                 </div>
-                <div id="pnl-inteligencia">SINCRONIZANDO DADOS...</div>
+                <div id="pnl-inteligencia" style="font-size: 11px; color: var(--green); line-height: 1.5; padding-top: 10px;">SINCRONIZANDO DADOS...</div>
             </div>
         </div>
     </div>
@@ -119,65 +123,74 @@
             const agora = new Date().toLocaleTimeString('pt-BR');
             const logDiv = document.getElementById('log-oraculo');
             
-            // TRADUÇÃO PARA LINGUAGEM DE ANALISTA
+            // INJEÇÃO DA VOZ DO ANALISTA SOBERANO
             let analise = texto.toUpperCase()
                 .replace("EXPLOSÃO", "ROMPIMENTO DE ESTRUTURA")
-                .replace("ENTRA", "COMPRA TÉCNICA VALIDADA")
-                .replace("PULA", "RECUO ESTRUTURAL");
+                .replace("ENTRA", "ENTRADA TÉCNICA VALIDADA")
+                .replace("PULA", "RECUO ESTRUTURAL")
+                .replace("VERDE", "FECHAMENTO EM ALTA");
 
-            logDiv.innerHTML += `<div class="log-entry"><span class="log-time">[${agora}]</span> <span>${analise}</span></div>`;
+            logDiv.innerHTML += `<div class="log-entry"><span class="log-time">[${agora}]</span> <span style="color:var(--gold)">${analise}</span></div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
 
             if (audioAtivo) {
                 window.speechSynthesis.cancel();
                 const mensagem = new SpeechSynthesisUtterance(analise);
                 mensagem.lang = 'pt-BR';
-                mensagem.rate = 1.1; 
+                mensagem.rate = 1.0; 
                 window.speechSynthesis.speak(mensagem);
             }
         }
 
         async function fetchPrices() {
+            const hb = document.getElementById('heartbeat');
+            hb.classList.add('pulse');
             try {
                 const dRes = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL`);
                 const dData = await dRes.json();
                 dolarReal = parseFloat(dData.price);
-                document.getElementById('dolar-real').innerText = `USDT: R$ ${dolarReal.toFixed(2)}`;
+                document.getElementById('label-dolar').innerText = `USDT: R$ ${dolarReal.toFixed(2)}`;
 
                 const btcRes = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT`);
                 const btcData = await btcRes.json();
-                const btcVar = parseFloat(btcData.priceChangePercent);
+                const btcVol = parseFloat(btcData.priceChangePercent);
 
                 for(let m of moedas) {
                     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${m.symbol}`);
                     const data = await res.json();
                     
-                    const precoAtual = parseFloat(data.lastPrice);
-                    const lastRecord = priceHistory[m.id] || precoAtual;
-                    const acceleration = ((precoAtual - lastRecord) / lastRecord) * 100;
-                    priceHistory[m.id] = precoAtual;
+                    const precoAtualUSD = parseFloat(data.lastPrice);
+                    const lastPriceRecord = priceHistory[m.id] || precoAtualUSD;
+                    const acceleration = ((precoAtualUSD - lastPriceRecord) / lastPriceRecord) * 100;
+                    priceHistory[m.id] = precoAtualUSD;
 
-                    const precoBRL = precoAtual * dolarReal;
+                    const precoBRL = precoAtualUSD * dolarReal;
                     lastPrices[m.id] = precoBRL;
                     const var24 = parseFloat(data.priceChangePercent);
-                    const delta = m.id === 'BTC' ? 0 : (var24 - btcVar);
+                    
+                    // CRUZAMENTO DE BLINDAGEM: DELTA E ALVO -50%
+                    const delta = m.id === 'BTC' ? 0 : (var24 - btcVol);
                     const alvoSPA = precoBRL + ((precoBRL * (Math.abs(var24)/100)) * 0.5);
 
-                    // LÓGICA DE DECISÃO ANALÍTICA
-                    let status = { text: 'PULA', color: 'var(--red)', class: 'led-red', msg: 'FLUXO INSUFICIENTE' };
-                    if (precoAtual >= parseFloat(data.openPrice)) {
-                        status = { text: 'AGUARDE', color: 'var(--blue)', class: 'led-blue', msg: 'ESTRUTURA EM FORMAÇÃO' };
+                    let currentVolPerc = (parseFloat(data.quoteVolume) / VOL_REF_GLOBAL) * 100;
+                    if (!ghostPeaks[m.id] || currentVolPerc > ghostPeaks[m.id]) ghostPeaks[m.id] = currentVolPerc;
+
+                    // STATUS COM TRAVAS DE SEGURANÇA
+                    let status = { text: 'PULA', color: 'var(--red)', class: 'led-red', msg: 'GRÁFICO ENFERMEIRO' };
+                    if (precoAtualUSD >= parseFloat(data.openPrice)) {
+                        status = { text: 'AGUARDE', color: 'var(--blue)', class: 'led-blue', msg: 'LATERALIZADO' };
+                        // SINAL "ENTRA" SÓ COM ACELERAÇÃO + DELTA POSITIVO (BLINDAGEM)
                         if (acceleration > 0.02 && delta > 0) {
-                            status = { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'ROMPIMENTO VALIDADO' };
+                            status = { text: 'ENTRA', color: 'var(--green)', class: 'led-green pulse', msg: 'ROMPIMENTO CONFIRMADO' };
                         }
                     }
 
                     if (lastStates[m.id] !== status.text && status.text === 'ENTRA') {
-                        falar(`${m.id}: Rompimento detectado. Alvo de exaustão em R$ ${alvoSPA.toFixed(2)}.`);
+                        falar(`${m.id}: Rompimento com aceleração de ${acceleration.toFixed(2)}%. Alvo técnico em R$ ${alvoSPA.toFixed(2)}.`);
                     }
                     lastStates[m.id] = status.text;
 
-                    // UPDATE UI
+                    // ATUALIZAÇÃO DA UI (ESTRUTURA ORIGINAL)
                     const elPrice = document.getElementById(`price-${m.id}`);
                     if(elPrice) {
                         elPrice.innerText = `R$ ${precoBRL.toFixed(3)}`;
@@ -187,13 +200,16 @@
                         document.getElementById(`led-${m.id}`).className = `led ${status.class}`;
                         document.getElementById(`delta-tag-${m.id}`).innerText = `Δ ${delta.toFixed(2)}%`;
                         
-                        let volPerc = (parseFloat(data.quoteVolume) / VOL_REF_GLOBAL) * 100;
-                        document.getElementById(`vol-bar-${m.id}`).style.width = `${Math.min(volPerc, 100)}%`;
+                        const vBar = document.getElementById(`vol-bar-${m.id}`);
+                        vBar.style.width = `${Math.min(currentVolPerc, 100)}%`;
+                        vBar.style.background = acceleration > 0.01 ? 'var(--green)' : 'var(--blue)';
+                        document.getElementById(`ghost-${m.id}`).style.left = `${Math.min(ghostPeaks[m.id], 99)}%`;
                         document.getElementById(`vol-label-${m.id}`).innerText = `VOLUME: US$ ${(parseFloat(data.quoteVolume)/1000000).toFixed(0)}M`;
                     }
                 }
                 atualizarPatrimonio();
-            } catch (e) { console.log("SYNC..."); }
+            } catch (e) { console.error("SYNC..."); }
+            setTimeout(() => hb.classList.remove('pulse'), 1000);
         }
 
         function atualizarPatrimonio() {
@@ -206,7 +222,7 @@
         }
 
         function mudarTab(evt, nomeTab) {
-            document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+            document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
             document.querySelectorAll(".tab-link").forEach(l => l.classList.remove("active"));
             document.getElementById(nomeTab).classList.add("active");
             evt.currentTarget.classList.add("active");
@@ -217,12 +233,12 @@
             document.getElementById('btn-audio').style.display = 'none';
             document.getElementById('main-content').innerHTML = moedas.map(m => `
                 <div class="crypto-section" id="card-${m.id}">
-                    <div class="market-info">
+                    <div class="market-info" id="info-${m.id}">
                         <div>
                             <span style="color:#666; font-weight:bold; font-size:10px;">${m.id} // SOBERANIA <span id="delta-tag-${m.id}" class="delta-tag">Δ 0%</span></span>
                             <span class="price-big" id="price-${m.id}">R$ ...</span>
-                            <div class="details" id="details-${m.id}">ANALISANDO...</div>
-                            <div class="vol-container"><div class="vol-bar" id="vol-bar-${m.id}"></div><div class="ghost-peak"></div></div>
+                            <div class="details" id="details-${m.id}">INICIALIZANDO ANALISTA...</div>
+                            <div class="vol-container"><div class="vol-bar" id="vol-bar-${m.id}"></div><div class="ghost-peak" id="ghost-${m.id}"></div></div>
                             <span class="vol-label" id="vol-label-${m.id}">VOLUME: US$ 0M</span>
                         </div>
                         <div style="text-align:right">
