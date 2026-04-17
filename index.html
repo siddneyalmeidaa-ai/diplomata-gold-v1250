@@ -6,194 +6,246 @@
     <title>SENTINEL_V12 // SOBERANIA</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #000000; --card: #111111; --green: #00ff41; --red: #ff3131; --blue: #00e5ff; --border: #1a1a1a; --text-dim: #666; }
-        body { background: var(--bg); color: white; font-family: 'Inter', -apple-system, sans-serif; margin: 0; padding: 0; }
+        :root { 
+            --bg: #000000; 
+            --card: #0d0d0d; 
+            --green: #00ff41; 
+            --red: #ff3131; 
+            --blue: #00e5ff; 
+            --border: #1a1a1a; 
+            --text-dim: #666; 
+            --gold: #ffb800;
+        }
         
-        /* TOP BAR TÁTICA */
-        .status-bar { background: #000; padding: 10px 15px; display: flex; justify-content: space-between; font-size: 8px; border-bottom: 1px solid var(--border); font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; }
-        .header { padding: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; font-weight: bold; }
-        .nav { display: flex; border-bottom: 2px solid var(--border); background: #000; }
-        .tab { flex: 1; padding: 15px; text-align: center; font-size: 10px; font-weight: 900; color: var(--text-dim); background: none; border: none; cursor: pointer; text-transform: uppercase; }
-        .tab.active { color: var(--green); border-bottom: 3px solid var(--green); }
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            overflow-x: hidden;
+        }
+        
+        /* BARRA DE STATUS SUPERIOR (FIXA) */
+        .status-bar { 
+            background: #000; 
+            padding: 10px 15px; 
+            display: flex; 
+            justify-content: space-around; 
+            font-size: 8px; 
+            border-bottom: 1px solid var(--border); 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-        .container { padding: 12px; }
+        /* HEADER */
+        .header { 
+            padding: 12px 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 10px; 
+            font-weight: bold; 
+        }
+
+        /* NAVEGAÇÃO */
+        .nav { 
+            display: flex; 
+            border-bottom: 2px solid var(--border); 
+            background: #000; 
+        }
+        .tab { 
+            flex: 1; 
+            padding: 15px; 
+            text-align: center; 
+            font-size: 10px; 
+            font-weight: 900; 
+            color: var(--text-dim); 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+        }
+        .tab.active { 
+            color: var(--green); 
+            border-bottom: 3px solid var(--green); 
+        }
+
+        .container { padding: 8px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* CARDS - DESIGN ARREDONDADO (BORDAS IGUAL AO PRINT) */
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; position: relative; overflow: hidden; padding: 18px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .card:active { background: #161616; }
+        /* DESIGN DO CARD */
+        .card { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            margin-bottom: 8px; 
+            position: relative; 
+            overflow: hidden; 
+            padding: 15px; 
+        }
 
-        .market-info { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .market-info { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: pointer; 
+        }
         
-        .coin-meta { display: flex; flex-direction: column; }
-        .coin-symbol { font-size: 16px; font-weight: 900; color: #fff; margin-bottom: 2px; }
-        .coin-pair { font-size: 8px; color: #444; font-weight: bold; margin-bottom: 5px; }
+        .coin-box { display: flex; flex-direction: column; }
+        .coin-name { font-size: 16px; font-weight: 900; color: #fff; margin-bottom: 2px; }
+        .coin-pair { font-size: 8px; color: #333; font-weight: bold; margin-bottom: 5px; }
 
-        .price-side { text-align: right; position: relative; padding-right: 35px; }
-        .price-val { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; color: #fff; }
+        .price-box { text-align: right; }
+        .price-val { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; }
         .price-pct { font-size: 11px; font-weight: bold; margin-top: 5px; display: block; }
 
-        .led-status { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; border-radius: 50%; }
+        .led-dot { 
+            width: 12px; 
+            height: 12px; 
+            border-radius: 50%; 
+            display: inline-block; 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+        }
 
-        /* GRÁFICO TV EXPANSÍVEL */
-        .chart-box { height: 0; overflow: hidden; transition: height 0.3s ease; background: #000; margin-top: 10px; border-radius: 10px; }
-        .chart-box.active { height: 450px; border-top: 1px solid var(--border); padding-top: 10px; }
-
-        /* ABA PATRIMÔNIO (PNL DESIGN) */
-        .pnl-hero-text { font-size: 11px; color: var(--text-dim); font-weight: bold; }
-        .pnl-main-val { font-size: 34px; font-weight: 900; margin: 10px 0; color: #fff; }
-        
-        .pnl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 25px; border-top: 1px solid #111; padding-top: 20px; }
-        .pnl-item { display: flex; flex-direction: column; gap: 5px; }
-        .pnl-title { font-size: 9px; color: var(--text-dim); font-weight: 800; text-transform: uppercase; }
-        .pnl-data { font-size: 13px; font-weight: bold; color: #fff; }
-        .pnl-chart { background: #080808; border: 1px solid #111; border-radius: 12px; padding: 20px; margin-top: 20px; }
-
-        .pos { color: var(--green); }
-        .neg { color: var(--red); }
+        /* GRÁFICO TÁTICO EXPANSÍVEL (ESPELHAMENTO DO PRINT) */
+        .chart-box { 
+            height: 0; 
+            overflow: hidden; 
+            transition: height 0.3s ease; 
+            background: #000; 
+            margin-top: 10px; 
+            border-radius: 6px; 
+        }
+        .chart-box.active { 
+            height: 500px; /* Altura para acomodar candles e RSI */
+            border-top: 1px solid var(--border); 
+            padding-top: 10px; 
+        }
     </style>
 </head>
 <body>
 
 <div class="status-bar">
-    <div>ESTADO: <span class="pos">ALTISTA</span></div>
-    <div>DOMÍNIO BTC: <span style="color:var(--blue)">52.4%</span></div>
-    <div>FLUXO ATIVO: <span class="pos">ENTRANDO</span></div>
+    <div>ESTADO: <span id="st-mercado" style="color:var(--green)">ALTISTA</span></div>
+    <div>DOMÍNIO BTC: <span id="st-dom" style="color:var(--blue)">52.4%</span></div>
+    <div>FLUXO ATIVO: <span id="st-fluxo" style="color:var(--green)">ENTRANDO</span></div>
 </div>
 
 <div class="header">
-    <div style="letter-spacing:1px">SENTINEL_V12 // SOBERANIA <span id="pulse" class="pos" style="margin-left:5px">●</span></div>
-    <div id="clock">03:24:00</div>
+    <div style="font-size:11px; font-weight:bold; letter-spacing:1px">SENTINEL_V12 // SOBERANIA <span id="hb" style="color:var(--green)">●</span></div>
+    <div id="timer" style="font-size:11px">03:30:00</div>
 </div>
 
 <div class="nav">
-    <button class="tab active" onclick="tab(event, 'm-tab')">🔱 MONITORAMENTO</button>
-    <button class="tab" onclick="tab(event, 'p-tab')">📊 PATRIMÔNIO</button>
+    <button class="tab active" onclick="openTab(event, 'm-tab')">🔱 MONITORAMENTO</button>
+    <button class="tab" onclick="openTab(event, 'p-tab')">📊 PATRIMÔNIO</button>
 </div>
 
 <div class="container">
     <div id="m-tab" class="tab-content active">
-        <div id="list"></div>
-    </div>
-
-    <div id="p-tab" class="tab-content">
-        <div class="pnl-hero-text">PNL de RENDER <span style="font-size:8px">▼</span></div>
-        <div class="pnl-main-val">0.00600000 <span style="font-size:14px; color:#444">≈ R$ 0,055</span></div>
-        
-        <div class="pnl-grid">
-            <div class="pnl-item"><span class="pnl-title">PNL Hoje</span><span class="pnl-data neg">-1.71%</span></div>
-            <div class="pnl-item"><span class="pnl-title">Flutuante</span><span class="pnl-data neg">-2.70%</span></div>
-            <div class="pnl-item"><span class="pnl-title">Cumulativo</span><span class="pnl-data neg">-0.68%</span></div>
-            <div class="pnl-item"><span class="pnl-title">Médio</span><span class="pnl-data">R$ 9,48</span></div>
-            <div class="pnl-item"><span class="pnl-title">Custo</span><span class="pnl-data">R$ 9,47</span></div>
-            <div class="pnl-item"><span class="pnl-title">Mercado</span><span class="pnl-data pos" id="render-market">R$ 9,21</span></div>
-        </div>
-
-        <div class="pnl-chart">
-            <span class="pnl-title" style="margin-bottom:15px; display:block">Patrimônio Líquido do Ativo</span>
-            <div style="font-size:24px; font-weight: 900; margin-bottom:20px; color: #fff;">R$ 0,05529</div>
-            <canvas id="pnlLineChartCanvas" height="150"></canvas>
-        </div>
+        <div id="coin-list"></div>
     </div>
 </div>
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    const assets = ["BTC", "ETH", "RENDER", "NEAR", "SOL", "SEI", "POL", "ADA", "DOT", "FET"];
-    
-    function tab(e, id) {
+    // LISTA DE 10 CRIPTOMOEDAS
+    const moedas = ["BTC", "ETH", "RENDER", "NEAR", "SOL", "SEI", "POL", "ADA", "DOT", "FET"];
+    let history = {};
+
+    function openTab(evt, tabName) {
         document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
         document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        document.getElementById(id).classList.add("active");
-        e.currentTarget.classList.add("active");
-        if(id === 'p-tab') drawPnl();
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
     }
 
-    function init() {
-        document.getElementById('list').innerHTML = assets.map(a => `
+    function buildUI() {
+        document.getElementById('coin-list').innerHTML = moedas.map(m => `
             <div class="card">
-                <div class="market-info" onclick="toggleChart('${a}')">
-                    <div class="coin-meta">
-                        <span class="coin-symbol">${a}</span>
+                <div class="market-info" onclick="toggleChart('${m}')">
+                    <div class="coin-box">
+                        <span class="coin-name">${m}</span>
                         <span class="coin-pair">USDT / BRL</span>
                     </div>
-                    <div class="price-side">
-                        <div class="price-val" id="p-${a}">R$ 0,00</div>
-                        <div class="price-pct" id="v-${a}">0.00%</div>
-                        <div class="led-status" id="led-${a}" style="background:#222"></div>
+                    <div class="price-box">
+                        <div class="price-val" id="p-${m}">R$ 0,00</div>
+                        <div class="price-pct" id="v-${m}">0.00%</div>
+                        <div class="led-dot" id="led-${m}" style="background:#222"></div>
                     </div>
                 </div>
-                <div class="chart-box" id="box-${a}"></div>
+                <div class="chart-box" id="box-${m}"></div>
             </div>
         `).join('');
     }
 
-    async function update() {
-        const pulse = document.getElementById('pulse');
-        pulse.style.opacity = '0.3';
-        for (let s of assets) {
+    async function sync() {
+        const hb = document.getElementById('hb');
+        hb.style.opacity = '0.3';
+        
+        for (let s of moedas) {
             try {
-                const r = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s === 'POL' ? 'MATIC' : s}USDT`);
-                const d = await r.json();
-                const brl = parseFloat(d.lastPrice) * 5.43; // Cotação BRL fixa para o exemplo
-                const pct = parseFloat(d.priceChangePercent);
+                // Sincronização de valores reais via API Binance
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s === 'POL' ? 'MATIC' : s}USDT`);
+                const data = await res.json();
+                const brl = parseFloat(data.lastPrice) * 5.43;
+                const change = parseFloat(data.priceChangePercent);
                 
-                const dec = (brl < 1) ? 4 : (brl < 100) ? 4 : 2;
-                document.getElementById(`p-${s}`).innerText = "R$ " + brl.toLocaleString('pt-BR', {minimumFractionDigits: dec});
+                // Precisão decimal por valor de ativo
+                const decimals = (brl < 1) ? 4 : (brl < 100) ? 4 : 2;
+                document.getElementById(`p-${s}`).innerText = "R$ " + brl.toLocaleString('pt-BR', {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
                 
-                const v = document.getElementById(`v-${s}`);
-                v.innerText = (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
-                v.className = `price-pct ${pct >= 0 ? 'pos' : 'neg'}`;
+                const pctEl = document.getElementById(`v-${s}`);
+                pctEl.innerText = (change >= 0 ? "+" : "") + change.toFixed(2) + "%";
+                pctEl.style.color = change >= 0 ? "var(--green)" : "var(--red)";
 
                 const led = document.getElementById(`led-${s}`);
-                if (pct < -0.3) {
+                if (change < -0.3) {
                     led.style.background = "var(--red)"; led.style.boxShadow = "0 0 10px var(--red)";
-                } else if (pct > 0.3) {
+                } else if (change > 0.3) {
                     led.style.background = "var(--green)"; led.style.boxShadow = "0 0 10px var(--green)";
                 } else {
                     led.style.background = "var(--blue)"; led.style.boxShadow = "0 0 10px var(--blue)";
                 }
-                if(s === "RENDER") document.getElementById('render-market').innerText = `R$ ${brl.toFixed(2)}`;
             } catch (e) {}
         }
-        pulse.style.opacity = '1';
+        hb.style.opacity = '1';
     }
 
     function toggleChart(id) {
         const box = document.getElementById(`box-${id}`);
         box.classList.toggle('active');
         if (box.innerHTML === "") {
+            const pair = (id === 'POL') ? 'MATIC' : id;
             new TradingView.widget({
-                "autosize": true, "symbol": "BINANCE:" + (id === 'POL' ? 'MATIC' : id) + "USDT",
-                "interval": "1", "theme": "dark", "style": "1", "container_id": `box-${id}`,
-                "hide_side_toolbar": true, "locale": "br"
+                "autosize": true,
+                "symbol": "BINANCE:" + pair + "USDT",
+                "interval": "1", // 1 minuto conforme print
+                "theme": "dark",
+                "style": "1", // Candles conforme print
+                "container_id": `box-${id}`,
+                "hide_side_toolbar": true,
+                "locale": "br",
+                "studies": [
+                    "RSI@tv-basicstudies", // RSI tático
+                    "MASimple@tv-basicstudies" // Média Móvel (MA 9)
+                ]
             });
         }
     }
 
-    function drawPnl() {
-        const ctx = document.getElementById('pnlLineChartCanvas').getContext('2d');
-        const grad = ctx.createLinearGradient(0, 0, 0, 150);
-        grad.addColorStop(0, 'rgba(255, 184, 0, 0.4)');
-        grad.addColorStop(1, 'rgba(255, 184, 0, 0)');
-        if(window.pnlChartObject) window.pnlChartObject.destroy();
-        window.pnlChartObject = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['04-10', '04-12', '04-13', '04-14', '04-15', '04-16', '04-17'],
-                datasets: [{
-                    data: [10, 8, 18, 5, 48, 15, 22], borderColor: '#ffb800', borderWidth: 3, fill: true, backgroundColor: grad, tension: 0.4, pointRadius: 0
-                }]
-            },
-            options: { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#333', font: { size: 9 } } }, y: { display: false } } }
-        });
-    }
-
-    init();
-    update();
-    setInterval(update, 8000);
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    buildUI();
+    sync();
+    setInterval(sync, 8000); // Sincronia a cada 8s
+    setInterval(() => { document.getElementById('timer').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
 </html>
