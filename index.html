@@ -3,26 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V12 // SOVERANIA_TOTAL</title>
+    <title>SENTINEL_V12 // SOBERANIA</title>
     <style>
         :root { --bg-dark: #020202; --card-bg: #0d0d0d; --text-main: #ffffff; --text-dim: #888; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Cabeçalho e Radar */
-        .top-bar { background: #000; padding: 12px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: var(--text-dim); border-bottom: 2px solid #1a1a1a; position: sticky; top: 0; z-index: 100; }
+        /* Header e Radar */
+        .top-bar { background: #000; padding: 12px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a1a1a; position: sticky; top: 0; z-index: 100; }
         .radar-global { background: #080808; padding: 10px; font-size: 10px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--blue); color: var(--blue); font-weight: bold; }
-        
-        /* Navegação */
         .nav-sistema { display: flex; background: #000; border-bottom: 2px solid #222; position: sticky; top: 43px; z-index: 99; }
         .tab-link { flex: 1; padding: 15px; border: none; background: none; color: var(--text-dim); cursor: pointer; font-size: 12px; font-weight: 800; text-transform: uppercase; }
         .tab-link.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
         
-        .btn-ativa { background: var(--green); color: black; border: none; padding: 25px; width: 100%; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+        .btn-ativa { background: var(--green); color: black; border: none; padding: 25px; width: 100%; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; }
 
-        /* Estrutura de Card Espelhada */
+        /* Estilo Clássico de Card Re-aplicado */
         .container { padding: 10px; }
-        .crypto-section { background: var(--card-bg); margin-bottom: 10px; border-radius: 6px; border: 1px solid #1a1a1a; overflow: hidden; }
-        .market-info { padding: 18px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #333; transition: 0.2s; }
+        .crypto-section { background: var(--card-bg); margin-bottom: 10px; border-radius: 8px; border: 1px solid #1a1a1a; overflow: hidden; }
+        .market-info { padding: 18px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #333; }
         
         .coin-name { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 1px; }
         .price-container { text-align: right; flex-grow: 1; padding-right: 20px; }
@@ -33,7 +31,7 @@
         .led-green { background: var(--green); box-shadow: 0 0 12px var(--green); }
         .led-red { background: var(--red); box-shadow: 0 0 12px var(--red); }
 
-        /* Área de Gestão (Espelhamento Patrimônio) */
+        /* Área de Input Espelhada no Patrimônio */
         .pat-input-area { background: #050505; padding: 15px; border-top: 1px solid #1a1a1a; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .label-pnl { font-size: 9px; color: var(--text-dim); font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: block; }
         .input-box { background: #111; border: 1px solid #333; color: var(--green); padding: 10px; font-size: 16px; font-weight: bold; border-radius: 4px; width: 100%; box-sizing: border-box; }
@@ -42,16 +40,16 @@
 </head>
 <body>
 
-    <button id="btn-start" class="btn-ativa" onclick="iniciarSentinela()">🔱 ATIVAR ESPELHAMENTO V12 [21:35 PM]</button>
+    <button id="btn-start" class="btn-ativa" onclick="iniciar()">🔱 RESTAURAR SENTINEL V12 // ESPELHAMENTO ATIVO</button>
 
     <div class="radar-global">
-        <span>ESTADO: <span id="global-status">SINCRONIZANDO...</span></span>
-        <span>DOMÍNIO BTC: <span id="global-dom">--%</span></span>
-        <span>FLUXO ATIVO: <span id="global-target" style="color: var(--yellow);">...</span></span>
+        <span>ESTADO: <span id="global-status">ALTISTA</span></span>
+        <span>DOMÍNIO BTC: <span id="global-dom">48.06%</span></span>
+        <span>FLUXO ATIVO: <span id="global-target" style="color: var(--yellow);">SOL</span></span>
     </div>
 
     <div class="top-bar">
-        <div>SENTINEL_V12 // SOBERANIA <span id="heartbeat" style="color: var(--green);">●</span></div>
+        <div>SENTINEL_V12 // SOBERANIA <span style="color: var(--green);">●</span></div>
         <div id="clock">00:00:00</div>
     </div>
 
@@ -64,23 +62,17 @@
         <div id="monitoramento" class="tab-content">
             <div id="lista-mkt"></div>
         </div>
-
         <div id="patrimonio" class="tab-content" style="display:none;">
             <div id="lista-pat"></div>
         </div>
     </div>
 
     <script>
-        const moedas = [
-            { id: "BTC", pair: "BTCUSDT" }, { id: "ETH", pair: "ETHUSDT" },
-            { id: "RENDER", pair: "RENDERUSDT" }, { id: "SOL", pair: "SOLUSDT" },
-            { id: "NEAR", pair: "NEARUSDT" }, { id: "LINK", pair: "LINKUSDT" }
-        ];
-        
+        const moedas = ["BTC", "ETH", "RENDER", "SOL", "NEAR", "LINK", "SEI", "POL", "ADA", "DOT"];
         let prices = {};
         let dolarBRL = 5.30;
 
-        async function iniciarSentinela() {
+        async function iniciar() {
             document.getElementById('btn-start').style.display = 'none';
             renderizarEstruturas();
             atualizarDados();
@@ -89,41 +81,39 @@
         }
 
         function renderizarEstruturas() {
-            // Render Monitoramento
+            // Monitoramento
             document.getElementById('lista-mkt').innerHTML = moedas.map(m => `
                 <div class="crypto-section">
-                    <div class="market-info" id="card-m-${m.id}">
-                        <div class="coin-name">${m.id}</div>
+                    <div class="market-info" id="card-m-${m}">
+                        <div class="coin-name">${m}</div>
                         <div class="price-container">
-                            <span class="price-big" id="price-m-${m.id}">R$ 0,00</span>
-                            <span class="var-percent" id="var-m-${m.id}">0.00%</span>
+                            <span class="price-big" id="price-m-${m}">R$ 0,00</span>
+                            <span class="var-percent" id="var-m-${m}">0.00%</span>
                         </div>
-                        <div class="led" id="led-m-${m.id}"></div>
+                        <div class="led" id="led-m-${m}"></div>
                     </div>
                 </div>
             `).join('');
 
-            // Render Patrimônio (Espelhamento com Campo de Depósito)
-            // Moedas em foco para o seu patrimônio: RENDER e SOL
-            const meuPatrimonio = moedas.filter(m => m.id === "RENDER" || m.id === "SOL");
-            document.getElementById('lista-pat').innerHTML = meuPatrimonio.map(m => `
+            // Patrimônio (Espelhamento Total com Campos de Depósito)
+            document.getElementById('lista-pat').innerHTML = moedas.map(m => `
                 <div class="crypto-section">
-                    <div class="market-info" id="card-p-${m.id}">
-                        <div class="coin-name">${m.id}</div>
+                    <div class="market-info" id="card-p-${m}">
+                        <div class="coin-name">${m}</div>
                         <div class="price-container">
-                            <span class="price-big" id="lucro-p-${m.id}">R$ 0,00</span>
-                            <span class="var-percent" id="perf-p-${m.id}">Aguardando Depósito</span>
+                            <span class="price-big" id="lucro-p-${m}">R$ 0,00</span>
+                            <span class="var-percent" id="perf-p-${m}">Sincronizando...</span>
                         </div>
-                        <div class="led" id="led-p-${m.id}"></div>
+                        <div class="led" id="led-p-${m}"></div>
                     </div>
                     <div class="pat-input-area">
                         <div>
                             <span class="label-pnl">Capital p/ Depósito (R$)</span>
-                            <input type="number" id="deposito-${m.id}" class="input-box" placeholder="Ex: 1500" oninput="calcularPnl('${m.id}')">
+                            <input type="number" id="deposito-${m}" class="input-box" placeholder="0.00" oninput="calcularPnl('${m}')">
                         </div>
                         <div style="text-align: right;">
                             <span class="label-pnl">Cotação Atual</span>
-                            <div class="val-display" id="cotacao-p-${m.id}">R$ 0,00</div>
+                            <div class="val-display" id="saldo-p-${m}">R$ 0,00</div>
                         </div>
                     </div>
                 </div>
@@ -132,74 +122,52 @@
 
         async function atualizarDados() {
             try {
-                const symbols = moedas.map(m => m.pair);
+                const symbols = moedas.map(m => m + "USDT");
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=["${symbols.join('","')}","USDTBRL"]`);
                 const data = await res.json();
-                
                 dolarBRL = parseFloat(data.find(x => x.symbol === "USDTBRL").lastPrice);
-                const btcData = data.find(x => x.symbol === "BTCUSDT");
-                const btcVar = parseFloat(btcData.priceChangePercent);
-
-                // SINAPSE DO CABEÇALHO (O que estava faltando)
-                document.getElementById('global-status').innerText = btcVar >= 0 ? "ALTISTA" : "LATERAL";
-                document.getElementById('global-status').style.color = btcVar >= 0 ? 'var(--green)' : 'var(--red)';
-                document.getElementById('global-dom').innerText = (48 + (btcVar / 5)).toFixed(2) + "%";
-
-                let topMoeda = "";
-                let maxAlta = -999;
 
                 data.forEach(item => {
-                    const coin = moedas.find(c => c.pair === item.symbol);
-                    if (coin) {
+                    const sym = item.symbol.replace("USDT", "");
+                    if (moedas.includes(sym)) {
                         const price = parseFloat(item.lastPrice) * dolarBRL;
                         const varPct = parseFloat(item.priceChangePercent);
-                        prices[coin.id] = price;
-
-                        if(varPct > maxAlta && coin.id !== "BTC") { maxAlta = varPct; topMoeda = coin.id; }
+                        prices[sym] = price;
 
                         // Atualiza Monitoramento
-                        if(document.getElementById(`price-m-${coin.id}`)) {
-                            document.getElementById(`price-m-${coin.id}`).innerText = price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-                            const vEl = document.getElementById(`var-m-${coin.id}`);
-                            vEl.innerText = (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
-                            vEl.style.color = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                            document.getElementById(`card-m-${coin.id}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                            document.getElementById(`led-m-${coin.id}`).className = `led ${varPct >= 0 ? 'led-green' : 'led-red'}`;
-                        }
+                        const precision = price < 10 ? 4 : 2;
+                        document.getElementById(`price-m-${sym}`).innerText = price.toLocaleString('pt-BR', {style:'currency', currency:'BRL', minimumFractionDigits: precision});
+                        const vEl = document.getElementById(`var-m-${sym}`);
+                        vEl.innerText = (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
+                        vEl.style.color = varPct >= 0 ? 'var(--green)' : 'var(--red)';
+                        document.getElementById(`card-m-${sym}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
+                        document.getElementById(`led-m-${sym}`).className = `led ${varPct >= 0 ? 'led-green' : 'led-red'}`;
+
+                        // Atualiza Patrimônio (Espelhamento de LED e Cor)
+                        document.getElementById(`saldo-p-${sym}`).innerText = price.toLocaleString('pt-BR', {style:'currency', currency:'BRL', minimumFractionDigits: precision});
+                        document.getElementById(`card-p-${sym}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
+                        document.getElementById(`led-p-${sym}`).className = `led ${varPct >= 0 ? 'led-green' : 'led-red'}`;
                         
-                        // Atualiza Cotação no Patrimônio
-                        if(document.getElementById(`cotacao-p-${coin.id}`)) {
-                            document.getElementById(`cotacao-p-${coin.id}`).innerText = price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-                        }
-                        
-                        calcularPnl(coin.id);
+                        calcularPnl(sym);
                     }
                 });
-
-                document.getElementById('global-target').innerText = topMoeda;
-            } catch (e) { console.error("🔱 Falha na sinapse de dados."); }
+            } catch (e) { console.log("Erro de Sincronia."); }
         }
 
-        function calcularPnl(id) {
-            const input = document.getElementById(`deposito-${id}`);
-            if(!input) return;
-            
+        function calcularPnl(m) {
+            const input = document.getElementById(`deposito-${m}`);
             const deposito = parseFloat(input.value) || 0;
-            const precoAtual = prices[id] || 0;
-            
-            // Lógica de espelhamento: O lucro mostrado no card de patrimônio reflete o seu capital
-            // Se o depósito existe, o card mostra o valor do saldo em tempo real.
-            const elLucro = document.getElementById(`lucro-p-${id}`);
-            const elPerf = document.getElementById(`perf-p-${id}`);
-            const card = document.getElementById(`card-p-${id}`);
-            const led = document.getElementById(`led-p-${id}`);
+            const elLucro = document.getElementById(`lucro-p-${m}`);
+            const elPerf = document.getElementById(`perf-p-${m}`);
 
             if(deposito > 0) {
                 elLucro.innerText = deposito.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-                elPerf.innerText = "CAPITAL MONITORADO";
+                elPerf.innerText = "CAPITAL ATIVO";
                 elPerf.style.color = 'var(--blue)';
-                card.style.borderLeftColor = 'var(--blue)';
-                led.className = 'led led-green';
+            } else {
+                elLucro.innerText = "R$ 0,00";
+                elPerf.innerText = "AGUARDANDO APORTE";
+                elPerf.style.color = 'var(--text-dim)';
             }
         }
 
