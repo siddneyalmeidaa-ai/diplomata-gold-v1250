@@ -1,81 +1,49 @@
-// 1. ENDEREÇO DO CÉREBRO
+// 1. ENDEREÇO DO CÉREBRO (Certifique-se que o Worker está ON)
 const JSON_STREAM = "https://late-sea-261d.siddney-almeidaa.workers.dev";
 
-let moedas = []; // Começa vazio, o JSON vai preencher
-let charts = {};
+// Lista de emergência caso o JSON falhe no primeiro carregamento
+let moedas = ["BTC", "ETH", "SOL", "RENDER", "NEAR", "LINK", "SEI", "POL", "ADA", "DOT"];
+let sparks = {}; 
 let candleCharts = {};
 
-// 2. FUNÇÃO PRINCIPAL: PUXAR DADOS DO WORKER
-async function sincronizarSentinela() {
-    try {
-        const response = await fetch(JSON_STREAM);
-        const data = await response.json();
-
-        // Se for a primeira vez, cria o layout com as moedas que vieram do JSON
-        if (moedas.length === 0) {
-            moedas = data.moedas_mercado.map(m => m.id);
-            renderizarInterface();
-        }
-
-        // 3. ATUALIZAÇÃO DO STATUS E RADAR
-        document.getElementById('global-status').innerText = data.status_ia;
-        document.getElementById('global-dom').innerText = data.btc_dominancia + "%";
-        
-        const btcData = data.moedas_mercado.find(m => m.id === "BTC");
-        const btcVar = btcData ? btcData.variacao_24h : 0;
-
-        // 4. LOOP DE ATUALIZAÇÃO POR MOEDA
-        data.moedas_mercado.forEach(moeda => {
-            const m = moeda.id;
-            const preco = moeda.valor_brl;
-            const variacao = moeda.variacao_24h;
-
-            // Atualiza preços nas duas abas
-            ['m', 'p'].forEach(aba => {
-                const pEl = document.getElementById(`price-${aba}-${m}`);
-                const vEl = document.getElementById(`var-${aba}-${m}`);
-                if (pEl) pEl.innerText = preco.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-                if (vEl) {
-                    vEl.innerText = (variacao >= 0 ? "+" : "") + variacao.toFixed(2) + "%";
-                    vEl.style.color = variacao >= 0 ? 'var(--green)' : 'var(--red)';
-                }
-            });
-
-            // 5. LÓGICA DA FAVELINHA (DRENANDO / INJETANDO)
-            let analise = "";
-            if (variacao > btcVar && btcVar < 0) analise = "REFÚGIO";
-            else if (variacao > btcVar) analise = "INJETANDO";
-            else analise = "DRENANDO";
-
-            const fluxoEl = document.getElementById(`fluxo-m-${m}`);
-            if (fluxoEl) {
-                fluxoEl.innerText = analise;
-                fluxoEl.style.color = analise === "DRENANDO" ? 'var(--red)' : (analise === "REFÚGIO" ? 'var(--blue)' : 'var(--green)');
-            }
-
-            // 6. PATRIMÔNIO AUTOMÁTICO (Vindo do JSON)
-            if (data.meu_patrimonio[m]) {
-                const pInfo = data.meu_patrimonio[m];
-                const pmEl = document.getElementById(`pm-${m}`);
-                const saldoEl = document.getElementById(`saldo-${m}`);
-                
-                if (pmEl) pmEl.innerText = pInfo.preco_medio_automatico.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-                // Cálculo de saldo: Quantidade (do JSON) * Preço Atual
-                if (saldoEl) {
-                    const saldoReal = pInfo.quantidade * (preco / 5.45); // Ajuste se o JSON já for em BRL
-                    saldoEl.innerText = saldoReal.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-                }
-            }
-        });
-
-    } catch (error) {
-        console.error("❌ ERRO NA SINAPSE JSON:", error);
-    }
+async function iniciarSistema() {
+    document.getElementById('btn-start').style.display = 'none';
+    
+    // Rendeziramos a base IMEDIATAMENTE com a lista de emergência
+    renderizarBase(); 
+    
+    // Tenta a primeira conexão com o cérebro
+    await sincronizarCerebro();
+    
+    // Mantém o pulso
+    setInterval(sincronizarCerebro, 10000);
+    setInterval(() => { 
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); 
+    }, 1000);
 }
 
-// 7. INICIALIZAÇÃO
-function iniciarSistema() {
-    document.getElementById('btn-start').style.display = 'none';
-    sincronizarSentinela();
-    setInterval(sincronizarSentinela, 10000); // Pulso de 10 segundos
+async function sincronizarCerebro() {
+    try {
+        const response = await fetch(JSON_STREAM);
+        if (!response.ok) throw new Error("Worker offline");
+        
+        const data = await response.json();
+
+        // Atualiza os dados globais
+        document.getElementById('global-status').innerText = data.status_ia || "ESTÁVEL";
+        document.getElementById('global-dom').innerText = (data.btc_dominancia || "0") + "%";
+        document.getElementById('global-situacao').innerText = "CONECTADO";
+        document.getElementById('global-situacao').style.color = "var(--green)";
+
+        // Restante da lógica de loop (BTC Var, Fluxo, etc...) igual ao anterior
+        processarDadosFluxo(data);
+
+    } catch (e) {
+        console.error("⚠️ ALERTA: Cérebro JSON offline. Operando em modo de segurança.");
+        document.getElementById('global-situacao').innerText = "MODO SEGURANÇA (OFFLINE)";
+        document.getElementById('global-situacao').style.color = "var(--red)";
+        
+        // Se o JSON falhar, o sistema continua tentando atualizar via Binance direto
+        syncFallbackBinance(); 
+    }
 }
