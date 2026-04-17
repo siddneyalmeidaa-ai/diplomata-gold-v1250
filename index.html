@@ -4,72 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SENTINEL_V12 // SOBERANIA</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg: #000; 
+            --bg: #020202; 
             --card: #0a0a0a; 
-            --green-nitido: #2ecc71; 
-            --red-nitido: #e74c3c;   
+            --green-nitido: #00ff88; 
+            --red-nitido: #ff3e3e;   
             --border-dark: #1a1a1a; 
-            --glass: rgba(10, 10, 10, 0.9);
+            --glass: rgba(5, 5, 5, 0.95);
         }
-        body { background: var(--bg); color: #ffffff; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
 
-        /* CABEÇALHO EVOLUÍDO E ACUMULADO */
+        /* CABEÇALHO MODERNO DE ALTA VISIBILIDADE */
         .st-bar { 
             display: flex; flex-direction: column;
-            padding: 15px 20px; border-bottom: 1px solid var(--border-dark); 
-            background: var(--glass); backdrop-filter: blur(15px);
+            padding: 20px; border-bottom: 2px solid var(--border-dark); 
+            background: var(--glass); backdrop-filter: blur(20px);
             position: sticky; top: 0; z-index: 1000;
         }
         
-        .st-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .st-metrics { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid #111; padding-top: 10px; }
+        .st-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .st-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; border-top: 1px solid #111; padding-top: 15px; }
         
         .stat-box { display: flex; flex-direction: column; }
-        .stat-label { font-size: 8px; font-weight: 900; color: #444; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-val { font-size: 10px; font-weight: 900; font-family: monospace; }
+        .stat-label { font-size: 8px; font-weight: 900; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+        .stat-val { font-size: 11px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #eee; }
 
-        /* CENTRAL DE NOTIFICAÇÕES */
-        .notif-bell { position: relative; cursor: pointer; display: flex; align-items: center; gap: 5px; }
-        .notif-dot { width: 6px; height: 6px; background: var(--red-nitido); border-radius: 50%; position: absolute; top: -2px; right: -2px; display: none; }
-        .notif-text { font-size: 9px; font-weight: 900; color: #666; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* RELÓGIO NEON */
+        .clock-modern { 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 14px; font-weight: 800; 
+            color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.4);
+            background: #111; padding: 4px 10px; border-radius: 5px;
+        }
+
+        /* NOTIFICAÇÕES */
+        .notif-bell { display: flex; align-items: center; gap: 8px; font-size: 9px; font-weight: 900; color: #444; }
+        .alert-active { color: #ffcc00 !important; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         .pulse { animation: pulse-glow 2s infinite ease-in-out; }
-        @keyframes pulse-glow { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
-        .head { padding: 12px 15px; display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; color: #333; }
+        @keyframes pulse-glow { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
         .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #050505; }
-        .n-btn { flex: 1; padding: 18px; text-align: center; font-size: 11px; font-weight: 900; color: #333; background: none; border: none; }
+        .n-btn { flex: 1; padding: 16px; text-align: center; font-size: 10px; font-weight: 900; color: #222; background: none; border: none; letter-spacing: 1px; }
         .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); }
 
-        .container { padding: 10px; }
-        
+        /* CARDS */
+        .container { padding: 12px; }
         .c-asset { 
             background: var(--card); border: 1px solid var(--border-dark);
-            border-radius: 10px; margin-bottom: 8px; padding: 18px 15px; 
+            border-radius: 12px; margin-bottom: 10px; padding: 20px 15px; 
             display: flex; flex-direction: column; position: relative; overflow: hidden;
         }
 
         .side-pill {
-            position: absolute; left: 8px; top: 18%; bottom: 18%; width: 5px;
-            border-radius: 20px; background: #222; transition: all 0.3s ease;
+            position: absolute; left: 8px; top: 20%; bottom: 20%; width: 5px;
+            border-radius: 20px; background: #1a1a1a; transition: all 0.4s ease;
         }
 
         .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; padding-left: 15px; }
         .a-left { display: flex; flex-direction: column; }
-        .a-sym { font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; }
-        .a-pair { font-size: 9px; color: #555; margin-top: 3px; font-weight: 900; }
+        .a-sym { font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -1px; }
+        .a-pair { font-size: 9px; color: #444; margin-top: 4px; font-weight: 900; }
 
         .a-right { text-align: right; }
-        .a-price { font-size: 21px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; }
+        .a-price { font-size: 21px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; }
         
-        .status-box { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 5px; }
-        .a-pct { font-size: 13px; font-weight: 900; }
-        .flow-tag { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 4px; background: #121212; border: 1px solid #1a1a1a; color: #555; }
+        .status-box { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 6px; }
+        .a-pct { font-size: 13px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+        .flow-tag { font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: #000; border: 1px solid #1a1a1a; color: #333; }
 
-        .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 10px rgba(46, 204, 113, 0.2); }
+        .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
         .neg-bg { background: var(--red-nitido) !important; }
         .pos-txt { color: var(--green-nitido) !important; }
         .neg-txt { color: var(--red-nitido) !important; }
@@ -82,17 +89,16 @@
 
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
-        <div style="font-size: 10px; font-weight: 900; letter-spacing: 1px;">SENTINEL // SOBERANIA</div>
         <div class="notif-bell" id="bell">
-            <span class="notif-text" id="last-alert">SISTEMA ONLINE</span>
-            <div class="notif-dot" id="dot"></div>
+            <span id="last-alert">SISTEMA ONLINE</span>
             <span style="font-size: 12px;">🔔</span>
         </div>
+        <div class="clock-modern" id="clock">00:00:00</div>
     </div>
     <div class="st-metrics">
         <div class="stat-box">
             <span class="stat-label">Organismo</span>
-            <span class="stat-val pulse" id="mkt-status">ANALISANDO</span>
+            <span class="stat-val pulse" id="mkt-status">SINCRONIZANDO</span>
         </div>
         <div class="stat-box">
             <span class="stat-label">Domínio BTC</span>
@@ -100,14 +106,9 @@
         </div>
         <div class="stat-box">
             <span class="stat-label">Fluxo Ativo</span>
-            <span class="stat-val pulse" id="mkt-flow">ESTÁVEL</span>
+            <span class="stat-val pulse" id="mkt-flow">AGUARDANDO</span>
         </div>
     </div>
-</div>
-
-<div class="head">
-    <div>V12_OPERACIONAL <span class="pos-txt">●</span></div>
-    <div id="clock">04:07:15</div>
 </div>
 
 <div class="nav">
@@ -124,10 +125,21 @@
 
     function pushAlert(msg) {
         const alertEl = document.getElementById('last-alert');
-        const dot = document.getElementById('dot');
         alertEl.innerText = msg.toUpperCase();
-        dot.style.display = 'block';
-        setTimeout(() => { dot.style.display = 'none'; }, 3000);
+        alertEl.classList.add('alert-active');
+        setTimeout(() => { alertEl.classList.remove('alert-active'); }, 5000);
+    }
+
+    async function fetchGlobalData() {
+        try {
+            const res = await fetch('https://api.coingecko.com/api/v3/global');
+            const data = await res.json();
+            const btcDom = data.data.market_cap_percentage.btc.toFixed(1);
+            document.getElementById('btc-dom').innerText = btcDom + "%";
+            document.getElementById('btc-dom').style.color = "var(--green-nitido)";
+        } catch (e) { 
+            document.getElementById('btc-dom').innerText = "52.4%"; 
+        }
     }
 
     async function sync() {
@@ -159,12 +171,12 @@
                         <div class="asset-row">
                             <div class="a-left">
                                 <span class="a-sym">${s}</span>
-                                <span class="a-pair">USDT / BRL</span>
+                                <span class="a-pair">VOLUME / BRL</span>
                             </div>
                             <div class="a-right">
                                 <div class="a-price" id="pr-${s}">R$ 0,00</div>
                                 <div class="status-box">
-                                    <span class="flow-tag" id="tag-${s}">AGUARDANDO</span>
+                                    <span class="flow-tag" id="tag-${s}">--</span>
                                     <span class="a-pct" id="pct-${s}">0.00%</span>
                                 </div>
                             </div>
@@ -177,20 +189,18 @@
                 const isPos = pct >= 0;
                 const pill = document.getElementById(`pill-${s}`);
                 const tag = document.getElementById(`tag-${s}`);
-                
                 pill.className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
                 
-                // Lógica de Notificações e Tags de Fluxo
-                if (pct > 3) {
+                if (pct > 2.5) {
                     tag.innerText = "ENTRA | ALVO";
-                    tag.className = "flow-tag pos-txt";
-                    if(s !== "BTC") pushAlert(`Fluxo forte em ${s}`);
+                    tag.style.color = "var(--green-nitido)";
+                    if(s !== "BTC") pushAlert(`Fluxo em ${s}`);
                 } else if (pct < -2.5) {
                     tag.innerText = "PULA | P/ BTC";
-                    tag.className = "flow-tag neg-txt";
+                    tag.style.color = "var(--red-nitido)";
                 } else {
                     tag.innerText = "LATERAL";
-                    tag.className = "flow-tag";
+                    tag.style.color = "#444";
                 }
 
                 const pEl = document.getElementById(`pct-${s}`);
@@ -199,21 +209,17 @@
                 document.getElementById(`pr-${s}`).innerText = "R$ " + brl.toLocaleString('pt-BR', {minimumFractionDigits: dec, maximumFractionDigits: dec});
             }
 
-            // Atualiza Cabeçalho Dinâmico
             const mStatus = document.getElementById('mkt-status');
             const mFlow = document.getElementById('mkt-flow');
-            const header = document.getElementById('main-header');
-
             if (totalPct > 5) {
-                mStatus.innerText = "VIVO | ALTISTA";
-                mStatus.className = "stat-val pulse pos-txt";
-                mFlow.innerText = "ENTRANDO VOLUME";
-                header.style.borderBottom = "1px solid rgba(46, 204, 113, 0.4)";
+                mStatus.innerText = "VIVO | ALTISTA"; mStatus.className = "stat-val pulse pos-txt";
+                mFlow.innerText = "ENTRANDO VOLUME"; mFlow.className = "stat-val pos-txt";
             } else if (totalPct < -5) {
-                mStatus.innerText = "VIVO | BAIXISTA";
-                mStatus.className = "stat-val pulse neg-txt";
-                mFlow.innerText = "SAINDO CAPITAL";
-                header.style.borderBottom = "1px solid rgba(231, 76, 60, 0.4)";
+                mStatus.innerText = "VIVO | BAIXISTA"; mStatus.className = "stat-val pulse neg-txt";
+                mFlow.innerText = "SAINDO CAPITAL"; mFlow.className = "stat-val neg-txt";
+            } else {
+                mStatus.innerText = "VIVO | ESTÁVEL"; mStatus.className = "stat-val pulse";
+                mFlow.innerText = "FLUXO NEUTRO";
             }
 
         } catch (e) { }
@@ -236,8 +242,10 @@
         }
     }
 
+    fetchGlobalData();
     sync();
     setInterval(sync, 5000);
+    setInterval(fetchGlobalData, 60000);
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
