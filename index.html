@@ -15,7 +15,7 @@
         
         body { background-color: var(--bg-dark); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Cabeçalho e Radar */
+        /* Radar e Top Bar */
         .radar-global { background: #080808; padding: 10px; font-size: 10px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--blue); color: var(--blue); font-weight: bold; }
         .top-bar { background: #000; padding: 12px; font-size: 11px; display: flex; justify-content: space-between; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 100; }
         .nav-sistema { display: flex; background: #000; border-bottom: 2px solid #222; position: sticky; top: 43px; z-index: 99; }
@@ -24,38 +24,36 @@
         
         .btn-ativa { background: var(--green); color: black; border: none; padding: 25px; width: 100%; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; }
 
-        /* Interface de Cards Premium */
+        /* Interface de Cards */
         .container { padding: 10px; }
         .crypto-section { background: var(--card-bg); margin-bottom: 12px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; position: relative; cursor: pointer; }
         .market-info { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #333; position: relative; z-index: 5; background: rgba(13, 13, 13, 0.7); }
         
         .coin-name { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 1px; }
+        .fluxo-status { font-size: 9px; display: block; margin-top: 4px; font-weight: bold; text-transform: uppercase; }
         .price-container { text-align: right; }
         .price-big { font-size: 22px; font-weight: 900; color: #fff; display: block; }
         .var-percent { font-size: 12px; font-weight: bold; }
 
-        /* Sparkline (Gráfico de Fundo) */
+        /* Sparklines e Velas */
         .chart-container { position: absolute; bottom: 0; left: 0; width: 100%; height: 55%; z-index: 1; pointer-events: none; opacity: 0.5; }
-
-        /* Expansão Candlestick */
         .candle-view { height: 0; background: #000; overflow: hidden; transition: height 0.4s ease; position: relative; z-index: 10; }
         .candle-view.open { height: 320px; border-top: 1px solid #222; }
 
-        /* Lógica de Patrimônio */
+        /* Patrimônio */
         .pat-details { background: #050505; padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid var(--border); position: relative; z-index: 6; }
         .pnl-block { font-size: 9px; color: var(--text-dim); font-weight: bold; text-transform: uppercase; }
         .pnl-val { font-size: 15px; color: #fff; font-weight: 900; padding-top: 4px; }
-        .input-aporte { background: #111; border: 1px solid #333; color: var(--green); padding: 8px; font-size: 14px; width: 90%; border-radius: 4px; margin-top: 5px; outline: none; }
     </style>
 </head>
 <body>
 
-    <button id="btn-start" class="btn-ativa" onclick="iniciarSistema()">🔱 INICIALIZAR SENTINEL V12 COMPLETADO</button>
+    <button id="btn-start" class="btn-ativa" onclick="iniciarSistema()">🔱 ATIVAR SENTINEL V12 // SINC_JSON_TOTAL</button>
 
     <div class="radar-global">
-        <span>ESTADO: <span id="global-status">ALTISTA</span></span>
-        <span>DOMÍNIO BTC: <span id="global-dom">48.06%</span></span>
-        <span>FLUXO ATIVO: <span id="global-target" style="color: var(--yellow);">...</span></span>
+        <span>ESTADO: <span id="global-status">...</span></span>
+        <span>DOMÍNIO BTC: <span id="global-dom">...</span></span>
+        <span>SITUAÇÃO: <span id="global-situacao" style="color: var(--yellow);">AGUARDANDO JSON</span></span>
     </div>
 
     <div class="top-bar">
@@ -74,25 +72,85 @@
     </div>
 
     <script>
-        const moedas = ["BTC", "ETH", "RENDER", "SOL", "NEAR", "LINK", "FET", "ADA"];
-        let prices = {}; 
+        const JSON_STREAM = "https://late-sea-261d.siddney-almeidaa.workers.dev";
+        let moedas = [];
         let sparks = {}; 
         let candleCharts = {};
-        let dolarBRL = 5.40;
 
         async function iniciarSistema() {
             document.getElementById('btn-start').style.display = 'none';
-            renderizarBase();
-            syncData();
-            setInterval(syncData, 10000);
+            await sincronizarCerebro();
+            setInterval(sincronizarCerebro, 10000);
             setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
+        }
+
+        async function sincronizarCerebro() {
+            try {
+                const response = await fetch(JSON_STREAM);
+                const data = await response.json();
+
+                if (moedas.length === 0) {
+                    moedas = data.moedas_mercado.map(m => m.id);
+                    renderizarBase();
+                }
+
+                document.getElementById('global-status').innerText = data.status_ia;
+                document.getElementById('global-dom').innerText = data.btc_dominancia + "%";
+
+                const btcVar = data.moedas_mercado.find(m => m.id === "BTC").variacao_24h;
+
+                data.moedas_mercado.forEach(moeda => {
+                    const m = moeda.id;
+                    const preco = moeda.valor_brl;
+                    const varPct = moeda.variacao_24h;
+
+                    // Atualiza UI
+                    ['m', 'p'].forEach(aba => {
+                        const pEl = document.getElementById(`price-${aba}-${m}`);
+                        const vEl = document.getElementById(`var-${aba}-${m}`);
+                        if(pEl) pEl.innerText = preco.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+                        if(vEl) {
+                            vEl.innerText = (varPct >= 0 ? "+" : "") + varPct.toFixed(2) + "%";
+                            vEl.style.color = varPct >= 0 ? 'var(--green)' : 'var(--red)';
+                        }
+                        document.getElementById(`card-${aba}-${m}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
+                        
+                        // Sparklines
+                        const s = sparks[`${aba}-${m}`];
+                        if(s) {
+                            s.data.datasets[0].data.push(preco);
+                            if(s.data.datasets[0].data.length > 15) s.data.datasets[0].data.shift();
+                            s.data.datasets[0].borderColor = varPct >= 0 ? '#00ff41' : '#ff3131';
+                            s.update('none');
+                        }
+                    });
+
+                    // Lógica Favelinha
+                    let analise = varPct > btcVar ? (btcVar < 0 ? "REFÚGIO" : "INJETANDO") : "DRENANDO";
+                    const fluxEl = document.getElementById(`fluxo-m-${m}`);
+                    if(fluxEl) {
+                        fluxEl.innerText = analise;
+                        fluxEl.style.color = analise === "DRENANDO" ? 'var(--red)' : (analise === "REFÚGIO" ? 'var(--blue)' : 'var(--green)');
+                    }
+
+                    // Patrimônio vindo do JSON
+                    if (data.meu_patrimonio[m]) {
+                        const pat = data.meu_patrimonio[m];
+                        document.getElementById(`pm-${m}`).innerText = pat.preco_medio_automatico.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+                        document.getElementById(`saldo-${m}`).innerText = (pat.quantidade * (preco/5.45)).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+                    }
+                });
+            } catch (e) { console.error("ERRO_SINC"); }
         }
 
         function renderizarBase() {
             const layout = (m, aba) => `
                 <div class="crypto-section" onclick="toggleCandle('${m}', '${aba}')">
                     <div class="market-info" id="card-${aba}-${m}">
-                        <div class="coin-name">${m}</div>
+                        <div>
+                            <div class="coin-name">${m}</div>
+                            <span class="fluxo-status" id="fluxo-${aba}-${m}">ANALISANDO...</span>
+                        </div>
                         <div class="price-container">
                             <span class="price-big" id="price-${aba}-${m}">R$ 0,00</span>
                             <span class="var-percent" id="var-${aba}-${m}">+0.00%</span>
@@ -102,10 +160,8 @@
                     <div class="candle-view" id="candle-${aba}-${m}"></div>
                     ${aba === 'p' ? `
                     <div class="pat-details" onclick="event.stopPropagation()">
-                        <div class="pnl-block">Capital Depósito<input type="number" id="apt-${m}" class="input-aporte" placeholder="0.00" oninput="calcPnL('${m}')"></div>
-                        <div class="pnl-block">Saldo Atualizado<div class="pnl-val" id="saldo-${m}">R$ 0,00</div></div>
-                        <div class="pnl-block">PnL Realizado<div class="pnl-val" id="pnl-${m}">R$ 0,00</div></div>
-                        <div class="pnl-block">Performance<div class="pnl-val" id="perf-${m}" style="color:var(--green)">0.00%</div></div>
+                        <div class="pnl-block">P. Médio (Auto)<div class="pnl-val" id="pm-${m}">R$ 0,00</div></div>
+                        <div class="pnl-block">Saldo Estimado<div class="pnl-val" id="saldo-${m}">R$ 0,00</div></div>
                     </div>` : ''}
                 </div>`;
 
@@ -123,70 +179,17 @@
             });
         }
 
-        function toggleCandle(m, aba) {
+        async function toggleCandle(m, aba) {
             const el = document.getElementById(`candle-${aba}-${m}`);
-            const isOpen = el.classList.contains('open');
-            document.querySelectorAll('.candle-view').forEach(v => v.classList.remove('open'));
-            if (!isOpen) {
-                el.classList.add('open');
-                if (!candleCharts[`${aba}-${m}`]) initCandle(m, aba);
+            if (el.classList.contains('open')) { el.classList.remove('open'); el.style.height = "0px"; return; }
+            el.classList.add('open'); el.style.height = "320px";
+            if (el.innerHTML === "") {
+                const chart = LightweightCharts.createChart(el, { width: el.clientWidth, height: 300, layout: { backgroundColor: '#000', textColor: '#888' }, grid: { vertLines: { color: '#111' }, horzLines: { color: '#111' } }, timeScale: { borderColor: '#333' } });
+                const series = chart.addCandlestickSeries({ upColor: '#00ff41', downColor: '#ff3131', borderVisible: false, wickUpColor: '#00ff41', wickDownColor: '#ff3131' });
+                const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${m}USDT&interval=1m&limit=80`);
+                const klines = await res.json();
+                series.setData(klines.map(d => ({ time: d[0]/1000, open: parseFloat(d[1]), high: parseFloat(d[2]), low: parseFloat(d[3]), close: parseFloat(d[4]) })));
             }
-        }
-
-        function initCandle(m, aba) {
-            const container = document.getElementById(`candle-${aba}-${m}`);
-            const chart = LightweightCharts.createChart(container, {
-                width: container.clientWidth, height: 320,
-                layout: { backgroundColor: '#000', textColor: '#888' },
-                grid: { vertLines: { color: '#111' }, horzLines: { color: '#111' } },
-                timeScale: { borderColor: '#333' }
-            });
-            const series = chart.addCandlestickSeries({ upColor: '#00ff41', downColor: '#ff3131', borderVisible: false, wickUpColor: '#00ff41', wickDownColor: '#ff3131' });
-            
-            // Mock data - Injetar WebSocket real aqui
-            const data = []; let time = Math.floor(Date.now() / 1000) - 100 * 60;
-            for(let i=0; i<100; i++) data.push({ time: time + i*60, open: 100, high: 105, low: 95, close: 102 });
-            series.setData(data);
-            candleCharts[`${aba}-${m}`] = chart;
-        }
-
-        async function syncData() {
-            try {
-                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${JSON.stringify(moedas.map(m => m + "USDT"))}`);
-                const data = await res.json();
-                
-                data.forEach(item => {
-                    const sym = item.symbol.replace("USDT", "");
-                    const price = parseFloat(item.lastPrice) * dolarBRL;
-                    const varPct = parseFloat(item.priceChangePercent);
-                    prices[sym] = price;
-
-                    ['m', 'p'].forEach(aba => {
-                        document.getElementById(`price-${aba}-${sym}`).innerText = price.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-                        const vEl = document.getElementById(`var-${aba}-${sym}`);
-                        vEl.innerText = (varPct >= 0 ? "+" : "") + varPct.toFixed(2) + "%";
-                        vEl.style.color = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                        document.getElementById(`card-${aba}-${sym}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                        
-                        const s = sparks[`${aba}-${sym}`];
-                        s.data.datasets[0].data.push(price);
-                        if(s.data.datasets[0].data.length > 15) s.data.datasets[0].data.shift();
-                        s.data.datasets[0].borderColor = varPct >= 0 ? '#00ff41' : '#ff3131';
-                        s.update('none');
-                    });
-                    calcPnL(sym);
-                });
-            } catch (e) {}
-        }
-
-        function calcPnL(m) {
-            const input = document.getElementById(`apt-${m}`);
-            if(!input || !input.value) return;
-            const aporte = parseFloat(input.value);
-            const atual = prices[m];
-            const pnl = (aporte * 0.02); // Simulação de variação de lucro
-            document.getElementById(`saldo-${m}`).innerText = (aporte + pnl).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-            document.getElementById(`pnl-${m}`).innerText = pnl.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
         }
 
         function mudarTab(evt, n) {
