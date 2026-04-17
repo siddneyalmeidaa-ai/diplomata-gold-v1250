@@ -16,7 +16,7 @@
         }
         body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
 
-        /* CABEÇALHO MODERNO DE ALTA VISIBILIDADE */
+        /* CABEÇALHO MODERNO */
         .st-bar { 
             display: flex; flex-direction: column;
             padding: 20px; border-bottom: 2px solid var(--border-dark); 
@@ -31,7 +31,6 @@
         .stat-label { font-size: 8px; font-weight: 900; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
         .stat-val { font-size: 11px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #eee; }
 
-        /* RELÓGIO NEON */
         .clock-modern { 
             font-family: 'JetBrains Mono', monospace; 
             font-size: 18px; font-weight: 800; 
@@ -39,7 +38,6 @@
             background: #111; padding: 5px 12px; border-radius: 6px; border: 1px solid #222;
         }
 
-        /* NOTIFICAÇÕES E PAINEL */
         .notif-bell { display: flex; align-items: center; gap: 8px; font-size: 9px; font-weight: 900; color: #444; cursor: pointer; position: relative; }
         .alert-active { color: #ffcc00 !important; animation: blink 1s infinite; }
         .bell-dot { width: 8px; height: 8px; background: #ffcc00; border-radius: 50%; position: absolute; top: -4px; right: -4px; display: none; box-shadow: 0 0 10px #ffcc00; }
@@ -51,7 +49,6 @@
         }
         .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 10px; }
         .notif-item { font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 10px 0; border-bottom: 1px solid #1a1a1a; color: #aaa; }
-        .notif-item b { color: var(--green-nitido); }
 
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .pulse { animation: pulse-glow 2s infinite ease-in-out; }
@@ -61,13 +58,11 @@
         .n-btn { flex: 1; padding: 16px; text-align: center; font-size: 10px; font-weight: 900; color: #222; background: none; border: none; letter-spacing: 1px; }
         .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); }
 
-        /* CARDS */
         .container { padding: 12px; display: flex; flex-direction: column; }
         .c-asset { 
             background: var(--card); border: 1px solid var(--border-dark);
             border-radius: 12px; margin-bottom: 10px; padding: 20px 15px; 
             display: flex; flex-direction: column; position: relative; overflow: hidden;
-            transition: all 0.3s ease;
         }
 
         .side-pill {
@@ -76,7 +71,6 @@
         }
 
         .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-        
         .a-left { display: flex; align-items: center; gap: 12px; }
         .coin-icon { width: 32px; height: 32px; border-radius: 50%; background: #111; border: 1px solid #222; }
         .a-info { display: flex; flex-direction: column; }
@@ -90,14 +84,13 @@
         .a-pct { font-size: 13px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
         .flow-tag { font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: #000; border: 1px solid #1a1a1a; color: #333; }
 
+        .chart-box { display: none; width: 100%; height: 450px; margin-top: 15px; border-top: 1px solid var(--border-dark); }
+        .c-asset.open .chart-box { display: block; }
+
         .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
         .neg-bg { background: var(--red-nitido) !important; }
         .pos-txt { color: var(--green-nitido) !important; }
         .neg-txt { color: var(--red-nitido) !important; }
-
-        .chart-box { display: none; width: 100%; height: 450px; margin-top: 15px; border-top: 1px solid var(--border-dark); }
-        .c-asset.open { background: #0f0f0f; }
-        .c-asset.open .chart-box { display: block; }
     </style>
 </head>
 <body>
@@ -112,26 +105,14 @@
         <div class="clock-modern" id="clock">00:00:00</div>
     </div>
     <div class="st-metrics">
-        <div class="stat-box">
-            <span class="stat-label">Organismo</span>
-            <span class="stat-val pulse" id="mkt-status">SINCRONIZANDO</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-label">Domínio BTC</span>
-            <span class="stat-val" id="btc-dom">--%</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-label">Fluxo Ativo</span>
-            <span class="stat-val pulse" id="mkt-flow">AGUARDANDO</span>
-        </div>
+        <div class="stat-box"><span class="stat-label">Organismo</span><span class="stat-val pulse" id="mkt-status">SINCRONIZANDO</span></div>
+        <div class="stat-box"><span class="stat-label">Domínio BTC</span><span class="stat-val" id="btc-dom">--%</span></div>
+        <div class="stat-box"><span class="stat-label">Fluxo Ativo</span><span class="stat-val pulse" id="mkt-flow">AGUARDANDO</span></div>
     </div>
 </div>
 
 <div id="notif-panel">
-    <div class="notif-header">
-        <span style="font-size: 11px; font-weight: 900;">LOG DE ROTAÇÃO</span>
-        <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px; color: #555;">✕</span>
-    </div>
+    <div class="notif-header"><span style="font-size: 11px; font-weight: 900;">LOG DE ROTAÇÃO</span><span onclick="toggleNotifs()" style="cursor:pointer;">✕</span></div>
     <div id="notif-list"></div>
 </div>
 
@@ -164,26 +145,18 @@
         const time = new Date().toLocaleTimeString();
         alerts.unshift(`[${time}] ${msg}`);
         if(alerts.length > 8) alerts.pop();
-        
-        const list = document.getElementById('notif-list');
-        list.innerHTML = alerts.map(a => `<div class="notif-item">${a}</div>`).join('');
+        document.getElementById('notif-list').innerHTML = alerts.map(a => `<div class="notif-item">${a}</div>`).join('');
         document.getElementById('dot').style.display = 'block';
-        
-        const lastAlertEl = document.getElementById('last-alert');
-        lastAlertEl.innerText = "ALERTA DE ROTAÇÃO";
-        lastAlertEl.classList.add('alert-active');
+        document.getElementById('last-alert').innerText = "ALERTA DE ROTAÇÃO";
     }
 
     async function fetchGlobalData() {
         try {
             const res = await fetch('https://api.coingecko.com/api/v3/global');
             const data = await res.json();
-            const btcDom = data.data.market_cap_percentage.btc.toFixed(1);
-            document.getElementById('btc-dom').innerText = btcDom + "%";
-            document.getElementById('btc-dom').style.color = "var(--green-nitido)";
-        } catch (e) { 
-            document.getElementById('btc-dom').innerText = "52.4%"; 
-        }
+            const bDom = data.data.market_cap_percentage.btc.toFixed(1);
+            document.getElementById('btc-dom').innerText = bDom + "%";
+        } catch (e) {}
     }
 
     async function sync() {
@@ -197,82 +170,68 @@
             btcChange = parseFloat(dataBtc.priceChangePercent);
 
             let assetData = [];
-            let totalPct = 0;
-
             for (let s of coins) {
-                try {
-                    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`);
-                    const data = await res.json();
-                    const priceBrl = parseFloat(data.lastPrice) * usdRate;
-                    const pctChange = parseFloat(data.priceChangePercent);
-                    totalPct += pctChange;
-
-                    assetData.push({
-                        symbol: s,
-                        priceBrl: priceBrl,
-                        pct: pctChange
-                    });
-                } catch (err) { console.error(`Erro ao buscar ${s}`); }
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`);
+                const data = await res.json();
+                assetData.push({
+                    s, 
+                    p: parseFloat(data.lastPrice) * usdRate, 
+                    pct: parseFloat(data.priceChangePercent)
+                });
             }
 
-            // ORDENAÇÃO: DO MAIOR PARA O MENOR VALOR
-            assetData.sort((a, b) => b.priceBrl - a.priceBrl);
+            assetData.sort((a, b) => b.p - a.p);
 
             assetData.forEach((asset, index) => {
-                let card = document.getElementById(`card-${asset.symbol}`);
+                let card = document.getElementById(`card-${asset.s}`);
                 if (!card) {
                     card = document.createElement('div');
-                    card.id = `card-${asset.symbol}`;
+                    card.id = `card-${asset.s}`;
                     card.className = `c-asset`;
-                    card.onclick = () => toggle(asset.symbol);
+                    card.onclick = () => toggle(asset.s);
+                    // Estrutura fixa injetada apenas UMA VEZ
+                    card.innerHTML = `
+                        <div class="side-pill" id="pill-${asset.s}"></div>
+                        <div class="asset-row">
+                            <div class="a-left">
+                                <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[asset.s]}-${asset.s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${asset.s}&background=111&color=fff'">
+                                <div class="a-info"><span class="a-sym">${asset.s}</span><span class="a-pair">VOLUME / BRL</span></div>
+                            </div>
+                            <div class="a-right">
+                                <div class="a-price" id="pr-${asset.s}">--</div>
+                                <div class="status-box">
+                                    <span class="flow-tag" id="tag-${asset.s}">--</span>
+                                    <span class="a-pct" id="pct-${asset.s}">--</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-box" id="tv-${asset.s}"></div>
+                    `;
                     document.getElementById('list').appendChild(card);
                 }
 
+                // ATUALIZAÇÃO APENAS DOS ELEMENTOS DE TEXTO (Protege o Gráfico)
                 card.style.order = index;
                 const isPos = asset.pct >= 0;
-                const logo = logoMap[asset.symbol] || asset.symbol.toLowerCase();
+                
+                document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
+                document.getElementById(`pr-${asset.s}`).innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: asset.p < 1 ? 4 : 2, maximumFractionDigits: asset.p < 1 ? 4 : 2});
+                
+                const pctEl = document.getElementById(`pct-${asset.s}`);
+                pctEl.innerText = (isPos ? '+' : '') + asset.pct.toFixed(2) + "%";
+                pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
 
-                card.innerHTML = `
-                    <div class="side-pill ${isPos ? 'pos-bg' : 'neg-bg'}"></div>
-                    <div class="asset-row">
-                        <div class="a-left">
-                            <img class="coin-icon" src="https://cryptologos.cc/logos/${logo}-${asset.symbol.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${asset.symbol}&background=111&color=fff'">
-                            <div class="a-info">
-                                <span class="a-sym">${asset.symbol}</span>
-                                <span class="a-pair">VOLUME / BRL</span>
-                            </div>
-                        </div>
-                        <div class="a-right">
-                            <div class="a-price" id="pr-${asset.symbol}">R$ ${asset.priceBrl.toLocaleString('pt-BR', {minimumFractionDigits: asset.priceBrl < 1 ? 4 : 2, maximumFractionDigits: asset.priceBrl < 1 ? 4 : 2})}</div>
-                            <div class="status-box">
-                                <span class="flow-tag" id="tag-${asset.symbol}" style="color: ${asset.pct > btcChange + 2 ? 'var(--green-nitido)' : '#444'}">
-                                    ${asset.pct > btcChange + 2 ? 'ENTRA | ALVO' : 'LATERAL'}
-                                </span>
-                                <span class="a-pct ${isPos ? 'pos-txt' : 'neg-txt'}">${isPos ? '+' : ''}${asset.pct.toFixed(2)}%</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="chart-box" id="tv-${asset.symbol}"></div>
-                `;
-
-                if (asset.symbol !== "BTC" && asset.pct > btcChange + 2.5) {
-                    const tag = document.getElementById(`tag-${asset.symbol}`);
-                    if (tag && tag.innerText !== "ENTRA | ALVO") addAlert(`Brecha aberta em <b>${asset.symbol}</b>`);
+                const tagEl = document.getElementById(`tag-${asset.s}`);
+                if (asset.s !== "BTC" && asset.pct > btcChange + 2) {
+                    if(tagEl.innerText !== "ENTRA | ALVO") addAlert(`Brecha em ${asset.s}`);
+                    tagEl.innerText = "ENTRA | ALVO"; tagEl.style.color = "var(--green-nitido)";
+                } else {
+                    tagEl.innerText = "LATERAL"; tagEl.style.color = "#444";
                 }
             });
 
-            // Atualiza métricas de topo
-            const mStatus = document.getElementById('mkt-status');
-            const mFlow = document.getElementById('mkt-flow');
-            if (totalPct / coins.length > btcChange) {
-                mStatus.innerText = "VIVO | ALT-SEASON"; mStatus.className = "stat-val pulse pos-txt";
-                mFlow.innerText = "FLUXO PARA ALTS";
-            } else {
-                mStatus.innerText = "VIVO | BTC-POWER"; mStatus.className = "stat-val pulse";
-                mFlow.innerText = "FLUXO PARA BTC";
-            }
-
-        } catch (e) { console.error("Sync Error", e); }
+            document.getElementById('mkt-status').innerText = btcChange > 0 ? "VIVO | BULL" : "VIVO | BEAR";
+        } catch (e) {}
     }
 
     function toggle(id) {
@@ -281,13 +240,9 @@
         const containerId = `tv-${id}`;
         if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
             new TradingView.widget({
-                "autosize": true,
-                "symbol": "BINANCE:" + id + "USDT",
-                "interval": "1",
-                "theme": "dark",
-                "container_id": containerId,
-                "hide_side_toolbar": true,
-                "studies": ["RSI@tv-basicstudies"]
+                "autosize": true, "symbol": "BINANCE:" + id + "USDT",
+                "interval": "1", "theme": "dark", "container_id": containerId,
+                "hide_side_toolbar": true, "studies": ["RSI@tv-basicstudies"]
             });
         }
     }
@@ -295,7 +250,6 @@
     fetchGlobalData();
     sync();
     setInterval(sync, 5000);
-    setInterval(fetchGlobalData, 60000);
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
