@@ -6,61 +6,65 @@
     <title>SENTINEL_V12 // SOBERANIA</title>
     <style>
         :root { 
-            --bg: #000; --card: #080808; --green: #00ff41; --red: #ff3131; --border-dark: #121212; 
+            --bg: #000; 
+            --card: #080808; 
+            --green-fosco: #2e7d32; /* Verde Esmeralda Seco */
+            --red-fosco: #8a1d1d;   /* Vinho Fosco */
+            --border-dark: #121212; 
         }
-        body { 
-            background: var(--bg); color: white; font-family: Arial, sans-serif; margin: 0; padding: 0; 
-        }
+        body { background: var(--bg); color: #ccc; font-family: Arial, sans-serif; margin: 0; padding: 0; }
 
-        .st-bar { display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid var(--border-dark); font-size: 8px; font-weight: bold; text-transform: uppercase; }
-        .head { padding: 12px 15px; display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; color: #555; }
+        .st-bar { display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid var(--border-dark); font-size: 8px; font-weight: bold; text-transform: uppercase; color: #555; }
+        .head { padding: 12px 15px; display: flex; justify-content: space-between; font-size: 10px; font-weight: bold; color: #333; }
 
         .nav { display: flex; border-bottom: 1px solid var(--border-dark); }
-        .n-btn { flex: 1; padding: 15px; text-align: center; font-size: 10px; font-weight: 900; color: #333; background: none; border: none; }
-        .n-btn.active { color: var(--green); border-bottom: 2px solid var(--green); }
+        .n-btn { flex: 1; padding: 15px; text-align: center; font-size: 10px; font-weight: 900; color: #222; background: none; border: none; }
+        .n-btn.active { color: var(--green-fosco); border-bottom: 2px solid var(--green-fosco); }
 
         .container { padding: 8px; }
         
-        /* CARD LIMPO - SEM LUZINHA E SEM TEXTO NO TOPO */
         .c-asset { 
-            background: var(--card); 
-            border: 1px solid var(--border-dark);
-            border-left: 4px solid #333; /* Borda lateral que muda de cor */
-            border-radius: 4px; 
-            margin-bottom: 6px; 
-            padding: 15px 18px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between;
-            min-height: 70px;
+            background: var(--card); border: 1px solid var(--border-dark);
+            border-left: 4px solid #222; border-radius: 4px; 
+            margin-bottom: 6px; padding: 15px 18px; 
+            display: flex; flex-direction: column;
             transition: border-left 0.3s ease;
         }
 
+        .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
         .a-left { display: flex; flex-direction: column; }
-        .a-sym { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; }
+        .a-sym { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; color: #eee; }
         .a-pair { font-size: 8px; color: #333; margin-top: 3px; font-weight: bold; }
 
         .a-right { text-align: right; }
-        .a-price { font-size: 21px; font-weight: 900; letter-spacing: -1px; }
+        .a-price { font-size: 21px; font-weight: 900; letter-spacing: -1px; color: #fff; }
         .a-pct { font-size: 11px; font-weight: bold; margin-top: 5px; }
 
-        .pos-border { border-left-color: var(--green) !important; }
-        .neg-border { border-left-color: var(--red) !important; }
-        .pos-text { color: var(--green); }
-        .neg-text { color: var(--red); }
+        /* Cores Foscas */
+        .pos-border { border-left-color: var(--green-fosco) !important; }
+        .neg-border { border-left-color: var(--red-fosco) !important; }
+        .pos-text { color: var(--green-fosco); }
+        .neg-text { color: var(--red-fosco); }
+
+        /* Área do Gráfico */
+        .chart-box { 
+            display: none; width: 100%; height: 400px; 
+            margin-top: 15px; border-top: 1px solid var(--border-dark); 
+        }
+        .c-asset.open .chart-box { display: block; }
     </style>
 </head>
 <body>
 
 <div class="st-bar">
     <div>ESTADO: <span class="pos-text">ALTISTA</span></div>
-    <div>DOMÍNIO BTC: <span style="color:var(--green)">52.4%</span></div>
+    <div>DOMÍNIO BTC: <span style="color:var(--green-fosco)">52.4%</span></div>
     <div>FLUXO ATIVO: <span class="pos-text">ENTRANDO</span></div>
 </div>
 
 <div class="head">
     <div>SENTINEL_V12 // SOBERANIA <span class="pos-text">●</span></div>
-    <div id="clock">03:43:51</div>
+    <div id="clock">03:46:13</div>
 </div>
 
 <div class="nav">
@@ -70,6 +74,7 @@
 
 <div class="container" id="list"></div>
 
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     const coins = ["BTC", "ETH", "RENDER", "SOL", "NEAR", "SEI", "POL", "ADA", "DOT", "FET"];
     let usdRate = 5.48;
@@ -80,7 +85,6 @@
             const dRate = await rRate.json();
             usdRate = parseFloat(dRate.price);
 
-            let html = '';
             for (let s of coins) {
                 const pair = (s === 'POL') ? 'MATICUSDT' : s + 'USDT';
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${pair}`);
@@ -90,25 +94,52 @@
                 const pct = parseFloat(data.priceChangePercent);
                 const dec = brl < 1 ? 4 : 2;
                 
-                // Lógica da borda e cor
-                const statusClass = pct >= 0 ? 'pos-border' : 'neg-border';
-                const textClass = pct >= 0 ? 'pos-text' : 'neg-text';
+                let card = document.getElementById(`card-${s}`);
+                if (!card) {
+                    card = document.createElement('div');
+                    card.id = `card-${s}`;
+                    card.className = `c-asset`;
+                    card.onclick = () => toggle(s);
+                    card.innerHTML = `
+                        <div class="asset-row">
+                            <div class="a-left">
+                                <span class="a-sym">${s}</span>
+                                <span class="a-pair">USDT / BRL</span>
+                            </div>
+                            <div class="a-right">
+                                <div class="a-price" id="pr-${s}">R$ 0,00</div>
+                                <div class="a-pct" id="pct-${s}">0.00%</div>
+                            </div>
+                        </div>
+                        <div class="chart-box" id="tv-${s}"></div>
+                    `;
+                    document.getElementById('list').appendChild(card);
+                }
 
-                html += `
-                    <div class="c-asset ${statusClass}">
-                        <div class="a-left">
-                            <span class="a-sym">${s}</span>
-                            <span class="a-pair">USDT / BRL</span>
-                        </div>
-                        <div class="a-right">
-                            <div class="a-price">R$ ${brl.toLocaleString('pt-BR', {minimumFractionDigits: dec, maximumFractionDigits: dec})}</div>
-                            <div class="a-pct ${textClass}">${(pct >= 0 ? "+" : "") + pct.toFixed(2)}%</div>
-                        </div>
-                    </div>
-                `;
+                card.className = `c-asset ${pct >= 0 ? 'pos-border' : 'neg-border'}`;
+                const pEl = document.getElementById(`pct-${s}`);
+                pEl.innerText = (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
+                pEl.className = `a-pct ${pct >= 0 ? 'pos-text' : 'neg-text'}`;
+                document.getElementById(`pr-${s}`).innerText = "R$ " + brl.toLocaleString('pt-BR', {minimumFractionDigits: dec, maximumFractionDigits: dec});
             }
-            document.getElementById('list').innerHTML = html;
-        } catch (e) { console.error("Erro na sincronização."); }
+        } catch (e) { console.error("Erro de sincronização."); }
+    }
+
+    function toggle(id) {
+        const c = document.getElementById(`card-${id}`);
+        c.classList.toggle('open');
+        const containerId = `tv-${id}`;
+        if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": "BINANCE:" + (id === 'POL' ? 'MATIC' : id) + "USDT",
+                "interval": "1",
+                "theme": "dark",
+                "container_id": containerId,
+                "hide_side_toolbar": true,
+                "studies": ["RSI@tv-basicstudies"]
+            });
+        }
     }
 
     sync();
