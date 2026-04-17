@@ -34,16 +34,26 @@
         /* RELÓGIO NEON */
         .clock-modern { 
             font-family: 'JetBrains Mono', monospace; 
-            font-size: 14px; font-weight: 800; 
-            color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.4);
-            background: #111; padding: 4px 10px; border-radius: 5px;
+            font-size: 18px; font-weight: 800; 
+            color: #fff; text-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            background: #111; padding: 5px 12px; border-radius: 6px; border: 1px solid #222;
         }
 
-        /* NOTIFICAÇÕES */
-        .notif-bell { display: flex; align-items: center; gap: 8px; font-size: 9px; font-weight: 900; color: #444; }
+        /* NOTIFICAÇÕES E PAINEL */
+        .notif-bell { display: flex; align-items: center; gap: 8px; font-size: 9px; font-weight: 900; color: #444; cursor: pointer; position: relative; }
         .alert-active { color: #ffcc00 !important; animation: blink 1s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .bell-dot { width: 8px; height: 8px; background: #ffcc00; border-radius: 50%; position: absolute; top: -4px; right: -4px; display: none; box-shadow: 0 0 10px #ffcc00; }
+        
+        #notif-panel {
+            position: fixed; top: 100px; right: 15px; left: 15px; 
+            background: #0d0d0d; border: 1px solid #222; border-radius: 12px;
+            padding: 20px; display: none; z-index: 2000; box-shadow: 0 30px 60px rgba(0,0,0,1);
+        }
+        .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 10px; }
+        .notif-item { font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 10px 0; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+        .notif-item b { color: var(--green-nitido); }
 
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .pulse { animation: pulse-glow 2s infinite ease-in-out; }
         @keyframes pulse-glow { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
@@ -89,8 +99,9 @@
 
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
-        <div class="notif-bell" id="bell">
+        <div class="notif-bell" id="bell" onclick="toggleNotifs()">
             <span id="last-alert">SISTEMA ONLINE</span>
+            <div class="bell-dot" id="dot"></div>
             <span style="font-size: 12px;">🔔</span>
         </div>
         <div class="clock-modern" id="clock">00:00:00</div>
@@ -111,6 +122,14 @@
     </div>
 </div>
 
+<div id="notif-panel">
+    <div class="notif-header">
+        <span style="font-size: 11px; font-weight: 900;">LOG DE ROTAÇÃO</span>
+        <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px; color: #555;">✕</span>
+    </div>
+    <div id="notif-list"></div>
+</div>
+
 <div class="nav">
     <button class="n-btn active">🔱 MONITORAMENTO</button>
     <button class="n-btn">📊 PATRIMÔNIO</button>
@@ -122,12 +141,27 @@
 <script>
     const coins = ["BTC", "ETH", "RENDER", "SOL", "NEAR", "SEI", "POL", "ADA", "DOT", "FET"];
     let usdRate = 5.50;
+    let btcChange = 0;
+    let alerts = [];
 
-    function pushAlert(msg) {
-        const alertEl = document.getElementById('last-alert');
-        alertEl.innerText = msg.toUpperCase();
-        alertEl.classList.add('alert-active');
-        setTimeout(() => { alertEl.classList.remove('alert-active'); }, 5000);
+    function toggleNotifs() {
+        const panel = document.getElementById('notif-panel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        document.getElementById('dot').style.display = 'none';
+    }
+
+    function addAlert(msg) {
+        const time = new Date().toLocaleTimeString();
+        alerts.unshift(`[${time}] ${msg}`);
+        if(alerts.length > 8) alerts.pop();
+        
+        const list = document.getElementById('notif-list');
+        list.innerHTML = alerts.map(a => `<div class="notif-item">${a}</div>`).join('');
+        document.getElementById('dot').style.display = 'block';
+        
+        const lastAlertEl = document.getElementById('last-alert');
+        lastAlertEl.innerText = "ALERTA DE FLUXO";
+        lastAlertEl.classList.add('alert-active');
     }
 
     async function fetchGlobalData() {
@@ -147,6 +181,11 @@
             const rRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
             const dRate = await rRate.json();
             usdRate = parseFloat(dRate.price);
+
+            // Primeiro pegar o BTC como referência de rotação
+            const resBtc = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+            const dataBtc = await resBtc.json();
+            btcChange = parseFloat(dataBtc.priceChangePercent);
 
             let totalPct = 0;
 
@@ -191,10 +230,13 @@
                 const tag = document.getElementById(`tag-${s}`);
                 pill.className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
                 
-                if (pct > 2.5) {
+                // Lógica de Detecção de Rotação (Capital saindo do BTC para Alts)
+                if (s !== "BTC" && pct > (btcChange + 2)) {
+                    if (tag.innerText !== "ENTRA | ALVO") {
+                        addAlert(`Capital migrando do BTC para <b>${s}</b>`);
+                    }
                     tag.innerText = "ENTRA | ALVO";
                     tag.style.color = "var(--green-nitido)";
-                    if(s !== "BTC") pushAlert(`Fluxo em ${s}`);
                 } else if (pct < -2.5) {
                     tag.innerText = "PULA | P/ BTC";
                     tag.style.color = "var(--red-nitido)";
@@ -211,15 +253,12 @@
 
             const mStatus = document.getElementById('mkt-status');
             const mFlow = document.getElementById('mkt-flow');
-            if (totalPct > 5) {
-                mStatus.innerText = "VIVO | ALTISTA"; mStatus.className = "stat-val pulse pos-txt";
-                mFlow.innerText = "ENTRANDO VOLUME"; mFlow.className = "stat-val pos-txt";
-            } else if (totalPct < -5) {
-                mStatus.innerText = "VIVO | BAIXISTA"; mStatus.className = "stat-val pulse neg-txt";
-                mFlow.innerText = "SAINDO CAPITAL"; mFlow.className = "stat-val neg-txt";
+            if (totalPct / coins.length > btcChange) {
+                mStatus.innerText = "VIVO | ALT-SEASON"; mStatus.className = "stat-val pulse pos-txt";
+                mFlow.innerText = "FLUXO PARA ALTS"; mFlow.className = "stat-val pos-txt";
             } else {
-                mStatus.innerText = "VIVO | ESTÁVEL"; mStatus.className = "stat-val pulse";
-                mFlow.innerText = "FLUXO NEUTRO";
+                mStatus.innerText = "VIVO | BTC-POWER"; mStatus.className = "stat-val pulse";
+                mFlow.innerText = "FLUXO PARA BTC";
             }
 
         } catch (e) { }
