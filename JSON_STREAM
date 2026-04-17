@@ -1,12 +1,48 @@
-// CHAMADA DO FLUXO JSON V1250
+// CONEXÃO COM O CÉREBRO JSON
 const JSON_STREAM = "https://late-sea-261d.siddney-almeidaa.workers.dev";
 
 async function carregarDados() {
-    const response = await fetch(JSON_STREAM);
-    const data = await response.json();
+    try {
+        const response = await fetch(JSON_STREAM);
+        const data = await response.json();
+        
+        // 1. ATUALIZAÇÃO DA OPERAÇÃO (APORTE E QUANTIDADE)
+        // Aqui o sistema faz o cálculo automático do Preço Médio
+        config.meu_patrimonio = data.meu_patrimonio; 
+        
+        // 2. ATUALIZAÇÃO DAS REGRAS DA FAVELINHA
+        // Puxa as labels de "INJETANDO" ou "DRENANDO" direto do servidor
+        config.favelinha_rules = data.favelinha_rules;
+
+        // 3. MAPEAMENTO DE FLUXO (Onde o dinheiro está indo?)
+        // Compara a variação de cada moeda contra a queda/alta do BTC
+        atualizarAnaliseFavelinha(data.moedas_mercado);
+
+        // 4. DISPARO DOS SINAIS
+        document.getElementById('btc-val').innerText = data.btc_valor_brl;
+        document.getElementById('status-sentinela').innerText = data.status_ia;
+        
+        console.log("🔱 FLUXO JSON V12 PROCESSADO // SINC_TOTAL");
+    } catch (error) {
+        console.error("❌ FALHA NA CAMADA DE DADOS:", error);
+    }
+}
+
+// Função que analisa se estão comprando ou vendendo
+function atualizarAnaliseFavelinha(mercado) {
+    let btcVar = mercado.find(m => m.id === "BTC").variacao_24h;
     
-    // Atualiza o valor do Bitcoin e a Trava de -50%
-    document.getElementById('btc-val').innerText = data.valor_atual;
-    document.getElementById('status-sentinela').innerText = data.status_ia;
-    document.getElementById('proj-val').innerText = data.projecao_24h;
+    mercado.forEach(moeda => {
+        let analise = "";
+        // Se a moeda sobe enquanto o BTC cai = DINHEIRO SENDO INJETADO (Refúgio)
+        if (moeda.variacao_24h > btcVar && btcVar < 0) {
+            analise = "REFÚGIO: Dinheiro fugindo do BTC para " + moeda.id;
+        } else if (moeda.variacao_24h > btcVar) {
+            analise = "INJETANDO: Volume comprador forte em " + moeda.id;
+        } else {
+            analise = "DRENANDO: Capital saindo deste ativo.";
+        }
+        // Atualiza a tabela com essa análise de campo
+        atualizarLinhaTabela(moeda.id, analise);
+    });
 }
