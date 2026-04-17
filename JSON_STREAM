@@ -1,48 +1,62 @@
-// CONEXÃO COM O CÉREBRO JSON
+// --- [ CONEXÃO COM O CÉREBRO JSON ] ---
 const JSON_STREAM = "https://late-sea-261d.siddney-almeidaa.workers.dev";
 
-async function carregarDados() {
+async function carregarDadosCerebro() {
     try {
         const response = await fetch(JSON_STREAM);
         const data = await response.json();
         
-        // 1. ATUALIZAÇÃO DA OPERAÇÃO (APORTE E QUANTIDADE)
-        // Aqui o sistema faz o cálculo automático do Preço Médio
-        config.meu_patrimonio = data.meu_patrimonio; 
-        
-        // 2. ATUALIZAÇÃO DAS REGRAS DA FAVELINHA
-        // Puxa as labels de "INJETANDO" ou "DRENANDO" direto do servidor
-        config.favelinha_rules = data.favelinha_rules;
+        // 1. SINCRONIZAÇÃO DE PATRIMÔNIO (Cálculo do P. Médio)
+        // O sistema lê o aporte e a quantidade total direto do seu Worker
+        const meuPatrimonio = data.meu_patrimonio; 
 
-        // 3. MAPEAMENTO DE FLUXO (Onde o dinheiro está indo?)
-        // Compara a variação de cada moeda contra a queda/alta do BTC
-        atualizarAnaliseFavelinha(data.moedas_mercado);
-
-        // 4. DISPARO DOS SINAIS
-        document.getElementById('btc-val').innerText = data.btc_valor_brl;
-        document.getElementById('status-sentinela').innerText = data.status_ia;
+        // 2. ATUALIZAÇÃO DA INTERFACE (Camada Visual)
+        document.getElementById('global-status').innerText = data.status_ia;
+        document.getElementById('global-dom').innerText = data.btc_dominancia + "%";
         
+        // 3. ANÁLISE DE CAMPO (A Lógica da Favelinha)
+        // Aqui comparamos a variação de cada moeda contra o BTC para definir o Fluxo
+        const mercado = data.moedas_mercado;
+        const btcData = mercado.find(m => m.id === "BTC");
+        const btcVar = btcData ? btcData.variacao_24h : 0;
+
+        mercado.forEach(moeda => {
+            let analise = "";
+            let corFluxo = "var(--text-dim)";
+
+            // REGRA DE OURO DA FAVELINHA
+            if (moeda.variacao_24h > btcVar && btcVar < 0) {
+                analise = "REFÚGIO: Fugindo do BTC para " + moeda.id;
+                corFluxo = "var(--blue)";
+            } else if (moeda.variacao_24h > btcVar) {
+                analise = "INJETANDO: Comprador forte em " + moeda.id;
+                corFluxo = "var(--green)";
+            } else {
+                analise = "DRENANDO: Capital saindo deste ativo.";
+                corFluxo = "var(--red)";
+            }
+
+            // Injeta a análise diretamente no card correspondente (Aba Monitoramento)
+            const labelFluxo = document.getElementById(`fluxo-m-${moeda.id}`);
+            if (labelFluxo) {
+                labelFluxo.innerText = analise;
+                labelFluxo.style.color = corFluxo;
+            }
+
+            // Injeta o P. Médio automático na Aba Patrimônio vindo do JSON
+            if (meuPatrimonio[moeda.id]) {
+                const pmElement = document.getElementById(`pm-${moeda.id}`);
+                if (pmElement) {
+                    pmElement.innerText = meuPatrimonio[moeda.id].preco_medio_automatico.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+                }
+            }
+        });
+
         console.log("🔱 FLUXO JSON V12 PROCESSADO // SINC_TOTAL");
     } catch (error) {
         console.error("❌ FALHA NA CAMADA DE DADOS:", error);
     }
 }
 
-// Função que analisa se estão comprando ou vendendo
-function atualizarAnaliseFavelinha(mercado) {
-    let btcVar = mercado.find(m => m.id === "BTC").variacao_24h;
-    
-    mercado.forEach(moeda => {
-        let analise = "";
-        // Se a moeda sobe enquanto o BTC cai = DINHEIRO SENDO INJETADO (Refúgio)
-        if (moeda.variacao_24h > btcVar && btcVar < 0) {
-            analise = "REFÚGIO: Dinheiro fugindo do BTC para " + moeda.id;
-        } else if (moeda.variacao_24h > btcVar) {
-            analise = "INJETANDO: Volume comprador forte em " + moeda.id;
-        } else {
-            analise = "DRENANDO: Capital saindo deste ativo.";
-        }
-        // Atualiza a tabela com essa análise de campo
-        atualizarLinhaTabela(moeda.id, analise);
-    });
-}
+// Inicia o batimento cardíaco da conexão
+setInterval(carregarDadosCerebro, 15000); 
