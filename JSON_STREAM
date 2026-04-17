@@ -1,62 +1,81 @@
-// --- [ CONEXÃO COM O CÉREBRO JSON ] ---
+// 1. ENDEREÇO DO CÉREBRO
 const JSON_STREAM = "https://late-sea-261d.siddney-almeidaa.workers.dev";
 
-async function carregarDadosCerebro() {
+let moedas = []; // Começa vazio, o JSON vai preencher
+let charts = {};
+let candleCharts = {};
+
+// 2. FUNÇÃO PRINCIPAL: PUXAR DADOS DO WORKER
+async function sincronizarSentinela() {
     try {
         const response = await fetch(JSON_STREAM);
         const data = await response.json();
-        
-        // 1. SINCRONIZAÇÃO DE PATRIMÔNIO (Cálculo do P. Médio)
-        // O sistema lê o aporte e a quantidade total direto do seu Worker
-        const meuPatrimonio = data.meu_patrimonio; 
 
-        // 2. ATUALIZAÇÃO DA INTERFACE (Camada Visual)
+        // Se for a primeira vez, cria o layout com as moedas que vieram do JSON
+        if (moedas.length === 0) {
+            moedas = data.moedas_mercado.map(m => m.id);
+            renderizarInterface();
+        }
+
+        // 3. ATUALIZAÇÃO DO STATUS E RADAR
         document.getElementById('global-status').innerText = data.status_ia;
         document.getElementById('global-dom').innerText = data.btc_dominancia + "%";
         
-        // 3. ANÁLISE DE CAMPO (A Lógica da Favelinha)
-        // Aqui comparamos a variação de cada moeda contra o BTC para definir o Fluxo
-        const mercado = data.moedas_mercado;
-        const btcData = mercado.find(m => m.id === "BTC");
+        const btcData = data.moedas_mercado.find(m => m.id === "BTC");
         const btcVar = btcData ? btcData.variacao_24h : 0;
 
-        mercado.forEach(moeda => {
+        // 4. LOOP DE ATUALIZAÇÃO POR MOEDA
+        data.moedas_mercado.forEach(moeda => {
+            const m = moeda.id;
+            const preco = moeda.valor_brl;
+            const variacao = moeda.variacao_24h;
+
+            // Atualiza preços nas duas abas
+            ['m', 'p'].forEach(aba => {
+                const pEl = document.getElementById(`price-${aba}-${m}`);
+                const vEl = document.getElementById(`var-${aba}-${m}`);
+                if (pEl) pEl.innerText = preco.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+                if (vEl) {
+                    vEl.innerText = (variacao >= 0 ? "+" : "") + variacao.toFixed(2) + "%";
+                    vEl.style.color = variacao >= 0 ? 'var(--green)' : 'var(--red)';
+                }
+            });
+
+            // 5. LÓGICA DA FAVELINHA (DRENANDO / INJETANDO)
             let analise = "";
-            let corFluxo = "var(--text-dim)";
+            if (variacao > btcVar && btcVar < 0) analise = "REFÚGIO";
+            else if (variacao > btcVar) analise = "INJETANDO";
+            else analise = "DRENANDO";
 
-            // REGRA DE OURO DA FAVELINHA
-            if (moeda.variacao_24h > btcVar && btcVar < 0) {
-                analise = "REFÚGIO: Fugindo do BTC para " + moeda.id;
-                corFluxo = "var(--blue)";
-            } else if (moeda.variacao_24h > btcVar) {
-                analise = "INJETANDO: Comprador forte em " + moeda.id;
-                corFluxo = "var(--green)";
-            } else {
-                analise = "DRENANDO: Capital saindo deste ativo.";
-                corFluxo = "var(--red)";
+            const fluxoEl = document.getElementById(`fluxo-m-${m}`);
+            if (fluxoEl) {
+                fluxoEl.innerText = analise;
+                fluxoEl.style.color = analise === "DRENANDO" ? 'var(--red)' : (analise === "REFÚGIO" ? 'var(--blue)' : 'var(--green)');
             }
 
-            // Injeta a análise diretamente no card correspondente (Aba Monitoramento)
-            const labelFluxo = document.getElementById(`fluxo-m-${moeda.id}`);
-            if (labelFluxo) {
-                labelFluxo.innerText = analise;
-                labelFluxo.style.color = corFluxo;
-            }
-
-            // Injeta o P. Médio automático na Aba Patrimônio vindo do JSON
-            if (meuPatrimonio[moeda.id]) {
-                const pmElement = document.getElementById(`pm-${moeda.id}`);
-                if (pmElement) {
-                    pmElement.innerText = meuPatrimonio[moeda.id].preco_medio_automatico.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            // 6. PATRIMÔNIO AUTOMÁTICO (Vindo do JSON)
+            if (data.meu_patrimonio[m]) {
+                const pInfo = data.meu_patrimonio[m];
+                const pmEl = document.getElementById(`pm-${m}`);
+                const saldoEl = document.getElementById(`saldo-${m}`);
+                
+                if (pmEl) pmEl.innerText = pInfo.preco_medio_automatico.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+                // Cálculo de saldo: Quantidade (do JSON) * Preço Atual
+                if (saldoEl) {
+                    const saldoReal = pInfo.quantidade * (preco / 5.45); // Ajuste se o JSON já for em BRL
+                    saldoEl.innerText = saldoReal.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
                 }
             }
         });
 
-        console.log("🔱 FLUXO JSON V12 PROCESSADO // SINC_TOTAL");
     } catch (error) {
-        console.error("❌ FALHA NA CAMADA DE DADOS:", error);
+        console.error("❌ ERRO NA SINAPSE JSON:", error);
     }
 }
 
-// Inicia o batimento cardíaco da conexão
-setInterval(carregarDadosCerebro, 15000); 
+// 7. INICIALIZAÇÃO
+function iniciarSistema() {
+    document.getElementById('btn-start').style.display = 'none';
+    sincronizarSentinela();
+    setInterval(sincronizarSentinela, 10000); // Pulso de 10 segundos
+}
