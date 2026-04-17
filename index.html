@@ -62,21 +62,25 @@
         .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); }
 
         /* CARDS */
-        .container { padding: 12px; }
+        .container { padding: 12px; display: flex; flex-direction: column; }
         .c-asset { 
             background: var(--card); border: 1px solid var(--border-dark);
             border-radius: 12px; margin-bottom: 10px; padding: 20px 15px; 
             display: flex; flex-direction: column; position: relative; overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .side-pill {
-            position: absolute; left: 8px; top: 20%; bottom: 20%; width: 5px;
-            border-radius: 20px; background: #1a1a1a; transition: all 0.4s ease;
+            position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            background: #1a1a1a; transition: all 0.4s ease;
         }
 
-        .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; padding-left: 15px; }
-        .a-left { display: flex; flex-direction: column; }
-        .a-sym { font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -1px; }
+        .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+        
+        .a-left { display: flex; align-items: center; gap: 12px; }
+        .coin-icon { width: 32px; height: 32px; border-radius: 50%; background: #111; border: 1px solid #222; }
+        .a-info { display: flex; flex-direction: column; }
+        .a-sym { font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -1px; line-height: 1; }
         .a-pair { font-size: 9px; color: #444; margin-top: 4px; font-weight: 900; }
 
         .a-right { text-align: right; }
@@ -92,6 +96,7 @@
         .neg-txt { color: var(--red-nitido) !important; }
 
         .chart-box { display: none; width: 100%; height: 450px; margin-top: 15px; border-top: 1px solid var(--border-dark); }
+        .c-asset.open { background: #0f0f0f; }
         .c-asset.open .chart-box { display: block; }
     </style>
 </head>
@@ -139,7 +144,12 @@
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    const coins = ["BTC", "ETH", "RENDER", "SOL", "NEAR", "SEI", "POL", "ADA", "DOT", "FET"];
+    const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER", "NEAR", "SEI", "ADA", "DOT", "FET"];
+    const logoMap = {
+        "BTC": "btc", "ETH": "eth", "SOL": "sol", "LINK": "link", "STX": "stx",
+        "RENDER": "rndr", "NEAR": "near", "SEI": "sei", "ADA": "ada", "DOT": "dot", "FET": "fet"
+    };
+
     let usdRate = 5.50;
     let btcChange = 0;
     let alerts = [];
@@ -160,7 +170,7 @@
         document.getElementById('dot').style.display = 'block';
         
         const lastAlertEl = document.getElementById('last-alert');
-        lastAlertEl.innerText = "ALERTA DE FLUXO";
+        lastAlertEl.innerText = "ALERTA DE ROTAÇÃO";
         lastAlertEl.classList.add('alert-active');
     }
 
@@ -182,86 +192,87 @@
             const dRate = await rRate.json();
             usdRate = parseFloat(dRate.price);
 
-            // Primeiro pegar o BTC como referência de rotação
             const resBtc = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
             const dataBtc = await resBtc.json();
             btcChange = parseFloat(dataBtc.priceChangePercent);
 
+            let assetData = [];
             let totalPct = 0;
 
             for (let s of coins) {
-                const pair = s + 'USDT';
-                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${pair}`);
-                const data = await res.json();
-                
-                const brl = parseFloat(data.lastPrice) * usdRate;
-                const pct = parseFloat(data.priceChangePercent);
-                totalPct += pct;
-                const dec = brl < 1 ? 4 : 2;
-                
-                let card = document.getElementById(`card-${s}`);
+                try {
+                    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`);
+                    const data = await res.json();
+                    const priceBrl = parseFloat(data.lastPrice) * usdRate;
+                    const pctChange = parseFloat(data.priceChangePercent);
+                    totalPct += pctChange;
+
+                    assetData.push({
+                        symbol: s,
+                        priceBrl: priceBrl,
+                        pct: pctChange
+                    });
+                } catch (err) { console.error(`Erro ao buscar ${s}`); }
+            }
+
+            // ORDENAÇÃO: DO MAIOR PARA O MENOR VALOR
+            assetData.sort((a, b) => b.priceBrl - a.priceBrl);
+
+            assetData.forEach((asset, index) => {
+                let card = document.getElementById(`card-${asset.symbol}`);
                 if (!card) {
                     card = document.createElement('div');
-                    card.id = `card-${s}`;
+                    card.id = `card-${asset.symbol}`;
                     card.className = `c-asset`;
-                    card.onclick = () => toggle(s);
-                    card.innerHTML = `
-                        <div class="side-pill" id="pill-${s}"></div>
-                        <div class="asset-row">
-                            <div class="a-left">
-                                <span class="a-sym">${s}</span>
-                                <span class="a-pair">VOLUME / BRL</span>
-                            </div>
-                            <div class="a-right">
-                                <div class="a-price" id="pr-${s}">R$ 0,00</div>
-                                <div class="status-box">
-                                    <span class="flow-tag" id="tag-${s}">--</span>
-                                    <span class="a-pct" id="pct-${s}">0.00%</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chart-box" id="tv-${s}"></div>
-                    `;
+                    card.onclick = () => toggle(asset.symbol);
                     document.getElementById('list').appendChild(card);
                 }
 
-                const isPos = pct >= 0;
-                const pill = document.getElementById(`pill-${s}`);
-                const tag = document.getElementById(`tag-${s}`);
-                pill.className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
-                
-                // Lógica de Detecção de Rotação (Capital saindo do BTC para Alts)
-                if (s !== "BTC" && pct > (btcChange + 2)) {
-                    if (tag.innerText !== "ENTRA | ALVO") {
-                        addAlert(`Capital migrando do BTC para <b>${s}</b>`);
-                    }
-                    tag.innerText = "ENTRA | ALVO";
-                    tag.style.color = "var(--green-nitido)";
-                } else if (pct < -2.5) {
-                    tag.innerText = "PULA | P/ BTC";
-                    tag.style.color = "var(--red-nitido)";
-                } else {
-                    tag.innerText = "LATERAL";
-                    tag.style.color = "#444";
+                card.style.order = index;
+                const isPos = asset.pct >= 0;
+                const logo = logoMap[asset.symbol] || asset.symbol.toLowerCase();
+
+                card.innerHTML = `
+                    <div class="side-pill ${isPos ? 'pos-bg' : 'neg-bg'}"></div>
+                    <div class="asset-row">
+                        <div class="a-left">
+                            <img class="coin-icon" src="https://cryptologos.cc/logos/${logo}-${asset.symbol.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${asset.symbol}&background=111&color=fff'">
+                            <div class="a-info">
+                                <span class="a-sym">${asset.symbol}</span>
+                                <span class="a-pair">VOLUME / BRL</span>
+                            </div>
+                        </div>
+                        <div class="a-right">
+                            <div class="a-price" id="pr-${asset.symbol}">R$ ${asset.priceBrl.toLocaleString('pt-BR', {minimumFractionDigits: asset.priceBrl < 1 ? 4 : 2, maximumFractionDigits: asset.priceBrl < 1 ? 4 : 2})}</div>
+                            <div class="status-box">
+                                <span class="flow-tag" id="tag-${asset.symbol}" style="color: ${asset.pct > btcChange + 2 ? 'var(--green-nitido)' : '#444'}">
+                                    ${asset.pct > btcChange + 2 ? 'ENTRA | ALVO' : 'LATERAL'}
+                                </span>
+                                <span class="a-pct ${isPos ? 'pos-txt' : 'neg-txt'}">${isPos ? '+' : ''}${asset.pct.toFixed(2)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-box" id="tv-${asset.symbol}"></div>
+                `;
+
+                if (asset.symbol !== "BTC" && asset.pct > btcChange + 2.5) {
+                    const tag = document.getElementById(`tag-${asset.symbol}`);
+                    if (tag && tag.innerText !== "ENTRA | ALVO") addAlert(`Brecha aberta em <b>${asset.symbol}</b>`);
                 }
+            });
 
-                const pEl = document.getElementById(`pct-${s}`);
-                pEl.innerText = (isPos ? "+" : "") + pct.toFixed(2) + "%";
-                pEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
-                document.getElementById(`pr-${s}`).innerText = "R$ " + brl.toLocaleString('pt-BR', {minimumFractionDigits: dec, maximumFractionDigits: dec});
-            }
-
+            // Atualiza métricas de topo
             const mStatus = document.getElementById('mkt-status');
             const mFlow = document.getElementById('mkt-flow');
             if (totalPct / coins.length > btcChange) {
                 mStatus.innerText = "VIVO | ALT-SEASON"; mStatus.className = "stat-val pulse pos-txt";
-                mFlow.innerText = "FLUXO PARA ALTS"; mFlow.className = "stat-val pos-txt";
+                mFlow.innerText = "FLUXO PARA ALTS";
             } else {
                 mStatus.innerText = "VIVO | BTC-POWER"; mStatus.className = "stat-val pulse";
                 mFlow.innerText = "FLUXO PARA BTC";
             }
 
-        } catch (e) { }
+        } catch (e) { console.error("Sync Error", e); }
     }
 
     function toggle(id) {
