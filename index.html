@@ -5,47 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SENTINEL_V12 // SOBERANIA</title>
     <style>
-        :root { --bg-dark: #020202; --card-bg: #0d0d0d; --text-main: #ffffff; --text-dim: #888; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; }
+        :root { 
+            --bg-dark: #020202; 
+            --card-bg: #0d0d0d; 
+            --text-main: #ffffff; 
+            --text-dim: #888; 
+            --green: #00ff41; 
+            --yellow: #ffdf00; 
+            --red: #ff3131; 
+            --blue: #00e5ff; 
+        }
+        
         body { background-color: var(--bg-dark); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Header e Radar */
+        /* Cabeçalho de Alta Precisão */
         .top-bar { background: #000; padding: 12px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a1a1a; position: sticky; top: 0; z-index: 100; }
         .radar-global { background: #080808; padding: 10px; font-size: 10px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--blue); color: var(--blue); font-weight: bold; }
+        
         .nav-sistema { display: flex; background: #000; border-bottom: 2px solid #222; position: sticky; top: 43px; z-index: 99; }
         .tab-link { flex: 1; padding: 15px; border: none; background: none; color: var(--text-dim); cursor: pointer; font-size: 12px; font-weight: 800; text-transform: uppercase; }
         .tab-link.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
         
         .btn-ativa { background: var(--green); color: black; border: none; padding: 25px; width: 100%; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; }
 
-        /* Estilo Clássico de Card Re-aplicado */
+        /* Interface de Cards Arredondados (Conforme Imagem) */
         .container { padding: 10px; }
-        .crypto-section { background: var(--card-bg); margin-bottom: 10px; border-radius: 8px; border: 1px solid #1a1a1a; overflow: hidden; }
-        .market-info { padding: 18px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #333; }
+        .crypto-section { background: var(--card-bg); margin-bottom: 12px; border-radius: 12px; border: 1px solid #1a1a1a; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .market-info { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #333; transition: border 0.3s; }
         
         .coin-name { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 1px; }
-        .price-container { text-align: right; flex-grow: 1; padding-right: 20px; }
+        .price-container { text-align: right; flex-grow: 1; padding-right: 15px; }
         .price-big { font-size: 22px; font-weight: 900; color: #fff; display: block; }
         .var-percent { font-size: 12px; font-weight: bold; }
 
-        .led { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-left: 10px; }
-        .led-green { background: var(--green); box-shadow: 0 0 12px var(--green); }
-        .led-red { background: var(--red); box-shadow: 0 0 12px var(--red); }
+        .led { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+        .led-green { background: var(--green); box-shadow: 0 0 15px var(--green); }
+        .led-red { background: var(--red); box-shadow: 0 0 15px var(--red); }
 
-        /* Área de Input Espelhada no Patrimônio */
+        /* Aba Patrimônio: Inputs e Lógica PnL */
         .pat-input-area { background: #050505; padding: 15px; border-top: 1px solid #1a1a1a; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .label-pnl { font-size: 9px; color: var(--text-dim); font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: block; }
-        .input-box { background: #111; border: 1px solid #333; color: var(--green); padding: 10px; font-size: 16px; font-weight: bold; border-radius: 4px; width: 100%; box-sizing: border-box; }
-        .val-display { font-size: 18px; font-weight: 900; color: #fff; padding-top: 5px; }
+        .input-box { background: #111; border: 1px solid #333; color: var(--green); padding: 10px; font-size: 16px; font-weight: bold; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
+        .input-box:focus { border-color: var(--blue); }
+        .pnl-val { font-size: 18px; font-weight: 900; padding-top: 5px; }
     </style>
 </head>
 <body>
 
-    <button id="btn-start" class="btn-ativa" onclick="iniciar()">🔱 RESTAURAR SENTINEL V12 // ESPELHAMENTO ATIVO</button>
+    <button id="btn-start" class="btn-ativa" onclick="iniciarSentinela()">🔱 ATIVAR INTERFACE PREMIUM [21:40]</button>
 
     <div class="radar-global">
         <span>ESTADO: <span id="global-status">ALTISTA</span></span>
         <span>DOMÍNIO BTC: <span id="global-dom">48.06%</span></span>
-        <span>FLUXO ATIVO: <span id="global-target" style="color: var(--yellow);">SOL</span></span>
+        <span>FLUXO ATIVO: <span id="global-target" style="color: var(--yellow);">...</span></span>
     </div>
 
     <div class="top-bar">
@@ -70,9 +82,11 @@
     <script>
         const moedas = ["BTC", "ETH", "RENDER", "SOL", "NEAR", "LINK", "SEI", "POL", "ADA", "DOT"];
         let prices = {};
+        let priceChanges = {};
+        let initialPrices = {}; // Para travar o preço no momento do aporte
         let dolarBRL = 5.30;
 
-        async function iniciar() {
+        async function iniciarSentinela() {
             document.getElementById('btn-start').style.display = 'none';
             renderizarEstruturas();
             atualizarDados();
@@ -81,43 +95,31 @@
         }
 
         function renderizarEstruturas() {
-            // Monitoramento
-            document.getElementById('lista-mkt').innerHTML = moedas.map(m => `
+            const layout = (m, aba) => `
                 <div class="crypto-section">
-                    <div class="market-info" id="card-m-${m}">
+                    <div class="market-info" id="card-${aba}-${m}">
                         <div class="coin-name">${m}</div>
                         <div class="price-container">
-                            <span class="price-big" id="price-m-${m}">R$ 0,00</span>
-                            <span class="var-percent" id="var-m-${m}">0.00%</span>
+                            <span class="price-big" id="price-${aba}-${m}">R$ 0,00</span>
+                            <span class="var-percent" id="var-${aba}-${m}">0.00%</span>
                         </div>
-                        <div class="led" id="led-m-${m}"></div>
+                        <div class="led" id="led-${aba}-${m}"></div>
                     </div>
-                </div>
-            `).join('');
-
-            // Patrimônio (Espelhamento Total com Campos de Depósito)
-            document.getElementById('lista-pat').innerHTML = moedas.map(m => `
-                <div class="crypto-section">
-                    <div class="market-info" id="card-p-${m}">
-                        <div class="coin-name">${m}</div>
-                        <div class="price-container">
-                            <span class="price-big" id="lucro-p-${m}">R$ 0,00</span>
-                            <span class="var-percent" id="perf-p-${m}">Sincronizando...</span>
-                        </div>
-                        <div class="led" id="led-p-${m}"></div>
-                    </div>
+                    ${aba === 'p' ? `
                     <div class="pat-input-area">
                         <div>
-                            <span class="label-pnl">Capital p/ Depósito (R$)</span>
-                            <input type="number" id="deposito-${m}" class="input-box" placeholder="0.00" oninput="calcularPnl('${m}')">
+                            <span class="label-pnl">Capital p/ Depósito</span>
+                            <input type="number" id="deposito-${m}" class="input-box" placeholder="R$ 0.00" oninput="calcularPnL('${m}')">
                         </div>
                         <div style="text-align: right;">
-                            <span class="label-pnl">Cotação Atual</span>
-                            <div class="val-display" id="saldo-p-${m}">R$ 0,00</div>
+                            <span class="label-pnl">Resultado PnL (Real)</span>
+                            <div id="pnl-res-${m}" class="pnl-val">R$ 0,00</div>
                         </div>
-                    </div>
-                </div>
-            `).join('');
+                    </div>` : ''}
+                </div>`;
+
+            document.getElementById('lista-mkt').innerHTML = moedas.map(m => layout(m, 'm')).join('');
+            document.getElementById('lista-pat').innerHTML = moedas.map(m => layout(m, 'p')).join('');
         }
 
         async function atualizarDados() {
@@ -133,42 +135,37 @@
                         const price = parseFloat(item.lastPrice) * dolarBRL;
                         const varPct = parseFloat(item.priceChangePercent);
                         prices[sym] = price;
+                        priceChanges[sym] = varPct;
 
-                        // Atualiza Monitoramento
-                        const precision = price < 10 ? 4 : 2;
-                        document.getElementById(`price-m-${sym}`).innerText = price.toLocaleString('pt-BR', {style:'currency', currency:'BRL', minimumFractionDigits: precision});
-                        const vEl = document.getElementById(`var-m-${sym}`);
-                        vEl.innerText = (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
-                        vEl.style.color = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                        document.getElementById(`card-m-${sym}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                        document.getElementById(`led-m-${sym}`).className = `led ${varPct >= 0 ? 'led-green' : 'led-red'}`;
-
-                        // Atualiza Patrimônio (Espelhamento de LED e Cor)
-                        document.getElementById(`saldo-p-${sym}`).innerText = price.toLocaleString('pt-BR', {style:'currency', currency:'BRL', minimumFractionDigits: precision});
-                        document.getElementById(`card-p-${sym}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                        document.getElementById(`led-p-${sym}`).className = `led ${varPct >= 0 ? 'led-green' : 'led-red'}`;
+                        const format = { style: 'currency', currency: 'BRL', minimumFractionDigits: price < 10 ? 4 : 2 };
                         
-                        calcularPnl(sym);
+                        // Atualiza as duas abas simultaneamente (Espelhamento)
+                        ['m', 'p'].forEach(aba => {
+                            document.getElementById(`price-${aba}-${sym}`).innerText = price.toLocaleString('pt-BR', format);
+                            const vEl = document.getElementById(`var-${aba}-${sym}`);
+                            vEl.innerText = (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
+                            vEl.style.color = varPct >= 0 ? 'var(--green)' : 'var(--red)';
+                            document.getElementById(`card-${aba}-${sym}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
+                            document.getElementById(`led-${aba}-${sym}`).className = `led ${varPct >= 0 ? 'led-green' : 'led-red'}`;
+                        });
+                        
+                        calcularPnL(sym);
                     }
                 });
-            } catch (e) { console.log("Erro de Sincronia."); }
+            } catch (e) { console.log("Erro na rede."); }
         }
 
-        function calcularPnl(m) {
+        function calcularPnL(m) {
             const input = document.getElementById(`deposito-${m}`);
-            const deposito = parseFloat(input.value) || 0;
-            const elLucro = document.getElementById(`lucro-p-${m}`);
-            const elPerf = document.getElementById(`perf-p-${m}`);
+            if (!input || !input.value) return;
 
-            if(deposito > 0) {
-                elLucro.innerText = deposito.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-                elPerf.innerText = "CAPITAL ATIVO";
-                elPerf.style.color = 'var(--blue)';
-            } else {
-                elLucro.innerText = "R$ 0,00";
-                elPerf.innerText = "AGUARDANDO APORTE";
-                elPerf.style.color = 'var(--text-dim)';
-            }
+            const capital = parseFloat(input.value);
+            const variacao = priceChanges[m] / 100;
+            const pnlReal = capital * variacao;
+
+            const resEl = document.getElementById(`pnl-res-${m}`);
+            resEl.innerText = pnlReal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            resEl.style.color = pnlReal >= 0 ? 'var(--green)' : 'var(--red)';
         }
 
         function mudarTab(evt, n) {
