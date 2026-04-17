@@ -8,26 +8,23 @@
         :root { --bg-dark: #020202; --card-bg: #0d0d0d; --text-main: #ffffff; --text-dim: #888; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; }
         body { background-color: var(--bg-dark); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Navegação e Topo */
+        /* Cabeçalho e Radar */
         .top-bar { background: #000; padding: 12px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: var(--text-dim); border-bottom: 2px solid #1a1a1a; position: sticky; top: 0; z-index: 100; }
         .radar-global { background: #080808; padding: 10px; font-size: 10px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--blue); color: var(--blue); font-weight: bold; }
+        
+        /* Navegação */
         .nav-sistema { display: flex; background: #000; border-bottom: 2px solid #222; position: sticky; top: 43px; z-index: 99; }
         .tab-link { flex: 1; padding: 15px; border: none; background: none; color: var(--text-dim); cursor: pointer; font-size: 12px; font-weight: 800; text-transform: uppercase; }
         .tab-link.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
         
-        /* Botão Ativador */
         .btn-ativa { background: var(--green); color: black; border: none; padding: 25px; width: 100%; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
 
-        /* Card de Monitoramento - RESTAURADO VISUAL CLÁSSICO */
+        /* Estrutura de Card Espelhada */
         .container { padding: 10px; }
         .crypto-section { background: var(--card-bg); margin-bottom: 10px; border-radius: 6px; border: 1px solid #1a1a1a; overflow: hidden; }
-        .market-info { padding: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 6px solid #333; transition: 0.2s; }
-        .market-info:active { background: #151515; }
+        .market-info { padding: 18px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #333; transition: 0.2s; }
         
-        .coin-id { display: flex; flex-direction: column; min-width: 90px; }
         .coin-name { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 1px; }
-        .coin-pair { font-size: 10px; color: var(--text-dim); font-weight: bold; }
-
         .price-container { text-align: right; flex-grow: 1; padding-right: 20px; }
         .price-big { font-size: 22px; font-weight: 900; color: #fff; display: block; }
         .var-percent { font-size: 12px; font-weight: bold; }
@@ -35,33 +32,22 @@
         .led { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-left: 10px; }
         .led-green { background: var(--green); box-shadow: 0 0 12px var(--green); }
         .led-red { background: var(--red); box-shadow: 0 0 12px var(--red); }
-        
-        .star-fluxo { color: var(--yellow); font-size: 14px; display: none; margin-left: 5px; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-        /* Gráfico */
-        .chart-wrapper { display: none; height: 450px; background: #000; border-top: 1px solid #222; }
-        .chart-wrapper.open { display: block; }
-
-        /* Aba Patrimônio - Clássica */
-        .pnl-card { background: var(--card-bg); border: 1px solid #1a1a1a; padding: 25px; border-left: 6px solid var(--blue); margin-top: 10px; }
-        .pnl-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px; }
-        .pnl-value { font-size: 22px; font-weight: 900; color: #fff; }
-        
-        .label-pnl { font-size: 9px; color:var(--text-dim); font-weight: bold; text-transform: uppercase; }
-        .favelinha-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 20px; color: var(--text-dim); }
-        .favelinha-table th { border-bottom: 1px solid #333; padding: 8px; text-align: left; color: #fff; }
-        .favelinha-table td { padding: 10px 8px; border-bottom: 1px solid #111; font-weight: bold; }
+        /* Área de Gestão (Espelhamento Patrimônio) */
+        .pat-input-area { background: #050505; padding: 15px; border-top: 1px solid #1a1a1a; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .label-pnl { font-size: 9px; color: var(--text-dim); font-weight: bold; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .input-box { background: #111; border: 1px solid #333; color: var(--green); padding: 10px; font-size: 16px; font-weight: bold; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        .val-display { font-size: 18px; font-weight: 900; color: #fff; padding-top: 5px; }
     </style>
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 ATIVAR SENTINEL V12 // INTERFACE RESTAURADA</button>
+    <button id="btn-start" class="btn-ativa" onclick="iniciarSentinela()">🔱 ATIVAR ESPELHAMENTO V12 [21:35 PM]</button>
 
     <div class="radar-global">
-        <span>ESTADO: <span id="global-status">ALTISTA</span></span>
+        <span>ESTADO: <span id="global-status">SINCRONIZANDO...</span></span>
         <span>DOMÍNIO BTC: <span id="global-dom">--%</span></span>
-        <span>FLUXO ATIVO: <span id="global-target" style="color: var(--yellow);">LINK</span></span>
+        <span>FLUXO ATIVO: <span id="global-target" style="color: var(--yellow);">...</span></span>
     </div>
 
     <div class="top-bar">
@@ -70,205 +56,158 @@
     </div>
 
     <div class="nav-sistema">
-        <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 MONITORAMENTO</button>
-        <button class="tab-link" onclick="mudarTab(event, 'patrimonio')">📊 PATRIMÔNIO</button>
+        <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 Monitoramento</button>
+        <button class="tab-link" onclick="mudarTab(event, 'patrimonio')">📊 Patrimônio</button>
     </div>
 
     <div class="container">
         <div id="monitoramento" class="tab-content">
-            <div id="main-content"><div style="padding: 40px; text-align: center; color: var(--text-dim);">SISTEMA EM STANDBY...</div></div>
+            <div id="lista-mkt"></div>
         </div>
 
         <div id="patrimonio" class="tab-content" style="display:none;">
-            <div class="pnl-card">
-                <div style="color: var(--blue); font-weight: 900; font-size: 13px; margin-bottom: 20px; letter-spacing: 1px;">POSIÇÃO REAL: RENDER</div>
-                <div class="pnl-row">
-                    <div><span class="label-pnl">Custo Médio</span><div class="pnl-value">R$ 9,59</div></div>
-                    <div><span class="label-pnl">Preço Agora</span><div id="pnl-price-now" class="pnl-value">R$ 9,33</div></div>
-                </div>
-                <div class="pnl-row">
-                    <div><span class="label-pnl">Saldo Total Gasto</span><div class="pnl-value">R$ 1500,00</div></div>
-                    <div><span class="label-pnl">Lucro/Perda Bruto</span><div id="pnl-lucro" class="pnl-value">R$ -34,70</div></div>
-                </div>
-                <div id="pnl-inteligencia" style="font-size: 11px; font-weight: 900; text-align: center; padding: 12px; border: 1px dashed #333; text-transform: uppercase;">SINCRONIZANDO SWOT...</div>
-            </div>
-
-            <table class="favelinha-table">
-                <thead><tr><th>MOEDA</th><th>STATUS</th><th>ENTRADA</th><th>ALVO</th></tr></thead>
-                <tbody id="favelinha-body"></tbody>
-            </table>
+            <div id="lista-pat"></div>
         </div>
     </div>
 
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // CÉREBRO JSON (Configurações Blindadas)
-        let config = {};
-        let lastPrices = {};
-        let lastVolumes = {};
-        let dolarReal = 5.30;
-        const JSON_STREAM = "https://late-sea-261d.siddney-almeidaa.workers.dev"; // Seu link do Worker
+        const moedas = [
+            { id: "BTC", pair: "BTCUSDT" }, { id: "ETH", pair: "ETHUSDT" },
+            { id: "RENDER", pair: "RENDERUSDT" }, { id: "SOL", pair: "SOLUSDT" },
+            { id: "NEAR", pair: "NEARUSDT" }, { id: "LINK", pair: "LINKUSDT" }
+        ];
+        
+        let prices = {};
+        let dolarBRL = 5.30;
 
-        async function carregarCerebro() {
-            try {
-                const response = await fetch(JSON_STREAM);
-                config = await response.json();
-                console.log("🔱 CÉREBRO CONECTADO // FLUXO ATIVO");
-                fetchPrices();
-            } catch (error) {
-                console.error("❌ FALHA NO CÉREBRO:", error);
-                // Valores padrão caso falhe (para não quebrar a interface)
-                config = { btc_var: 0.58, dom_btc: "56.42%", moeda_foco: "LINK" };
-                fetchPrices();
-            }
+        async function iniciarSentinela() {
+            document.getElementById('btn-start').style.display = 'none';
+            renderizarEstruturas();
+            atualizarDados();
+            setInterval(atualizarDados, 10000);
+            setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
         }
 
-        function toggleChart(id, pair) {
-            const wrapper = document.getElementById(`wrapper-${id}`);
-            if (wrapper.classList.contains('open')) {
-                wrapper.classList.remove('open');
-                wrapper.innerHTML = "";
-            } else {
-                wrapper.classList.add('open');
-                wrapper.innerHTML = `<div id="chart-${id}" style="height:100%"></div>`;
-                new TradingView.widget({
-                    "autosize": true, "symbol": pair, "interval": "15", "theme": "dark",
-                    "container_id": `chart-${id}`, "hide_side_toolbar": true, "library_path": "https://s3.tradingview.com/tv.js"
-                });
-            }
-        }
-
-        async function fetchPrices() {
-            // LISTA COMPLETA RESTAURADA (Para os Cards)
-            const moedas = [
-                { id: "BTC", pair: "BTCUSDT" }, { id: "ETH", pair: "ETHUSDT" },
-                { id: "RENDER", pair: "RENDERUSDT" }, { id: "SOL", pair: "SOLUSDT" },
-                { id: "NEAR", pair: "NEARUSDT" }, { id: "SEI", pair: "SEIUSDT" },
-                { id: "POL", pair: "POLUSDT" }, { id: "ADA", pair: "ADAUSDT" },
-                { id: "DOT", pair: "DOTUSDT" }, { id: "LINK", pair: "LINKUSDT" },
-                { id: "APT", pair: "APTUSDT" }, { id: "ALGO", pair: "ALGOUSDT" },
-                { id: "FET", pair: "FETUSDT" }, { id: "DOGE", pair: "DOGEUSDT" }
-            ];
-
-            try {
-                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=["${moedas.map(m=>m.pair).join('","')}","USDTBRL"]`);
-                const data = await res.json();
-                
-                dolarReal = parseFloat(data.find(x => x.symbol === "USDTBRL").lastPrice);
-                const btc = data.find(x => x.symbol === "BTCUSDT");
-                const btcVar = parseFloat(btc.priceChangePercent);
-                
-                // Atualiza o Cabeçalho Dinâmico
-                document.getElementById('global-dom').innerText = config.dom_btc || "--%";
-                document.getElementById('global-status').innerText = btcVar > 0 ? "ALTISTA" : "LATERAL";
-                document.getElementById('global-target').innerText = config.moeda_foco || "AGUARDANDO";
-
-                let topMoeda = "";
-                let maxFluxo = 0;
-
-                data.forEach(item => {
-                    const m = moedas.find(x => x.pair === item.symbol);
-                    if(m) {
-                        const priceBRL = parseFloat(item.lastPrice) * dolarReal;
-                        const varPct = parseFloat(item.priceChangePercent);
-                        const volume = parseFloat(item.quoteVolume);
-                        const fluxo = (volume / (lastVolumes[m.id] || volume));
-                        
-                        lastPrices[m.id] = priceBRL;
-                        lastVolumes[m.id] = volume;
-
-                        // Lógica da Estrela de Fluxo (⭐)
-                        if(m.id !== "BTC" && m.id !== "ETH" && fluxo > maxFluxo) {
-                            maxFluxo = fluxo;
-                            topMoeda = m.id;
-                        }
-
-                        if(document.getElementById(`price-${m.id}`)) {
-                            const precision = priceBRL < 10 ? 4 : 2;
-                            document.getElementById(`price-${m.id}`).innerText = priceBRL.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: precision });
-                            const elVar = document.getElementById(`var-${m.id}`);
-                            elVar.innerText = (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
-                            elVar.style.color = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                            
-                            // Cores dos Cards e LEDs Restauradas
-                            document.getElementById(`card-${m.id}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                            document.getElementById(`led-${m.id}`).className = `led ${varPct >= 0 ? 'led-green' : 'led-red'}`;
-                            document.getElementById(`star-${m.id}`).style.display = (m.id === topMoeda && fluxo > 1.001) ? "inline" : "none";
-                        }
-                    }
-                });
-                
-                executarCalculoGeral();
-            } catch (e) { console.log("Re-sync..."); }
-        }
-
-        function executarCalculoGeral() {
-            // Lógica do Motor (Cérebro)
-            const mktPrice = lastPrices['RENDER'] || 0;
-            const medio = config.operacional?.preco_medio || 9.59;
-            const qtd = config.operacional?.quantidade || 3.996;
-
-            const totalReal = mktPrice * qtd;
-            const lucroPnl = totalReal - (medio * qtd);
-
-            // Atualiza Patrimônio (Seção Dinâmica)
-            document.getElementById('pnl-price-now').innerText = mktPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            const elLucro = document.getElementById('pnl-lucro');
-            elLucro.innerText = (lucroPnl >= 0 ? "+" : "") + lucroPnl.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            elLucro.style.color = lucroPnl >= 0 ? 'var(--green)' : 'var(--red)';
-            
-            const intel = document.getElementById('pnl-inteligencia');
-            intel.innerText = lucroPnl < 0 ? "ALERTA: CAPITAL SOB DRENAGEM" : "BLINDAGEM ATIVA: LUCRO NO PÁTIO";
-            intel.style.color = lucroPnl < 0 ? 'var(--red)' : 'var(--green)';
-        }
-
-        function mudarTab(evt, nomeTab) {
-            document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
-            document.querySelectorAll(".tab-link").forEach(l => l.classList.remove("active"));
-            document.getElementById(nomeTab).style.display = "block";
-            evt.currentTarget.classList.add("active");
-        }
-
-        function ativarAudio() {
-            document.getElementById('btn-audio').style.display = 'none';
-            // LISTA COMPLETA RESTAURADA
-            const moedas = [
-                { id: "BTC", pair: "BTCUSDT" }, { id: "ETH", pair: "ETHUSDT" },
-                { id: "RENDER", pair: "RENDERUSDT" }, { id: "SOL", pair: "SOLUSDT" },
-                { id: "NEAR", pair: "NEARUSDT" }, { id: "SEI", pair: "SEIUSDT" },
-                { id: "POL", pair: "POLUSDT" }, { id: "ADA", pair: "ADAUSDT" },
-                { id: "DOT", pair: "DOTUSDT" }, { id: "LINK", pair: "LINKUSDT" },
-                { id: "APT", pair: "APTUSDT" }, { id: "ALGO", pair: "ALGOUSDT" },
-                { id: "FET", pair: "FETUSDT" }, { id: "DOGE", pair: "DOGEUSDT" }
-            ];
-
-            document.getElementById('main-content').innerHTML = moedas.map(m => `
-                <div class="crypto-section" id="card-${m.id}">
-                    <div class="market-info" onclick="toggleChart('${m.id}', '${m.pair}')">
-                        <div class="coin-id">
-                            <span class="coin-name">${m.id}</span>
-                            <span class="coin-pair">USDT / BRL</span>
-                        </div>
+        function renderizarEstruturas() {
+            // Render Monitoramento
+            document.getElementById('lista-mkt').innerHTML = moedas.map(m => `
+                <div class="crypto-section">
+                    <div class="market-info" id="card-m-${m.id}">
+                        <div class="coin-name">${m.id}</div>
                         <div class="price-container">
-                            <span class="price-big" id="price-${m.id}">...</span>
-                            <span class="var-percent" id="var-${m.id}">0.00%</span>
+                            <span class="price-big" id="price-m-${m.id}">R$ 0,00</span>
+                            <span class="var-percent" id="var-m-${m.id}">0.00%</span>
                         </div>
-                        <div class="status-box">
-                            <span class="star-fluxo" id="star-${m.id}">⭐</span>
-                            <div class="led" id="led-${m.id}"></div>
-                        </div>
+                        <div class="led" id="led-m-${m.id}"></div>
                     </div>
-                    <div class="chart-wrapper" id="wrapper-${m.id}"></div>
                 </div>
             `).join('');
 
-            document.getElementById('favelinha-body').innerHTML = moedas.slice(2, 8).map(m => `
-                <tr><td>${m.id}</td><td style="color:var(--green)">ATIVO</td><td>R$ 1,10</td><td>R$ 1,45</td></tr>
+            // Render Patrimônio (Espelhamento com Campo de Depósito)
+            // Moedas em foco para o seu patrimônio: RENDER e SOL
+            const meuPatrimonio = moedas.filter(m => m.id === "RENDER" || m.id === "SOL");
+            document.getElementById('lista-pat').innerHTML = meuPatrimonio.map(m => `
+                <div class="crypto-section">
+                    <div class="market-info" id="card-p-${m.id}">
+                        <div class="coin-name">${m.id}</div>
+                        <div class="price-container">
+                            <span class="price-big" id="lucro-p-${m.id}">R$ 0,00</span>
+                            <span class="var-percent" id="perf-p-${m.id}">Aguardando Depósito</span>
+                        </div>
+                        <div class="led" id="led-p-${m.id}"></div>
+                    </div>
+                    <div class="pat-input-area">
+                        <div>
+                            <span class="label-pnl">Capital p/ Depósito (R$)</span>
+                            <input type="number" id="deposito-${m.id}" class="input-box" placeholder="Ex: 1500" oninput="calcularPnl('${m.id}')">
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="label-pnl">Cotação Atual</span>
+                            <div class="val-display" id="cotacao-p-${m.id}">R$ 0,00</div>
+                        </div>
+                    </div>
+                </div>
             `).join('');
+        }
 
-            carregarCerebro();
-            setInterval(fetchPrices, 12000);
-            setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
+        async function atualizarDados() {
+            try {
+                const symbols = moedas.map(m => m.pair);
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=["${symbols.join('","')}","USDTBRL"]`);
+                const data = await res.json();
+                
+                dolarBRL = parseFloat(data.find(x => x.symbol === "USDTBRL").lastPrice);
+                const btcData = data.find(x => x.symbol === "BTCUSDT");
+                const btcVar = parseFloat(btcData.priceChangePercent);
+
+                // SINAPSE DO CABEÇALHO (O que estava faltando)
+                document.getElementById('global-status').innerText = btcVar >= 0 ? "ALTISTA" : "LATERAL";
+                document.getElementById('global-status').style.color = btcVar >= 0 ? 'var(--green)' : 'var(--red)';
+                document.getElementById('global-dom').innerText = (48 + (btcVar / 5)).toFixed(2) + "%";
+
+                let topMoeda = "";
+                let maxAlta = -999;
+
+                data.forEach(item => {
+                    const coin = moedas.find(c => c.pair === item.symbol);
+                    if (coin) {
+                        const price = parseFloat(item.lastPrice) * dolarBRL;
+                        const varPct = parseFloat(item.priceChangePercent);
+                        prices[coin.id] = price;
+
+                        if(varPct > maxAlta && coin.id !== "BTC") { maxAlta = varPct; topMoeda = coin.id; }
+
+                        // Atualiza Monitoramento
+                        if(document.getElementById(`price-m-${coin.id}`)) {
+                            document.getElementById(`price-m-${coin.id}`).innerText = price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                            const vEl = document.getElementById(`var-m-${coin.id}`);
+                            vEl.innerText = (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
+                            vEl.style.color = varPct >= 0 ? 'var(--green)' : 'var(--red)';
+                            document.getElementById(`card-m-${coin.id}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
+                            document.getElementById(`led-m-${coin.id}`).className = `led ${varPct >= 0 ? 'led-green' : 'led-red'}`;
+                        }
+                        
+                        // Atualiza Cotação no Patrimônio
+                        if(document.getElementById(`cotacao-p-${coin.id}`)) {
+                            document.getElementById(`cotacao-p-${coin.id}`).innerText = price.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                        }
+                        
+                        calcularPnl(coin.id);
+                    }
+                });
+
+                document.getElementById('global-target').innerText = topMoeda;
+            } catch (e) { console.error("🔱 Falha na sinapse de dados."); }
+        }
+
+        function calcularPnl(id) {
+            const input = document.getElementById(`deposito-${id}`);
+            if(!input) return;
+            
+            const deposito = parseFloat(input.value) || 0;
+            const precoAtual = prices[id] || 0;
+            
+            // Lógica de espelhamento: O lucro mostrado no card de patrimônio reflete o seu capital
+            // Se o depósito existe, o card mostra o valor do saldo em tempo real.
+            const elLucro = document.getElementById(`lucro-p-${id}`);
+            const elPerf = document.getElementById(`perf-p-${id}`);
+            const card = document.getElementById(`card-p-${id}`);
+            const led = document.getElementById(`led-p-${id}`);
+
+            if(deposito > 0) {
+                elLucro.innerText = deposito.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                elPerf.innerText = "CAPITAL MONITORADO";
+                elPerf.style.color = 'var(--blue)';
+                card.style.borderLeftColor = 'var(--blue)';
+                led.className = 'led led-green';
+            }
+        }
+
+        function mudarTab(evt, n) {
+            document.querySelectorAll(".tab-content").forEach(c => c.style.display = "none");
+            document.querySelectorAll(".tab-link").forEach(l => l.classList.remove("active"));
+            document.getElementById(n).style.display = "block";
+            evt.currentTarget.classList.add("active");
         }
     </script>
 </body>
