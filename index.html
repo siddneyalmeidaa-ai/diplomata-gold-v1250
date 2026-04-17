@@ -3,66 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V12 // SOVERANIA_TOTAL</title>
+    <title>SENTINEL_V12 // DESIGN_UNIFICADO</title>
     <style>
-        :root { --bg-dark: #020202; --card-bg: #0d0d0d; --text-main: #ffffff; --text-dim: #888; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; }
-        body { background-color: var(--bg-dark); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        :root { --bg-dark: #020202; --card-bg: #0d0d0d; --text-main: #ffffff; --text-dim: #888; --green: #00ff41; --yellow: #ffdf00; --red: #ff3131; --blue: #00e5ff; --border-line: #1a1a1a; }
+        body { background-color: var(--bg-dark); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         
-        /* Navegação e Topo - RESTAURADO VISUAL 1 */
-        .top-bar { background: #000; padding: 12px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; color: var(--text-dim); border-bottom: 2px solid #1a1a1a; position: sticky; top: 0; z-index: 100; }
+        /* Top Bar & Radar */
+        .top-bar { background: #000; padding: 12px; font-size: 11px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-line); position: sticky; top: 0; z-index: 100; }
         .radar-global { background: #080808; padding: 10px; font-size: 10px; display: flex; justify-content: space-around; border-bottom: 1px solid var(--blue); color: var(--blue); font-weight: bold; }
+        
+        /* Nav */
         .nav-sistema { display: flex; background: #000; border-bottom: 2px solid #222; position: sticky; top: 43px; z-index: 99; }
         .tab-link { flex: 1; padding: 15px; border: none; background: none; color: var(--text-dim); cursor: pointer; font-size: 12px; font-weight: 800; text-transform: uppercase; }
         .tab-link.active { color: var(--green); border-bottom: 3px solid var(--green); background: #050505; }
         
-        /* Botão Ativador */
-        .btn-ativa { background: var(--green); color: black; border: none; padding: 20px; width: 100%; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+        .btn-ativa { background: var(--green); color: black; border: none; padding: 25px; width: 100%; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; letter-spacing: 2px; }
 
-        /* Card de Monitoramento - RESTAURADO VISUAL 1 */
+        /* Estilo Unificado de Card (Monitoramento + Patrimônio) */
         .container { padding: 10px; }
-        .crypto-section { background: var(--card-bg); margin-bottom: 10px; border-radius: 6px; border: 1px solid #1a1a1a; overflow: hidden; }
-        .market-info { padding: 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-left: 6px solid #333; transition: 0.2s; }
-        .market-info:active { background: #151515; }
+        .crypto-card { background: var(--card-bg); margin-bottom: 10px; border-radius: 6px; border: 1px solid var(--border-line); overflow: hidden; border-left: 6px solid #333; }
+        .card-content { padding: 18px; display: flex; justify-content: space-between; align-items: center; }
         
-        .coin-id { display: flex; flex-direction: column; min-width: 90px; }
         .coin-name { font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 1px; }
-        .coin-pair { font-size: 10px; color: var(--text-dim); font-weight: bold; }
-
-        .price-container { text-align: right; flex-grow: 1; padding-right: 20px; }
-        .price-big { font-size: 22px; font-weight: 900; color: #fff; display: block; }
-        .var-percent { font-size: 12px; font-weight: bold; }
+        .price-big { font-size: 22px; font-weight: 900; color: #fff; text-align: right; display: block; }
+        .var-percent { font-size: 12px; font-weight: bold; text-align: right; display: block; }
 
         .led { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-left: 10px; }
         .led-green { background: var(--green); box-shadow: 0 0 12px var(--green); }
         .led-red { background: var(--red); box-shadow: 0 0 12px var(--red); }
-        
-        .star-fluxo { color: var(--yellow); font-size: 14px; display: none; margin-left: 5px; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
-        /* Gráfico */
-        .chart-wrapper { display: none; height: 450px; background: #000; border-top: 1px solid #222; }
-        .chart-wrapper.open { display: block; }
+        /* Grade de Dados do Patrimônio dentro do Card */
+        .pat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; background: #050505; border-top: 1px solid #1a1a1a; }
+        .pat-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; font-weight: bold; }
+        .pat-val { font-size: 15px; font-weight: 800; color: #fff; }
 
-        /* ABA PATRIMÔNIO - Visual Clássico com Lógica Nova */
-        .pnl-card { background: var(--card-bg); border: 1px solid #1a1a1a; padding: 25px; border-left: 6px solid var(--blue); margin-top: 10px; }
-        .pnl-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #1a1a1a; padding-bottom: 10px; }
-        .pnl-value { font-size: 22px; font-weight: 900; color: #fff; }
-        
-        .label-pnl { font-size: 9px; color:var(--text-dim); font-weight: bold; text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .input-box { background: #111; border: 1px solid #333; color: var(--green); padding: 10px; width: 100%; box-sizing: border-box; font-size: 16px; font-weight: bold; border-radius: 4px; }
-        
-        .favelinha-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 20px; color: var(--text-dim); }
-        .favelinha-table th { border-bottom: 1px solid #333; padding: 10px; text-align: left; color: #fff; text-transform: uppercase; }
+        /* Tabela Favelinha */
+        .favelinha-section { margin-top: 25px; padding: 10px; border: 1px solid #1a1a1a; }
+        .favelinha-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        .favelinha-table th { text-align: left; padding: 10px; color: var(--blue); border-bottom: 1px solid #222; }
         .favelinha-table td { padding: 12px 10px; border-bottom: 1px solid #111; font-weight: bold; }
+        .status-badge { font-weight: 900; padding: 4px 8px; border-radius: 2px; font-size: 9px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <button id="btn-audio" class="btn-ativa" onclick="ativarAudio()">🔱 RESTAURAR INTEGRAÇÃO CLASSIC V12 [21:28 PM]</button>
+    <button id="btn-start" class="btn-ativa" onclick="iniciarSentinela()">🔱 INICIALIZAR DESIGN UNIFICADO V12</button>
 
     <div class="radar-global">
         <span>ESTADO: <span id="global-status">ALTISTA</span></span>
-        <span>DOMÍNIO BTC: <span id="global-dom">--%</span></span>
         <span>FLUXO ATIVO: <span id="global-target" style="color: var(--yellow);">LINK</span></span>
     </div>
 
@@ -72,125 +60,146 @@
     </div>
 
     <div class="nav-sistema">
-        <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 MONITORAMENTO</button>
-        <button class="tab-link" onclick="mudarTab(event, 'patrimonio')">📊 PATRIMÔNIO</button>
+        <button class="tab-link active" onclick="mudarTab(event, 'monitoramento')">🔱 Monitoramento</button>
+        <button class="tab-link" onclick="mudarTab(event, 'patrimonio')">📊 Patrimônio</button>
     </div>
 
     <div class="container">
         <div id="monitoramento" class="tab-content">
-            <div id="main-content"><div style="padding: 40px; text-align: center; color: var(--text-dim);">STANDBY OPERACIONAL...</div></div>
+            <div id="lista-mercado"></div>
         </div>
 
         <div id="patrimonio" class="tab-content" style="display:none;">
-            <div class="pnl-card">
-                <div style="color: var(--blue); font-weight: 900; font-size: 13px; margin-bottom: 20px; letter-spacing: 1px;">GESTÃO DE BANCA // RENDER</div>
-                
-                <div class="pnl-row">
-                    <div style="flex: 1;">
-                        <span class="label-pnl">Preço Médio Gasto (R$)</span>
-                        <input type="number" id="inp-medio" class="input-box" placeholder="Ex: 9.59" oninput="executarCalculoGeral()">
-                    </div>
-                    <div style="flex: 1; margin-left: 10px;">
-                        <span class="label-pnl">Quantidade Gasta</span>
-                        <input type="number" id="inp-qtd" class="input-box" placeholder="0.00" oninput="executarCalculoGeral()">
-                    </div>
-                </div>
+            <div id="lista-patrimonio"></div>
 
-                <div class="pnl-row" style="margin-top: 20px; border-top: 1px solid #222; padding-top: 15px;">
-                    <div><span class="label-pnl">SALDO TOTAL REAL</span><div id="pnl-total" class="pnl-value">R$ 0,00</div></div>
-                    <div style="text-align: right;"><span class="label-pnl">LUCRO / PERDA</span><div id="pnl-lucro" class="pnl-value">R$ 0,00</div></div>
-                </div>
-                <div id="pnl-inteligencia" style="font-size: 11px; font-weight: 900; text-align: center; padding: 12px; border: 1px dashed #333; text-transform: uppercase;">SINCRONIZANDO SWOT...</div>
+            <div class="favelinha-section">
+                <div style="font-size: 10px; font-weight: 900; color: var(--yellow); letter-spacing: 1px;">RADAR FAVELINHA // INJEÇÃO DE CAPITAL</div>
+                <table class="favelinha-table">
+                    <thead><tr><th>MOEDA</th><th>FLUXO</th><th>INTENSIDADE</th><th>ALVO X</th></tr></thead>
+                    <tbody id="favelinha-body"></tbody>
+                </table>
             </div>
-
-            <table class="favelinha-table">
-                <thead><tr><th>MOEDA</th><th>INJEÇÃO</th><th>ENTRADA</th><th>ALVO</th></tr></thead>
-                <tbody id="favelinha-body"></tbody>
-            </table>
         </div>
     </div>
 
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        let lastPrices = {};
-        let lastVolumes = {};
-        let dolarReal = 5.30;
-        // Restaurada a Lista Completa Filtrada
-        const moedas = [
-            { id: "BTC", pair: "BTCUSDT" }, { id: "ETH", pair: "ETHUSDT" },
-            { id: "RENDER", pair: "RENDERUSDT" }, { id: "SOL", pair: "SOLUSDT" },
-            { id: "NEAR", pair: "NEARUSDT" }, { id: "SEI", pair: "SEIUSDT" },
-            { id: "POL", pair: "POLUSDT" }, { id: "ADA", pair: "ADAUSDT" },
-            { id: "DOT", pair: "DOTUSDT" }, { id: "LINK", pair: "LINKUSDT" },
-            { id: "APT", pair: "APTUSDT" }, { id: "ALGO", pair: "ALGOUSDT" },
-            { id: "FET", pair: "FETUSDT" }, { id: "DOGE", pair: "DOGEUSDT" }
-        ];
+        let config = {
+            patrimonio: [
+                { id: "RENDER", aporte: 1500.00, qtd: 156.40 },
+                { id: "SOL", aporte: 2000.00, qtd: 2.15 }
+            ],
+            moedas: [
+                { id: "BTC", pair: "BTCUSDT" }, { id: "ETH", pair: "ETHUSDT" },
+                { id: "RENDER", pair: "RENDERUSDT" }, { id: "SOL", pair: "SOLUSDT" },
+                { id: "NEAR", pair: "NEARUSDT" }, { id: "FET", pair: "FETUSDT" }
+            ]
+        };
 
-        function toggleChart(id, pair) {
-            const wrapper = document.getElementById(`wrapper-${id}`);
-            if (wrapper.classList.contains('open')) { wrapper.classList.remove('open'); wrapper.innerHTML = ""; }
-            else {
-                wrapper.classList.add('open');
-                wrapper.innerHTML = `<div id="chart-${id}" style="height:100%"></div>`;
-                new TradingView.widget({ "autosize": true, "symbol": pair, "interval": "15", "theme": "dark", "container_id": `chart-${id}`, "hide_side_toolbar": true, "library_path": "https://s3.tradingview.com/tv.js" });
-            }
+        let prices = {};
+        let dolarReal = 5.30;
+
+        async function iniciarSentinela() {
+            document.getElementById('btn-start').style.display = 'none';
+            renderStaticBase();
+            syncData();
+            setInterval(syncData, 10000);
+            setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
         }
 
-        async function fetchPrices() {
+        async function syncData() {
             try {
-                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=["${moedas.map(m=>m.pair).join('","')}","USDTBRL"]`);
+                const symbols = config.moedas.map(m => m.pair);
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=["${symbols.join('","')}","USDTBRL"]`);
                 const data = await res.json();
+                
                 dolarReal = parseFloat(data.find(x => x.symbol === "USDTBRL").lastPrice);
-                const btc = data.find(x => x.symbol === "BTCUSDT");
-                document.getElementById('global-status').innerText = parseFloat(btc.priceChangePercent) > 0 ? "ALTISTA" : "LATERAL";
-
-                let topMoeda = ""; let maxFluxo = 0;
 
                 data.forEach(item => {
-                    const m = moedas.find(x => x.pair === item.symbol);
-                    if(m) {
-                        const priceBRL = parseFloat(item.lastPrice) * dolarReal;
-                        const varPct = parseFloat(item.priceChangePercent);
-                        const volume = parseFloat(item.quoteVolume);
-                        const fluxo = (volume / (lastVolumes[m.id] || volume));
-                        lastPrices[m.id] = priceBRL;
-                        lastVolumes[m.id] = volume;
-                        if(m.id !== "BTC" && m.id !== "ETH" && fluxo > maxFluxo) { maxFluxo = fluxo; topMoeda = m.id; }
-
-                        if(document.getElementById(`price-${m.id}`)) {
-                            const precision = priceBRL < 10 ? 4 : 2;
-                            document.getElementById(`price-${m.id}`).innerText = priceBRL.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: precision });
-                            const elVar = document.getElementById(`var-${m.id}`);
-                            elVar.innerText = (varPct > 0 ? "+" : "") + varPct.toFixed(2) + "%";
-                            elVar.style.color = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                            document.getElementById(`card-${m.id}`).style.borderLeftColor = varPct >= 0 ? 'var(--green)' : 'var(--red)';
-                            document.getElementById(`led-${m.id}`).className = `led ${varPct >= 0 ? 'led-green' : 'led-red'}`;
-                            document.getElementById(`star-${m.id}`).style.display = (m.id === topMoeda && fluxo > 1.001) ? "inline" : "none";
-                        }
+                    const coin = config.moedas.find(c => c.pair === item.symbol);
+                    if(coin) {
+                        prices[coin.id] = parseFloat(item.lastPrice) * dolarReal;
+                        prices[coin.id + "_var"] = parseFloat(item.priceChangePercent);
                     }
                 });
-                executarCalculoGeral();
-            } catch (e) { console.log("Re-sync..."); }
+
+                updateVisuals();
+            } catch (e) { console.log("Erro de sincronização."); }
         }
 
-        function executarCalculoGeral() {
-            const mktPrice = lastPrices['RENDER'] || 0;
-            const medioInput = parseFloat(document.getElementById('inp-medio').value) || 0;
-            const qtdInput = parseFloat(document.getElementById('inp-qtd').value) || 0;
+        function renderStaticBase() {
+            // Renderiza estrutura de Monitoramento
+            document.getElementById('lista-mercado').innerHTML = config.moedas.map(m => `
+                <div class="crypto-card" id="card-m-${m.id}">
+                    <div class="card-content">
+                        <div class="coin-name">${m.id}</div>
+                        <div style="flex-grow:1">
+                            <span class="price-big" id="price-m-${m.id}">...</span>
+                            <span class="var-percent" id="var-m-${m.id}">0.00%</span>
+                        </div>
+                        <div class="led" id="led-m-${m.id}"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-            const totalReal = mktPrice * qtdInput;
-            const lucroPnl = totalReal - (medioInput * qtdInput);
+        function updateVisuals() {
+            // Atualiza Monitoramento
+            config.moedas.forEach(m => {
+                const p = prices[m.id] || 0;
+                const v = prices[m.id + "_var"] || 0;
+                document.getElementById(`price-m-${m.id}`).innerText = `R$ ${p.toFixed(2)}`;
+                document.getElementById(`var-m-${m.id}`).innerText = (v >= 0 ? "+" : "") + v.toFixed(2) + "%";
+                document.getElementById(`var-m-${m.id}`).style.color = v >= 0 ? 'var(--green)' : 'var(--red)';
+                document.getElementById(`card-m-${m.id}`).style.borderLeftColor = v >= 0 ? 'var(--green)' : 'var(--red)';
+                document.getElementById(`led-m-${m.id}`).className = `led ${v >= 0 ? 'led-green' : 'led-red'}`;
+            });
 
-            document.getElementById('pnl-total').innerText = totalReal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            const elL = document.getElementById('pnl-lucro');
-            elL.innerText = lucroPnl.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            elL.style.color = lucroPnl >= 0 ? 'var(--green)' : 'var(--red)';
-            
-            const intel = document.getElementById('pnl-inteligencia');
-            if (qtdInput > 0) {
-                intel.innerText = lucroPnl < 0 ? "ALERTA: CAPITAL SOB DRENAGEM" : "BLINDAGEM ATIVA: LUCRO NO PÁTIO";
-                intel.style.color = lucroPnl < 0 ? 'var(--red)' : 'var(--green)';
-            }
+            // Atualiza Patrimônio (Cards Unificados)
+            let patHtml = "";
+            config.patrimonio.forEach(item => {
+                const pAtual = prices[item.id] || 0;
+                const vAtual = prices[item.id + "_var"] || 0;
+                const saldo = pAtual * item.qtd;
+                const lucro = saldo - item.aporte;
+                const pMedio = item.aporte / item.qtd;
+
+                patHtml += `
+                    <div class="crypto-card" style="border-left-color: ${lucro >= 0 ? 'var(--green)' : 'var(--red)'}">
+                        <div class="card-content">
+                            <div class="coin-name">${item.id}</div>
+                            <div style="flex-grow:1">
+                                <span class="price-big" style="color:${lucro >= 0 ? 'var(--green)' : 'var(--red)'}">
+                                    ${lucro >= 0 ? '+' : ''}R$ ${lucro.toFixed(2)}
+                                </span>
+                                <span class="var-percent">${((lucro/item.aporte)*100).toFixed(2)}% Performance</span>
+                            </div>
+                            <div class="led ${lucro >= 0 ? 'led-green' : 'led-red'}"></div>
+                        </div>
+                        <div class="pat-grid">
+                            <div><div class="pat-label">Aporte Real</div><div class="pat-val">R$ ${item.aporte.toFixed(2)}</div></div>
+                            <div><div class="pat-label">P. Médio (Auto)</div><div class="pat-val">R$ ${pMedio.toFixed(2)}</div></div>
+                            <div><div class="pat-label">Saldo Atual</div><div class="pat-val">R$ ${saldo.toFixed(2)}</div></div>
+                            <div><div class="pat-label">Cotação</div><div class="pat-val">R$ ${pAtual.toFixed(2)}</div></div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('lista-patrimonio').innerHTML = patHtml;
+
+            // Renderiza Favelinha (Simplificado para validação)
+            let favHtml = "";
+            config.moedas.forEach(m => {
+                const v = prices[m.id + "_var"] || 0;
+                favHtml += `
+                    <tr>
+                        <td>${m.id}</td>
+                        <td><span class="status-badge" style="background:${v >= 0 ? 'var(--green)' : 'var(--red)'}; color:#000">${v >= 0 ? 'INJETANDO' : 'DRENANDO'}</span></td>
+                        <td>${Math.abs(v * 2).toFixed(0)}%</td>
+                        <td style="color:var(--yellow)">R$ ${(prices[m.id] * 1.05).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('favelinha-body').innerHTML = favHtml;
         }
 
         function mudarTab(evt, n) {
@@ -198,28 +207,6 @@
             document.querySelectorAll(".tab-link").forEach(l => l.classList.remove("active"));
             document.getElementById(n).style.display = "block";
             evt.currentTarget.classList.add("active");
-        }
-
-        function ativarAudio() {
-            document.getElementById('btn-audio').style.display = 'none';
-            document.getElementById('main-content').innerHTML = moedas.map(m => `
-                <div class="crypto-section" id="card-${m.id}">
-                    <div class="market-info" onclick="toggleChart('${m.id}', '${m.pair}')">
-                        <div class="coin-id"><span class="coin-name">${m.id}</span><span class="coin-pair">USDT / BRL</span></div>
-                        <div class="price-container"><span class="price-big" id="price-${m.id}">...</span><span class="var-percent" id="var-${m.id}">0.00%</span></div>
-                        <div class="status-box"><span class="star-fluxo" id="star-${m.id}">⭐</span><div class="led" id="led-${m.id}"></div></div>
-                    </div>
-                    <div class="chart-wrapper" id="wrapper-${m.id}"></div>
-                </div>
-            `).join('');
-
-            document.getElementById('favelinha-body').innerHTML = moedas.slice(2, 8).map(m => `
-                <tr><td>${m.id}</td><td style="color:var(--green)">100% INJETADO</td><td>R$ 1,10</td><td>R$ 1,45</td></tr>
-            `).join('');
-
-            fetchPrices();
-            setInterval(fetchPrices, 12000);
-            setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
         }
     </script>
 </body>
