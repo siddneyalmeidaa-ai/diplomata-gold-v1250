@@ -1,49 +1,12 @@
-// 1. ENDEREÇO DO CÉREBRO (Certifique-se que o Worker está ON)
+// CHAMADA DO FLUXO JSON V1250
 const JSON_STREAM = "https://late-sea-261d.siddney-almeidaa.workers.dev";
 
-// Lista de emergência caso o JSON falhe no primeiro carregamento
-let moedas = ["BTC", "ETH", "SOL", "RENDER", "NEAR", "LINK", "SEI", "POL", "ADA", "DOT"];
-let sparks = {}; 
-let candleCharts = {};
-
-async function iniciarSistema() {
-    document.getElementById('btn-start').style.display = 'none';
+async function carregarDados() {
+    const response = await fetch(JSON_STREAM);
+    const data = await response.json();
     
-    // Rendeziramos a base IMEDIATAMENTE com a lista de emergência
-    renderizarBase(); 
-    
-    // Tenta a primeira conexão com o cérebro
-    await sincronizarCerebro();
-    
-    // Mantém o pulso
-    setInterval(sincronizarCerebro, 10000);
-    setInterval(() => { 
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR'); 
-    }, 1000);
-}
-
-async function sincronizarCerebro() {
-    try {
-        const response = await fetch(JSON_STREAM);
-        if (!response.ok) throw new Error("Worker offline");
-        
-        const data = await response.json();
-
-        // Atualiza os dados globais
-        document.getElementById('global-status').innerText = data.status_ia || "ESTÁVEL";
-        document.getElementById('global-dom').innerText = (data.btc_dominancia || "0") + "%";
-        document.getElementById('global-situacao').innerText = "CONECTADO";
-        document.getElementById('global-situacao').style.color = "var(--green)";
-
-        // Restante da lógica de loop (BTC Var, Fluxo, etc...) igual ao anterior
-        processarDadosFluxo(data);
-
-    } catch (e) {
-        console.error("⚠️ ALERTA: Cérebro JSON offline. Operando em modo de segurança.");
-        document.getElementById('global-situacao').innerText = "MODO SEGURANÇA (OFFLINE)";
-        document.getElementById('global-situacao').style.color = "var(--red)";
-        
-        // Se o JSON falhar, o sistema continua tentando atualizar via Binance direto
-        syncFallbackBinance(); 
-    }
-}
+    // Atualiza o valor do Bitcoin e a Trava de -50%
+    document.getElementById('btc-val').innerText = data.valor_atual;
+    document.getElementById('status-sentinela').innerText = data.status_ia;
+    document.getElementById('proj-val').innerText = data.projecao_24h;
+} 
