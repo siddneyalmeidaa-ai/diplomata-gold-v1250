@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SENTINEL_V12 // SOBERANIA</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
@@ -14,7 +14,7 @@
             --border-dark: #1a1a1a; 
             --glass: rgba(5, 5, 5, 0.95);
         }
-        body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
 
         .st-bar { 
             display: flex; flex-direction: column;
@@ -74,9 +74,10 @@
         .coin-icon { width: 32px; height: 32px; border-radius: 50%; background: #111; border: 1px solid #222; }
         .a-info { display: flex; flex-direction: column; }
         .a-sym { font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -1px; line-height: 1; }
-        .a-subinfo { display: flex; gap: 8px; margin-top: 4px; align-items: center; }
-        .a-pair { font-size: 9px; color: #444; font-weight: 900; }
-        .rsi-tag { font-size: 8px; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #00ff88; background: rgba(0,255,136,0.1); padding: 1px 4px; border-radius: 3px; }
+        .a-subinfo { display: flex; gap: 8px; margin-top: 6px; align-items: center; flex-wrap: wrap; }
+        .a-pair { font-size: 10px; color: #888; font-weight: 900; } /* Ajustado tamanho e cor */
+        .rsi-tag { font-size: 10px; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #00ff88; background: rgba(0,255,136,0.15); padding: 2px 6px; border-radius: 4px; } /* Ajustado tamanho e cor */
+        .vol-tag { font-size: 10px; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #60a5fa; background: rgba(59,130,246,0.15); padding: 2px 6px; border-radius: 4px; } /* Ajustado tamanho e cor */
 
         .a-right { text-align: right; }
         .a-price { font-size: 21px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; }
@@ -252,8 +253,10 @@
                 let spreadPressure = Math.abs(variacaoOriginal) > 4 ? "SUPREMO" : "ESTÁVEL";
                 let isTarget = (s !== "BTC" && variacaoAjustada > 0.8 && spreadPressure === "SUPREMO");
 
-                // Cálculo aproximado do RSI baseado na variação e volatilidade para exibição instantânea
                 let rsiSimulado = Math.min(Math.max(50 + (variacaoOriginal * 2.5), 10), 99).toFixed(0);
+                
+                let quoteVolume = parseFloat(data.quoteVolume || 0);
+                let volFormatado = quoteVolume >= 1e9 ? (quoteVolume / 1e9).toFixed(1) + 'B' : (quoteVolume / 1e6).toFixed(1) + 'M';
 
                 assetData.push({
                     s, 
@@ -261,6 +264,7 @@
                     pct: variacaoAjustada,
                     spread: spreadCalculado,
                     rsi: rsiSimulado,
+                    vol: volFormatado,
                     pressure: spreadPressure,
                     isTarget
                 });
@@ -294,6 +298,7 @@
                                     <div class="a-subinfo">
                                         <span class="a-pair" id="spread-${asset.s}">SPREAD: 0.00%</span>
                                         <span class="rsi-tag" id="rsi-${asset.s}">RSI: --</span>
+                                        <span class="vol-tag" id="vol-${asset.s}">VOL: --</span>
                                     </div>
                                 </div>
                             </div>
@@ -326,7 +331,10 @@
                 
                 const rsiEl = document.getElementById(`rsi-${asset.s}`);
                 rsiEl.innerText = `RSI: ${asset.rsi}`;
-                rsiEl.style.color = asset.rsi > 70 ? '#ff3e3e' : (asset.rsi < 30 ? '#00ff88' : '#00ff88');
+                rsiEl.style.color = asset.rsi > 70 ? '#ff3e3e' : '#00ff88';
+
+                const volEl = document.getElementById(`vol-${asset.s}`);
+                volEl.innerText = `VOL: ${asset.vol}`;
 
                 const pctEl = document.getElementById(`pct-${asset.s}`);
                 pctEl.innerText = (isPos ? '+' : '') + asset.pct.toFixed(2) + "%";
@@ -363,7 +371,7 @@
             new TradingView.widget({
                 "autosize": true, "symbol": "BINANCE:" + id + "USDT",
                 "interval": "1", "theme": "dark", "container_id": containerId,
-                "hide_side_toolbar": true, "studies": ["RSI@tv-basicstudies"]
+                "hide_side_toolbar": true, "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
             });
         }
     }
@@ -374,4 +382,5 @@
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
-</html>
+    </html>
+                
