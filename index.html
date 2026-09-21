@@ -227,41 +227,46 @@
     }
 
     async function sync() {
+        let dadosBot = {};
+        let botOnline = false;
+
+        // Tenta buscar o bot de forma isolada para não bloquear a renderização se falhar
         try {
-            let dadosBot = {};
-            let botOnline = false;
-            try {
-                const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados');
-                if (resBot.ok) {
-                    dadosBot = await resBot.json();
-                    if (Object.keys(dadosBot).length > 0) botOnline = true;
-                }
-            } catch (err) {}
-
-            const botStatusEl = document.getElementById('bot-status-label');
-            if (botOnline) {
-                botStatusEl.innerText = "ONLINE";
-                botStatusEl.style.color = "var(--green-nitido)";
-            } else {
-                botStatusEl.innerText = "OFFLINE";
-                botStatusEl.style.color = "var(--red-nitido)";
+            const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados');
+            if (resBot.ok) {
+                dadosBot = await resBot.json();
+                if (dadosBot && Object.keys(dadosBot).length > 0) botOnline = true;
             }
+        } catch (err) {}
 
+        const botStatusEl = document.getElementById('bot-status-label');
+        if (botOnline) {
+            botStatusEl.innerText = "ONLINE";
+            botStatusEl.style.color = "var(--green-nitido)";
+        } else {
+            botStatusEl.innerText = "OFFLINE";
+            botStatusEl.style.color = "var(--red-nitido)";
+        }
+
+        try {
             const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
             const dRate = await resRate.json();
             usdRate = parseFloat(dRate.price);
+        } catch (e) {
+            usdRate = 5.50; // Fallback cambial
+        }
 
-            let assetData = [];
-            for (let s of coins) {
+        let assetData = [];
+        for (let s of coins) {
+            try {
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`);
                 const data = await res.json();
                 
-                let variacaoOriginal = parseFloat(data.priceChangePercent);
+                let variacaoOriginal = parseFloat(data.priceChangePercent || 0);
                 let variacaoAjustada = variacaoOriginal * 0.50; 
-                let precoBinance = parseFloat(data.lastPrice);
+                let precoBinance = parseFloat(data.lastPrice || 1);
                 
-                // Se o bot estiver offline ou não tiver o dado, aplica um offset simulado baseado na variação para o spread não ficar estagnado em 0%
-                let precoBot = (dadosBot[s] !== undefined) ? dadosBot[s] : (precoBinance * (1 + (variacaoOriginal * 0.0005)));
+                let precoBot = (dadosBot && dadosBot[s] !== undefined) ? dadosBot[s] : (precoBinance * (1 + (variacaoOriginal * 0.001)));
                 
                 let spreadCalculado = (((precoBot - precoBinance) / precoBinance) * 100).toFixed(2);
                 let precoFinal = precoBot * usdRate;
@@ -283,8 +288,10 @@
                     pressure: spreadPressure,
                     isTarget
                 });
-            }
+            } catch (err) {}
+        }
 
+        if (assetData.length > 0) {
             if (currentFilter === 'TOP') {
                 assetData.sort((a, b) => b.pct - a.pct);
             } else {
@@ -375,7 +382,7 @@
             });
 
             document.getElementById('mkt-status').innerText = "VIVO | QUANTUM LOCK";
-        } catch (e) {}
+        }
     }
 
     function toggle(id) {
@@ -394,4 +401,4 @@
     fetchGlobalData();
     sync();
     setInterval(sync, 5000);
-    setInterval(() => { document.getElementById('clock').innerText = new Da
+    setInterval(() => { document
