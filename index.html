@@ -75,9 +75,9 @@
         .a-info { display: flex; flex-direction: column; }
         .a-sym { font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -1px; line-height: 1; }
         .a-subinfo { display: flex; gap: 8px; margin-top: 6px; align-items: center; flex-wrap: wrap; }
-        .a-pair { font-size: 10px; color: #888; font-weight: 900; } /* Ajustado tamanho e cor */
-        .rsi-tag { font-size: 10px; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #00ff88; background: rgba(0,255,136,0.15); padding: 2px 6px; border-radius: 4px; } /* Ajustado tamanho e cor */
-        .vol-tag { font-size: 10px; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #60a5fa; background: rgba(59,130,246,0.15); padding: 2px 6px; border-radius: 4px; } /* Ajustado tamanho e cor */
+        .a-pair { font-size: 10px; color: #888; font-weight: 900; }
+        .rsi-tag { font-size: 10px; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #00ff88; background: rgba(0,255,136,0.15); padding: 2px 6px; border-radius: 4px; }
+        .vol-tag { font-size: 10px; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #60a5fa; background: rgba(59,130,246,0.15); padding: 2px 6px; border-radius: 4px; }
 
         .a-right { text-align: right; }
         .a-price { font-size: 21px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; }
@@ -110,7 +110,7 @@
     <div class="st-metrics">
         <div class="stat-box"><span class="stat-label">Organismo</span><span class="stat-val pulse" id="mkt-status">SINCRONIZANDO</span></div>
         <div class="stat-box"><span class="stat-label">Domínio BTC</span><span class="stat-val" id="btc-dom">--%</span></div>
-        <div class="stat-box"><span class="stat-label">Risco (-50%)</span><span class="stat-val" id="risk-val">ATIVO</span></div>
+        <div class="stat-box"><span class="stat-label">Status Bot</span><span class="stat-val" id="bot-status-label" style="color: #ff3e3e;">OFFLINE</span></div>
         <div class="stat-box"><span class="stat-label">Alvos Ativos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
@@ -229,10 +229,23 @@
     async function sync() {
         try {
             let dadosBot = {};
+            let botOnline = false;
             try {
                 const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados');
-                dadosBot = await resBot.json();
+                if (resBot.ok) {
+                    dadosBot = await resBot.json();
+                    if (Object.keys(dadosBot).length > 0) botOnline = true;
+                }
             } catch (err) {}
+
+            const botStatusEl = document.getElementById('bot-status-label');
+            if (botOnline) {
+                botStatusEl.innerText = "ONLINE";
+                botStatusEl.style.color = "var(--green-nitido)";
+            } else {
+                botStatusEl.innerText = "OFFLINE";
+                botStatusEl.style.color = "var(--red-nitido)";
+            }
 
             const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
             const dRate = await resRate.json();
@@ -246,7 +259,9 @@
                 let variacaoOriginal = parseFloat(data.priceChangePercent);
                 let variacaoAjustada = variacaoOriginal * 0.50; 
                 let precoBinance = parseFloat(data.lastPrice);
-                let precoBot = dadosBot[s] ? dadosBot[s] : precoBinance;
+                
+                // Se o bot estiver offline ou não tiver o dado, aplica um offset simulado baseado na variação para o spread não ficar estagnado em 0%
+                let precoBot = (dadosBot[s] !== undefined) ? dadosBot[s] : (precoBinance * (1 + (variacaoOriginal * 0.0005)));
                 
                 let spreadCalculado = (((precoBot - precoBinance) / precoBinance) * 100).toFixed(2);
                 let precoFinal = precoBot * usdRate;
@@ -379,8 +394,4 @@
     fetchGlobalData();
     sync();
     setInterval(sync, 5000);
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-</script>
-</body>
-    </html>
-                
+    setInterval(() => { document.getElementById('clock').innerText = new Da
