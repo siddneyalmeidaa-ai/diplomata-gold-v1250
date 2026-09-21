@@ -47,12 +47,13 @@
         }
         .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 10px; }
         .notif-item { font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 10px 0; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+        .clear-btn { background: #ff3e3e; color: #fff; border: none; padding: 4px 8px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
 
         .pulse { animation: pulse-glow 2s infinite ease-in-out; }
         @keyframes pulse-glow { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
         .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #050505; }
-        .n-btn { flex: 1; padding: 16px; text-align: center; font-size: 10px; font-weight: 900; color: #222; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
+        .n-btn { flex: 1; padding: 14px; text-align: center; font-size: 9px; font-weight: 900; color: #333; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
         .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); }
 
         .container { padding: 12px; display: flex; flex-direction: column; }
@@ -112,13 +113,20 @@
 </div>
 
 <div id="notif-panel">
-    <div class="notif-header"><span style="font-size: 11px; font-weight: 900;">HISTÓRICO QUÂNTICO (LOCALSTORAGE)</span><span onclick="toggleNotifs()" style="cursor:pointer;">✕</span></div>
+    <div class="notif-header">
+        <span style="font-size: 11px; font-weight: 900;">HISTÓRICO QUÂNTICO (LOCALSTORAGE)</span>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="clear-btn" onclick="clearAlerts()">LIMPAR</button>
+            <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px;">✕</span>
+        </div>
+    </div>
     <div id="notif-list"></div>
 </div>
 
 <div class="nav">
-    <button class="n-btn active" id="btn-all" onclick="setFilter('ALL')">🔱 TODOS OS ATIVOS</button>
-    <button class="n-btn" id="btn-targets" onclick="setFilter('TARGETS')">⚡ APENAS EM ALVO</button>
+    <button class="n-btn active" id="btn-all" onclick="setFilter('ALL')">🔱 TODOS</button>
+    <button class="n-btn" id="btn-targets" onclick="setFilter('TARGETS')">⚡ EM ALVO</button>
+    <button class="n-btn" id="btn-top" onclick="setFilter('TOP')">📈 ALTAS</button>
 </div>
 
 <div class="container" id="list"></div>
@@ -140,6 +148,7 @@
         currentFilter = filter;
         document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
         document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
+        document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
         sync();
     }
 
@@ -149,37 +158,53 @@
         document.getElementById('dot').style.display = 'none';
     }
 
-    function playUrgentAlertSound() {
+    function clearAlerts() {
+        alerts = [];
+        virtualTrades = {};
+        localStorage.removeItem('fenix_quantum_alerts_v3');
+        localStorage.removeItem('fenix_quantum_trades_v3');
+        renderAlerts();
+        document.getElementById('last-alert').innerText = "FÊNIX PRIME // QUANTUM LOCK";
+        sync();
+    }
+
+    function playMilitaryAlertSound() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-            osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.12, ctx.currentTime);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.25);
+            const now = ctx.currentTime;
+            
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.type = 'square';
+            osc1.frequency.setValueAtTime(880, now);
+            osc1.frequency.setValueAtTime(1200, now + 0.1);
+            
+            gain1.gain.setValueAtTime(0.08, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+            
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            
+            osc1.start(now);
+            osc1.stop(now + 0.25);
         } catch(e) {}
     }
 
     function addAlert(msg) {
         const time = new Date().toLocaleTimeString();
         alerts.unshift(`[${time}] ${msg}`);
-        if(alerts.length > 20) alerts.pop();
+        if(alerts.length > 25) alerts.pop();
         localStorage.setItem('fenix_quantum_alerts_v3', JSON.stringify(alerts));
         renderAlerts();
         document.getElementById('dot').style.display = 'block';
         document.getElementById('last-alert').innerText = "ALERTA DE ALTA URGÊNCIA";
-        playUrgentAlertSound();
+        playMilitaryAlertSound();
     }
 
     function renderAlerts() {
         const listEl = document.getElementById('notif-list');
         if(listEl) {
-            listEl.innerHTML = alerts.map(a => `<div class="notif-item">${a}</div>`).join('');
+            listEl.innerHTML = alerts.length ? alerts.map(a => `<div class="notif-item">${a}</div>`).join('') : '<div class="notif-item">Nenhum registo quântico recente.</div>';
         }
     }
     renderAlerts();
@@ -217,21 +242,29 @@
                 
                 let variacaoOriginal = parseFloat(data.priceChangePercent);
                 let variacaoAjustada = variacaoOriginal * 0.50; 
-                let precoUsd = dadosBot[s] ? dadosBot[s] : parseFloat(data.lastPrice);
-
+                let precoBinance = parseFloat(data.lastPrice);
+                let precoBot = dadosBot[s] ? dadosBot[s] : precoBinance;
+                
+                let spreadCalculado = (((precoBot - precoBinance) / precoBinance) * 100).toFixed(2);
+                let precoFinal = precoBot * usdRate;
                 let spreadPressure = Math.abs(variacaoOriginal) > 4 ? "SUPREMO" : "ESTÁVEL";
                 let isTarget = (s !== "BTC" && variacaoAjustada > 0.8 && spreadPressure === "SUPREMO");
 
                 assetData.push({
                     s, 
-                    p: precoUsd * usdRate, 
+                    p: precoFinal, 
                     pct: variacaoAjustada,
+                    spread: spreadCalculado,
                     pressure: spreadPressure,
                     isTarget
                 });
             }
 
-            assetData.sort((a, b) => b.p - a.p);
+            if (currentFilter === 'TOP') {
+                assetData.sort((a, b) => b.pct - a.pct);
+            } else {
+                assetData.sort((a, b) => b.p - a.p);
+            }
 
             let activeTargetsCount = assetData.filter(a => a.isTarget).length;
             document.getElementById('target-count').innerText = activeTargetsCount;
@@ -250,7 +283,10 @@
                         <div class="asset-row">
                             <div class="a-left">
                                 <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[asset.s]}-${asset.s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${asset.s}&background=111&color=fff'">
-                                <div class="a-info"><span class="a-sym">${asset.s}</span><span class="a-pair" id="spread-${asset.s}">MODO SUPREMACIA</span></div>
+                                <div class="a-info">
+                                    <span class="a-sym">${asset.s}</span>
+                                    <span class="a-pair" id="spread-${asset.s}">SPREAD: 0.00%</span>
+                                </div>
                             </div>
                             <div class="a-right">
                                 <div class="a-price" id="pr-${asset.s}" onclick="copyPrice(${asset.p}, '${asset.s}')">--</div>
@@ -277,19 +313,17 @@
                 
                 document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
                 document.getElementById(`pr-${asset.s}`).innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: asset.p < 1 ? 4 : 2, maximumFractionDigits: asset.p < 1 ? 4 : 2});
+                document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread}%`;
                 
                 const pctEl = document.getElementById(`pct-${asset.s}`);
                 pctEl.innerText = (isPos ? '+' : '') + asset.pct.toFixed(2) + "%";
                 pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
 
                 const tagEl = document.getElementById(`tag-${asset.s}`);
-                const spreadEl = document.getElementById(`spread-${asset.s}`);
 
                 if (asset.isTarget) {
                     tagEl.innerText = "ENTRA | ALVO"; 
                     tagEl.style.color = "var(--green-nitido)";
-                    spreadEl.innerText = "MODO SUPREMACIA";
-                    spreadEl.style.color = "#444";
                     card.classList.add('pulse');
 
                     if(!virtualTrades[asset.s]) {
@@ -300,8 +334,6 @@
                 } else {
                     tagEl.innerText = "PULA / AGUARDA"; 
                     tagEl.style.color = "#444";
-                    spreadEl.innerText = "MODO SUPREMACIA";
-                    spreadEl.style.color = "#444";
                     card.classList.remove('pulse');
                 }
             });
