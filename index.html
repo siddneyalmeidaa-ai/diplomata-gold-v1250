@@ -16,7 +16,6 @@
         }
         body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
 
-        /* BLOCO DE ESTILOS DO SISTEMA */
         .st-bar { 
             display: flex; flex-direction: column;
             padding: 20px; border-bottom: 2px solid var(--border-dark); 
@@ -95,9 +94,6 @@
 </head>
 <body>
 
-<!-- ========================================== -->
-// BLOCO 1: CABEÇALHO E ESTRUTURA VISUAL DO TERMINAL
-<!-- ========================================== -->
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
         <div class="notif-bell" id="bell" onclick="toggleNotifs()">
@@ -129,9 +125,6 @@
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    // ==========================================
-    // BLOCO 2: CONFIGURAÇÕES E MAPEAMENTO DOS ATIVOS
-    // ==========================================
     const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER", "NEAR", "SEI", "ADA", "DOT", "FET"];
     const logoMap = {
         "BTC": "btc", "ETH": "eth", "SOL": "sol", "LINK": "link", "STX": "stx",
@@ -139,7 +132,6 @@
     };
 
     let usdRate = 5.50;
-    // Persistência Quântica via LocalStorage Avançado
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v3') || '[]');
     let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v3') || '{}');
 
@@ -149,7 +141,6 @@
         document.getElementById('dot').style.display = 'none';
     }
 
-    // Notificações Sonoras e Visuais de Alta Urgência
     function playUrgentAlertSound() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -178,7 +169,6 @@
     }
 
     function renderAlerts() {
-        document.getElementById('notid-list')?.remove(); // limpeza segura se houver
         const listEl = document.getElementById('notif-list');
         if(listEl) {
             listEl.innerHTML = alerts.map(a => `<div class="notif-item">${a}</div>`).join('');
@@ -195,18 +185,13 @@
         } catch (e) {}
     }
 
-    // ==========================================
-    // BLOCO 3: MOTOR DE SINCRONIZAÇÃO E MELHORIAS DE SUPREMACIA
-    // ==========================================
     async function sync() {
         try {
             let dadosBot = {};
             try {
                 const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados');
                 dadosBot = await resBot.json();
-            } catch (err) {
-                console.log("Aviso: a buscar dados locais de fallback.");
-            }
+            } catch (err) {}
 
             const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
             const dRate = await resRate.json();
@@ -218,10 +203,9 @@
                 const data = await res.json();
                 
                 let variacaoOriginal = parseFloat(data.priceChangePercent);
-                let variacaoAjustada = variacaoOriginal * 0.50; // Regra de -50% na projeção de risco
+                let variacaoAjustada = variacaoOriginal * 0.50; 
                 let precoUsd = dadosBot[s] ? dadosBot[s] : parseFloat(data.lastPrice);
 
-                // Filtro de Volatilidade Inteligente (Modo Supremacia)
                 let spreadPressure = Math.abs(variacaoOriginal) > 4 ? "SUPREMO" : "ESTÁVEL";
 
                 assetData.push({
@@ -274,7 +258,6 @@
                 const tagEl = document.getElementById(`tag-${asset.s}`);
                 const spreadEl = document.getElementById(`spread-${asset.s}`);
 
-                // Painel de Controle de Risco Dinâmico & Alertas de Alta Urgência
                 if (asset.s !== "BTC" && asset.pct > 0.8 && asset.pressure === "SUPREMO") {
                     tagEl.innerText = "ENTRA | ALVO"; 
                     tagEl.style.color = "var(--green-nitido)";
