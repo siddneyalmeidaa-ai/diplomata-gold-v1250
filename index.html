@@ -148,6 +148,47 @@
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v5') || '[]');
     let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v5') || '{}');
 
+    // Inicialização imediata dos cards para evitar tela vazia
+    function initCards() {
+        const listContainer = document.getElementById('list');
+        coins.forEach((s, index) => {
+            if (!document.getElementById(`card-${s}`)) {
+                let card = document.createElement('div');
+                card.id = `card-${s}`;
+                card.className = `c-asset`;
+                card.style.order = index;
+                card.onclick = (e) => {
+                    if(!e.target.classList.contains('a-price')) toggle(s);
+                };
+                card.innerHTML = `
+                    <div class="side-pill" id="pill-${s}"></div>
+                    <div class="asset-row">
+                        <div class="a-left">
+                            <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[s]}-${s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${s}&background=111&color=fff'">
+                            <div class="a-info">
+                                <span class="a-sym">${s}</span>
+                                <div class="a-subinfo">
+                                    <span class="a-pair" id="spread-${s}">SPREAD: 0.00%</span>
+                                    <span class="rsi-tag" id="rsi-${s}">RSI: --</span>
+                                    <span class="vol-tag" id="vol-${s}">VOL: --</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="a-right">
+                            <div class="a-price" id="pr-${s}" onclick="copyPrice(0, '${s}')">Carregando...</div>
+                            <div class="status-box">
+                                <span class="flow-tag" id="tag-${s}">AGUARDA</span>
+                                <span class="a-pct" id="pct-${s}">0.00%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-box" id="tv-${s}"></div>
+                `;
+                listContainer.appendChild(card);
+            }
+        });
+    }
+
     function setFilter(filter) {
         currentFilter = filter;
         document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
@@ -177,19 +218,15 @@
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const now = ctx.currentTime;
-            
             const osc1 = ctx.createOscillator();
             const gain1 = ctx.createGain();
             osc1.type = 'square';
             osc1.frequency.setValueAtTime(880, now);
             osc1.frequency.setValueAtTime(1200, now + 0.1);
-            
             gain1.gain.setValueAtTime(0.08, now);
             gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-            
             osc1.connect(gain1);
             gain1.connect(ctx.destination);
-            
             osc1.start(now);
             osc1.stop(now + 0.25);
         } catch(e) {}
@@ -306,92 +343,54 @@
 
             assetData.forEach((asset, index) => {
                 let card = document.getElementById(`card-${asset.s}`);
-                if (!card) {
-                    card = document.createElement('div');
-                    card.id = `card-${asset.s}`;
-                    card.className = `c-asset`;
-                    card.onclick = (e) => {
-                        if(!e.target.classList.contains('a-price')) toggle(asset.s);
-                    };
-                    card.innerHTML = `
-                        <div class="side-pill" id="pill-${asset.s}"></div>
-                        <div class="asset-row">
-                            <div class="a-left">
-                                <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[asset.s]}-${asset.s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${asset.s}&background=111&color=fff'">
-                                <div class="a-info">
-                                    <span class="a-sym">${asset.s}</span>
-                                    <div class="a-subinfo">
-                                        <span class="a-pair" id="spread-${asset.s}">SPREAD: 0.00%</span>
-                                        <span class="rsi-tag" id="rsi-${asset.s}">RSI: --</span>
-                                        <span class="vol-tag" id="vol-${asset.s}">VOL: --</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="a-right">
-                                <div class="a-price" id="pr-${asset.s}" onclick="copyPrice(${asset.p}, '${asset.s}')">--</div>
-                                <div class="status-box">
-                                    <span class="flow-tag" id="tag-${asset.s}">--</span>
-                                    <span class="a-pct" id="pct-${asset.s}">--</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chart-box" id="tv-${asset.s}"></div>
-                    `;
-                    document.getElementById('list').appendChild(card);
-                }
+                if (card) {
+                    card.style.order = index;
 
-                card.style.order = index;
+                    let showCard = true;
+                    if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
+                    if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
 
-                let showCard = true;
-                if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
-                if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
+                    card.style.display = showCard ? 'flex' : 'none';
 
-                card.style.display = showCard ? 'flex' : 'none';
+                    const isPos = asset.pct >= 0;
+                    
+                    document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
+                    const priceEl = document.getElementById(`pr-${asset.s}`);
+                    priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: asset.p < 1 ? 4 : 2, maximumFractionDigits: asset.p < 1 ? 4 : 2});
+                    priceEl.setAttribute('onclick', `copyPrice(${asset.p}, '${asset.s}')`);
 
-                const isPos = asset.pct >= 0;
-                
-                document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
-                document.getElementById(`pr-${asset.s}`).innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: asset.p < 1 ? 4 : 2, maximumFractionDigits: asset.p < 1 ? 4 : 2});
-                document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
-                
-                const rsiEl = document.getElementById(`rsi-${asset.s}`);
-                rsiEl.innerText = `RSI: ${asset.rsi}`;
-                rsiEl.style.color = asset.rsi > 70 ? '#ff3e3e' : '#00ff88';
+                    document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
+                    
+                    const rsiEl = document.getElementById(`rsi-${asset.s}`);
+                    rsiEl.innerText = `RSI: ${asset.rsi}`;
+                    rsiEl.style.color = asset.rsi > 70 ? '#ff3e3e' : '#00ff88';
 
-                const volEl = document.getElementById(`vol-${asset.s}`);
-                volEl.innerText = `VOL: ${asset.vol}`;
+                    const volEl = document.getElementById(`vol-${asset.s}`);
+                    volEl.innerText = `VOL: ${asset.vol}`;
 
-                const pctEl = document.getElementById(`pct-${asset.s}`);
-                pctEl.innerText = (isPos ? '+' : '') + asset.pct.toFixed(2) + "%";
-                pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
+                    const pctEl = document.getElementById(`pct-${asset.s}`);
+                    pctEl.innerText = (isPos ? '+' : '') + asset.pct.toFixed(2) + "%";
+                    pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
 
-                const tagEl = document.getElementById(`tag-${asset.s}`);
+                    const tagEl = document.getElementById(`tag-${asset.s}`);
 
-                if (asset.isTarget) {
-                    tagEl.innerText = "ENTRA | ALVO"; 
-                    tagEl.style.color = "var(--green-nitido)";
-                    card.classList.add('pulse');
+                    if (asset.isTarget) {
+                        tagEl.innerText = "ENTRA | ALVO"; 
+                        tagEl.style.color = "var(--green-nitido)";
+                        card.classList.add('pulse');
 
-                    if(!virtualTrades[asset.s]) {
-                        virtualTrades[asset.s] = { price: asset.p, time: new Date().toLocaleTimeString() };
-                        localStorage.setItem('fenix_quantum_trades_v5', JSON.stringify(virtualTrades));
-                        addAlert(`Oportunidade confirmada em ${asset.s} a R$ ${asset.p.toFixed(2)}`);
+                        if(!virtualTrades[asset.s]) {
+                            virtualTrades[asset.s] = { price: asset.p, time: new Date().toLocaleTimeString() };
+                            localStorage.setItem('fenix_quantum_trades_v5', JSON.stringify(virtualTrades));
+                            addAlert(`Oportunidade confirmada em ${asset.s} a R$ ${asset.p.toFixed(2)}`);
+                        }
+                    } else {
+                        tagEl.innerText = "PULA / AGUARDA"; 
+                        tagEl.style.color = "#444";
+                        card.classList.remove('pulse');
                     }
-                } else {
-                    tagEl.innerText = "PULA / AGUARDA"; 
-                    tagEl.style.color = "#444";
-                    card.classList.remove('pulse');
                 }
             });
 
             document.getElementById('mkt-status').innerText = "VIVO | QUANTUM LOCK";
-        }
-    }
-
-    function toggle(id) {
-        const c = document.getElementById(`card-${id}`);
-        c.classList.toggle('open');
-        const containerId = `tv-${id}`;
-        if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
-            new TradingView.widget({
-                "au
+        
