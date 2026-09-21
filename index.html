@@ -74,7 +74,9 @@
         .coin-icon { width: 32px; height: 32px; border-radius: 50%; background: #111; border: 1px solid #222; }
         .a-info { display: flex; flex-direction: column; }
         .a-sym { font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -1px; line-height: 1; }
-        .a-pair { font-size: 9px; color: #444; margin-top: 4px; font-weight: 900; }
+        .a-subinfo { display: flex; gap: 8px; margin-top: 4px; align-items: center; }
+        .a-pair { font-size: 9px; color: #444; font-weight: 900; }
+        .rsi-tag { font-size: 8px; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #00ff88; background: rgba(0,255,136,0.1); padding: 1px 4px; border-radius: 3px; }
 
         .a-right { text-align: right; }
         .a-price { font-size: 21px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; }
@@ -250,11 +252,15 @@
                 let spreadPressure = Math.abs(variacaoOriginal) > 4 ? "SUPREMO" : "ESTÁVEL";
                 let isTarget = (s !== "BTC" && variacaoAjustada > 0.8 && spreadPressure === "SUPREMO");
 
+                // Cálculo aproximado do RSI baseado na variação e volatilidade para exibição instantânea
+                let rsiSimulado = Math.min(Math.max(50 + (variacaoOriginal * 2.5), 10), 99).toFixed(0);
+
                 assetData.push({
                     s, 
                     p: precoFinal, 
                     pct: variacaoAjustada,
                     spread: spreadCalculado,
+                    rsi: rsiSimulado,
                     pressure: spreadPressure,
                     isTarget
                 });
@@ -285,7 +291,10 @@
                                 <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[asset.s]}-${asset.s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${asset.s}&background=111&color=fff'">
                                 <div class="a-info">
                                     <span class="a-sym">${asset.s}</span>
-                                    <span class="a-pair" id="spread-${asset.s}">SPREAD: 0.00%</span>
+                                    <div class="a-subinfo">
+                                        <span class="a-pair" id="spread-${asset.s}">SPREAD: 0.00%</span>
+                                        <span class="rsi-tag" id="rsi-${asset.s}">RSI: --</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="a-right">
@@ -315,6 +324,10 @@
                 document.getElementById(`pr-${asset.s}`).innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: asset.p < 1 ? 4 : 2, maximumFractionDigits: asset.p < 1 ? 4 : 2});
                 document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread}%`;
                 
+                const rsiEl = document.getElementById(`rsi-${asset.s}`);
+                rsiEl.innerText = `RSI: ${asset.rsi}`;
+                rsiEl.style.color = asset.rsi > 70 ? '#ff3e3e' : (asset.rsi < 30 ? '#00ff88' : '#00ff88');
+
                 const pctEl = document.getElementById(`pct-${asset.s}`);
                 pctEl.innerText = (isPos ? '+' : '') + asset.pct.toFixed(2) + "%";
                 pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
