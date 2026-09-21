@@ -24,7 +24,7 @@
         }
         
         .st-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .st-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; border-top: 1px solid #111; padding-top: 15px; }
+        .st-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; border-top: 1px solid #111; padding-top: 15px; }
         
         .stat-box { display: flex; flex-direction: column; }
         .stat-label { font-size: 8px; font-weight: 900; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
@@ -52,7 +52,7 @@
         @keyframes pulse-glow { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
         .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #050505; }
-        .n-btn { flex: 1; padding: 16px; text-align: center; font-size: 10px; font-weight: 900; color: #222; background: none; border: none; letter-spacing: 1px; }
+        .n-btn { flex: 1; padding: 16px; text-align: center; font-size: 10px; font-weight: 900; color: #222; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
         .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); }
 
         .container { padding: 12px; display: flex; flex-direction: column; }
@@ -60,6 +60,7 @@
             background: var(--card); border: 1px solid var(--border-dark);
             border-radius: 12px; margin-bottom: 10px; padding: 20px 15px; 
             display: flex; flex-direction: column; position: relative; overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .side-pill {
@@ -75,7 +76,8 @@
         .a-pair { font-size: 9px; color: #444; margin-top: 4px; font-weight: 900; }
 
         .a-right { text-align: right; }
-        .a-price { font-size: 21px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; }
+        .a-price { font-size: 21px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; }
+        .a-price:active { opacity: 0.5; }
         
         .status-box { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 6px; }
         .a-pct { font-size: 13px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
@@ -105,6 +107,7 @@
         <div class="stat-box"><span class="stat-label">Organismo</span><span class="stat-val pulse" id="mkt-status">SINCRONIZANDO</span></div>
         <div class="stat-box"><span class="stat-label">Domínio BTC</span><span class="stat-val" id="btc-dom">--%</span></div>
         <div class="stat-box"><span class="stat-label">Risco (-50%)</span><span class="stat-val" id="risk-val">ATIVO</span></div>
+        <div class="stat-box"><span class="stat-label">Alvos Ativos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
 
@@ -114,8 +117,8 @@
 </div>
 
 <div class="nav">
-    <button class="n-btn active">🔱 MONITORAMENTO SUPREMO</button>
-    <button class="n-btn">📊 MODO SUPREMACIA</button>
+    <button class="n-btn active" id="btn-all" onclick="setFilter('ALL')">🔱 TODOS OS ATIVOS</button>
+    <button class="n-btn" id="btn-targets" onclick="setFilter('TARGETS')">⚡ APENAS EM ALVO</button>
 </div>
 
 <div class="container" id="list"></div>
@@ -129,8 +132,16 @@
     };
 
     let usdRate = 5.50;
+    let currentFilter = 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v3') || '[]');
     let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v3') || '{}');
+
+    function setFilter(filter) {
+        currentFilter = filter;
+        document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
+        document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
+        sync();
+    }
 
     function toggleNotifs() {
         const panel = document.getElementById('notif-panel');
@@ -173,6 +184,11 @@
     }
     renderAlerts();
 
+    function copyPrice(val, symbol) {
+        navigator.clipboard.writeText(val.toFixed(2));
+        addAlert(`Preço copiado para ${symbol}: R$ ${val.toFixed(2)}`);
+    }
+
     async function fetchGlobalData() {
         try {
             const res = await fetch('https://api.coingecko.com/api/v3/global');
@@ -204,16 +220,21 @@
                 let precoUsd = dadosBot[s] ? dadosBot[s] : parseFloat(data.lastPrice);
 
                 let spreadPressure = Math.abs(variacaoOriginal) > 4 ? "SUPREMO" : "ESTÁVEL";
+                let isTarget = (s !== "BTC" && variacaoAjustada > 0.8 && spreadPressure === "SUPREMO");
 
                 assetData.push({
                     s, 
                     p: precoUsd * usdRate, 
                     pct: variacaoAjustada,
-                    pressure: spreadPressure
+                    pressure: spreadPressure,
+                    isTarget
                 });
             }
 
             assetData.sort((a, b) => b.p - a.p);
+
+            let activeTargetsCount = assetData.filter(a => a.isTarget).length;
+            document.getElementById('target-count').innerText = activeTargetsCount;
 
             assetData.forEach((asset, index) => {
                 let card = document.getElementById(`card-${asset.s}`);
@@ -221,7 +242,9 @@
                     card = document.createElement('div');
                     card.id = `card-${asset.s}`;
                     card.className = `c-asset`;
-                    card.onclick = () => toggle(asset.s);
+                    card.onclick = (e) => {
+                        if(!e.target.classList.contains('a-price')) toggle(asset.s);
+                    };
                     card.innerHTML = `
                         <div class="side-pill" id="pill-${asset.s}"></div>
                         <div class="asset-row">
@@ -230,7 +253,7 @@
                                 <div class="a-info"><span class="a-sym">${asset.s}</span><span class="a-pair" id="spread-${asset.s}">MODO SUPREMACIA</span></div>
                             </div>
                             <div class="a-right">
-                                <div class="a-price" id="pr-${asset.s}">--</div>
+                                <div class="a-price" id="pr-${asset.s}" onclick="copyPrice(${asset.p}, '${asset.s}')">--</div>
                                 <div class="status-box">
                                     <span class="flow-tag" id="tag-${asset.s}">--</span>
                                     <span class="a-pct" id="pct-${asset.s}">--</span>
@@ -243,6 +266,13 @@
                 }
 
                 card.style.order = index;
+
+                if (currentFilter === 'TARGETS' && !asset.isTarget) {
+                    card.style.display = 'none';
+                } else {
+                    card.style.display = 'flex';
+                }
+
                 const isPos = asset.pct >= 0;
                 
                 document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
@@ -255,11 +285,12 @@
                 const tagEl = document.getElementById(`tag-${asset.s}`);
                 const spreadEl = document.getElementById(`spread-${asset.s}`);
 
-                if (asset.s !== "BTC" && asset.pct > 0.8 && asset.pressure === "SUPREMO") {
+                if (asset.isTarget) {
                     tagEl.innerText = "ENTRA | ALVO"; 
                     tagEl.style.color = "var(--green-nitido)";
                     spreadEl.innerText = "MODO SUPREMACIA";
                     spreadEl.style.color = "#444";
+                    card.classList.add('pulse');
 
                     if(!virtualTrades[asset.s]) {
                         virtualTrades[asset.s] = { price: asset.p, time: new Date().toLocaleTimeString() };
@@ -271,6 +302,7 @@
                     tagEl.style.color = "#444";
                     spreadEl.innerText = "MODO SUPREMACIA";
                     spreadEl.style.color = "#444";
+                    card.classList.remove('pulse');
                 }
             });
 
@@ -297,5 +329,4 @@
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
-    </html>
-    
+</html>
