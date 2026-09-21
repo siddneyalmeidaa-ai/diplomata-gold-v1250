@@ -16,7 +16,7 @@
         }
         body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
 
-        /* CABEÇALHO MODERNO */
+        /* BLOCO DE ESTILOS DO SISTEMA */
         .st-bar { 
             display: flex; flex-direction: column;
             padding: 20px; border-bottom: 2px solid var(--border-dark); 
@@ -95,6 +95,9 @@
 </head>
 <body>
 
+<!-- ========================================== -->
+// BLOCO 1: CABEÇALHO E ESTRUTURA VISUAL DO TERMINAL
+<!-- ========================================== -->
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
         <div class="notif-bell" id="bell" onclick="toggleNotifs()">
@@ -125,6 +128,9 @@
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
+    // ==========================================
+    // BLOCO 2: CONFIGURAÇÕES E MAPEAMENTO DOS ATIVOS
+    // ==========================================
     const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER", "NEAR", "SEI", "ADA", "DOT", "FET"];
     const logoMap = {
         "BTC": "btc", "ETH": "eth", "SOL": "sol", "LINK": "link", "STX": "stx",
@@ -159,6 +165,9 @@
         } catch (e) {}
     }
 
+    // ==========================================
+    // BLOCO 3: MOTOR DE SINCRONIZAÇÃO E CÁLCULO DE PROJEÇÃO (-50%)
+    // ==========================================
     async function sync() {
         try {
             const rRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
@@ -173,10 +182,15 @@
             for (let s of coins) {
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`);
                 const data = await res.json();
+                
+                // Cálculo de variação aplicando a diretriz de -50% na projeção obtida
+                let variacaoOriginal = parseFloat(data.priceChangePercent);
+                let variacaoAjustada = variacaoOriginal * 0.50;
+
                 assetData.push({
                     s, 
                     p: parseFloat(data.lastPrice) * usdRate, 
-                    pct: parseFloat(data.priceChangePercent)
+                    pct: variacaoAjustada
                 });
             }
 
@@ -189,7 +203,6 @@
                     card.id = `card-${asset.s}`;
                     card.className = `c-asset`;
                     card.onclick = () => toggle(asset.s);
-                    // Estrutura fixa injetada apenas UMA VEZ
                     card.innerHTML = `
                         <div class="side-pill" id="pill-${asset.s}"></div>
                         <div class="asset-row">
@@ -210,7 +223,6 @@
                     document.getElementById('list').appendChild(card);
                 }
 
-                // ATUALIZAÇÃO APENAS DOS ELEMENTOS DE TEXTO (Protege o Gráfico)
                 card.style.order = index;
                 const isPos = asset.pct >= 0;
                 
@@ -222,7 +234,7 @@
                 pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
 
                 const tagEl = document.getElementById(`tag-${asset.s}`);
-                if (asset.s !== "BTC" && asset.pct > btcChange + 2) {
+                if (asset.s !== "BTC" && asset.pct > (btcChange * 0.50) + 1) {
                     if(tagEl.innerText !== "ENTRA | ALVO") addAlert(`Brecha em ${asset.s}`);
                     tagEl.innerText = "ENTRA | ALVO"; tagEl.style.color = "var(--green-nitido)";
                 } else {
