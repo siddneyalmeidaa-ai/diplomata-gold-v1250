@@ -166,30 +166,37 @@
     }
 
     // ==========================================
-    // BLOCO 3: MOTOR DE SINCRONIZAÇÃO E CÁLCULO DE PROJEÇÃO (-50%)
+    // BLOCO 3: MOTOR DE SINCRONIZAÇÃO E CONSUMO DA API DO RENDER
     // ==========================================
     async function sync() {
         try {
-            const rRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
-            const dRate = await rRate.json();
-            usdRate = parseFloat(dRate.price);
+            // Consumindo os dados diretamente do nosso bot no Render
+            let dadosBot = {};
+            try {
+                const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados');
+                dadosBot = await resBot.json();
+            } catch (err) {
+                console.log("Aviso: a buscar dados locais de fallback.");
+            }
 
-            const resBtc = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
-            const dataBtc = await resBtc.json();
-            btcChange = parseFloat(dataBtc.priceChangePercent);
+            const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
+            const dRate = await resRate.json();
+            usdRate = parseFloat(dRate.price);
 
             let assetData = [];
             for (let s of coins) {
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`);
                 const data = await res.json();
                 
-                // Cálculo de variação aplicando a diretriz de -50% na projeção obtida
                 let variacaoOriginal = parseFloat(data.priceChangePercent);
-                let variacaoAjustada = variacaoOriginal * 0.50;
+                let variacaoAjustada = variacaoOriginal * 0.50; // Aplicação da regra de -50% na projeção
+
+                // Se houver preço vindo da API do Render, usa-o; caso contrário, usa o da Binance
+                let precoUsd = dadosBot[s] ? dadosBot[s] : parseFloat(data.lastPrice);
 
                 assetData.push({
                     s, 
-                    p: parseFloat(data.lastPrice) * usdRate, 
+                    p: precoUsd * usdRate, 
                     pct: variacaoAjustada
                 });
             }
@@ -234,7 +241,7 @@
                 pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
 
                 const tagEl = document.getElementById(`tag-${asset.s}`);
-                if (asset.s !== "BTC" && asset.pct > (btcChange * 0.50) + 1) {
+                if (asset.s !== "BTC" && asset.pct > 1) {
                     if(tagEl.innerText !== "ENTRA | ALVO") addAlert(`Brecha em ${asset.s}`);
                     tagEl.innerText = "ENTRA | ALVO"; tagEl.style.color = "var(--green-nitido)";
                 } else {
@@ -242,7 +249,7 @@
                 }
             });
 
-            document.getElementById('mkt-status').innerText = btcChange > 0 ? "VIVO | BULL" : "VIVO | BEAR";
+            document.getElementById('mkt-status').innerText = "VIVO | BULL";
         } catch (e) {}
     }
 
