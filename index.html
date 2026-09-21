@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V12 // SOBERANIA</title>
+    <title>SENTINEL_V12 // SOBERANIA TOTAL</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -52,8 +52,8 @@
         .pulse { animation: pulse-glow 2s infinite ease-in-out; }
         @keyframes pulse-glow { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
-        .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #050505; }
-        .n-btn { flex: 1; padding: 14px; text-align: center; font-size: 9px; font-weight: 900; color: #333; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
+        .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #050505; flex-wrap: wrap; }
+        .n-btn { flex: 1; min-width: 25%; padding: 14px; text-align: center; font-size: 9px; font-weight: 900; color: #333; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
         .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); }
 
         .container { padding: 12px; display: flex; flex-direction: column; }
@@ -110,14 +110,14 @@
     <div class="st-metrics">
         <div class="stat-box"><span class="stat-label">Organismo</span><span class="stat-val pulse" id="mkt-status">SINCRONIZANDO</span></div>
         <div class="stat-box"><span class="stat-label">Domínio BTC</span><span class="stat-val" id="btc-dom">--%</span></div>
-        <div class="stat-box"><span class="stat-label">Status Núcleo</span><span class="stat-val" id="bot-status-label" style="color: var(--green-nitido);">AUTÔNOMO</span></div>
+        <div class="stat-box"><span class="stat-label">Status Bot</span><span class="stat-val" id="bot-status-label" style="color: #ff3e3e;">OFFLINE</span></div>
         <div class="stat-box"><span class="stat-label">Alvos Ativos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
 
 <div id="notif-panel">
     <div class="notif-header">
-        <span style="font-size: 11px; font-weight: 900;">HISTÓRICO QUÂNTICO (LOCALSTORAGE)</span>
+        <span style="font-size: 11px; font-weight: 900;">HISTÓRICO QUÂNTICO & AUDITORIA</span>
         <div style="display: flex; gap: 10px; align-items: center;">
             <button class="clear-btn" onclick="clearAlerts()">LIMPAR</button>
             <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px;">✕</span>
@@ -130,6 +130,7 @@
     <button class="n-btn active" id="btn-all" onclick="setFilter('ALL')">🔱 TODOS</button>
     <button class="n-btn" id="btn-targets" onclick="setFilter('TARGETS')">⚡ EM ALVO</button>
     <button class="n-btn" id="btn-top" onclick="setFilter('TOP')">📈 ALTAS</button>
+    <button class="n-btn" id="btn-spread" onclick="setFilter('SPREAD')">🚀 SPREAD</button>
 </div>
 
 <div class="container" id="list"></div>
@@ -144,14 +145,15 @@
 
     let usdRate = 5.50;
     let currentFilter = 'ALL';
-    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v3') || '[]');
-    let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v3') || '{}');
+    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v4') || '[]');
+    let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v4') || '{}');
 
     function setFilter(filter) {
         currentFilter = filter;
         document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
         document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
         document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
+        document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
         sync();
     }
 
@@ -164,8 +166,8 @@
     function clearAlerts() {
         alerts = [];
         virtualTrades = {};
-        localStorage.removeItem('fenix_quantum_alerts_v3');
-        localStorage.removeItem('fenix_quantum_trades_v3');
+        localStorage.removeItem('fenix_quantum_alerts_v4');
+        localStorage.removeItem('fenix_quantum_trades_v4');
         renderAlerts();
         document.getElementById('last-alert').innerText = "FÊNIX PRIME // QUANTUM LOCK";
         sync();
@@ -196,8 +198,8 @@
     function addAlert(msg) {
         const time = new Date().toLocaleTimeString();
         alerts.unshift(`[${time}] ${msg}`);
-        if(alerts.length > 25) alerts.pop();
-        localStorage.setItem('fenix_quantum_alerts_v3', JSON.stringify(alerts));
+        if(alerts.length > 30) alerts.pop();
+        localStorage.setItem('fenix_quantum_alerts_v4', JSON.stringify(alerts));
         renderAlerts();
         document.getElementById('dot').style.display = 'block';
         document.getElementById('last-alert').innerText = "ALERTA DE ALTA URGÊNCIA";
@@ -227,6 +229,27 @@
     }
 
     async function sync() {
+        let dadosBot = {};
+        let botOnline = false;
+
+        // Keep-alive e checagem isolada do Render
+        try {
+            const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados', { method: 'GET', mode: 'cors' });
+            if (resBot.ok) {
+                dadosBot = await resBot.json();
+                if (dadosBot && Object.keys(dadosBot).length > 0) botOnline = true;
+            }
+        } catch (err) {}
+
+        const botStatusEl = document.getElementById('bot-status-label');
+        if (botOnline) {
+            botStatusEl.innerText = "ONLINE";
+            botStatusEl.style.color = "var(--green-nitido)";
+        } else {
+            botStatusEl.innerText = "OFFLINE";
+            botStatusEl.style.color = "var(--red-nitido)";
+        }
+
         try {
             const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
             const dRate = await resRate.json();
@@ -245,17 +268,15 @@
                 let variacaoAjustada = variacaoOriginal * 0.50; 
                 let precoBinance = parseFloat(data.lastPrice || 1);
                 
-                // Geração de spread autônomo baseado no hash do símbolo e variação para evitar zeros estagnados
-                let hashOffset = (s.charCodeAt(0) % 5 + 1) * 0.08;
-                let spreadCalculado = (Math.abs(variacaoOriginal) > 0 ? (hashOffset + (Math.sin(Date.now() / 2000 + s.charCodeAt(0)) * 0.3)).toFixed(2) : "0.45");
+                let precoBot = (dadosBot && dadosBot[s] !== undefined) ? dadosBot[s] : (precoBinance * (1 + (variacaoOriginal * 0.001)));
                 
-                let precoBot = precoBinance * (1 + (parseFloat(spreadCalculado) / 100));
+                let spreadCalculado = (((precoBot - precoBinance) / precoBinance) * 100).toFixed(2);
                 let precoFinal = precoBot * usdRate;
-                
                 let spreadPressure = Math.abs(variacaoOriginal) > 4 ? "SUPREMO" : "ESTÁVEL";
                 let isTarget = (s !== "BTC" && variacaoAjustada > 0.8 && spreadPressure === "SUPREMO");
 
                 let rsiSimulado = Math.min(Math.max(50 + (variacaoOriginal * 2.5), 10), 99).toFixed(0);
+                
                 let quoteVolume = parseFloat(data.quoteVolume || 0);
                 let volFormatado = quoteVolume >= 1e9 ? (quoteVolume / 1e9).toFixed(1) + 'B' : (quoteVolume / 1e6).toFixed(1) + 'M';
 
@@ -263,7 +284,7 @@
                     s, 
                     p: precoFinal, 
                     pct: variacaoAjustada,
-                    spread: spreadCalculado,
+                    spread: parseFloat(spreadCalculado),
                     rsi: rsiSimulado,
                     vol: volFormatado,
                     pressure: spreadPressure,
@@ -275,6 +296,8 @@
         if (assetData.length > 0) {
             if (currentFilter === 'TOP') {
                 assetData.sort((a, b) => b.pct - a.pct);
+            } else if (currentFilter === 'SPREAD') {
+                assetData.sort((a, b) => b.spread - a.spread);
             } else {
                 assetData.sort((a, b) => b.p - a.p);
             }
@@ -320,17 +343,17 @@
 
                 card.style.order = index;
 
-                if (currentFilter === 'TARGETS' && !asset.isTarget) {
-                    card.style.display = 'none';
-                } else {
-                    card.style.display = 'flex';
-                }
+                let showCard = true;
+                if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
+                if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
+
+                card.style.display = showCard ? 'flex' : 'none';
 
                 const isPos = asset.pct >= 0;
                 
                 document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
                 document.getElementById(`pr-${asset.s}`).innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: asset.p < 1 ? 4 : 2, maximumFractionDigits: asset.p < 1 ? 4 : 2});
-                document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread}%`;
+                document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
                 
                 const rsiEl = document.getElementById(`rsi-${asset.s}`);
                 rsiEl.innerText = `RSI: ${asset.rsi}`;
@@ -352,7 +375,7 @@
 
                     if(!virtualTrades[asset.s]) {
                         virtualTrades[asset.s] = { price: asset.p, time: new Date().toLocaleTimeString() };
-                        localStorage.setItem('fenix_quantum_trades_v3', JSON.stringify(virtualTrades));
+                        localStorage.setItem('fenix_quantum_trades_v4', JSON.stringify(virtualTrades));
                         addAlert(`Oportunidade confirmada em ${asset.s} a R$ ${asset.p.toFixed(2)}`);
                     }
                 } else {
@@ -371,19 +394,4 @@
         c.classList.toggle('open');
         const containerId = `tv-${id}`;
         if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
-            new TradingView.widget({
-                "autosize": true, "symbol": "BINANCE:" + id + "USDT",
-                "interval": "1", "theme": "dark", "container_id": containerId,
-                "hide_side_toolbar": true, "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
-            });
-        }
-    }
-
-    fetchGlobalData();
-    sync();
-    setInterval(sync, 5000);
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-</script>
-</body>
-</html>
-
+            new Tradi
