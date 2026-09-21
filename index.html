@@ -1,251 +1,277 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Controle e Monitoramento</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SENTINEL_V12 // SOBERANIA</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
-            --accent-color: #3b82f6;
-            --success-color: #10b981;
-            --danger-color: #ef4444;
-            --border-color: #334155;
+        :root { 
+            --bg: #020202; 
+            --card: #0a0a0a; 
+            --green-nitido: #00ff88; 
+            --red-nitido: #ff3e3e;   
+            --border-dark: #1a1a1a; 
+            --glass: rgba(5, 5, 5, 0.95);
         }
-        body {
-            font-family: Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
+        body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+
+        /* BLOCO DE ESTILOS DO SISTEMA */
+        .st-bar { 
+            display: flex; flex-direction: column;
+            padding: 20px; border-bottom: 2px solid var(--border-dark); 
+            background: var(--glass); backdrop-filter: blur(20px);
+            position: sticky; top: 0; z-index: 1000;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        
+        .st-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .st-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; border-top: 1px solid #111; padding-top: 15px; }
+        
+        .stat-box { display: flex; flex-direction: column; }
+        .stat-label { font-size: 8px; font-weight: 900; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+        .stat-val { font-size: 11px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #eee; }
+
+        .clock-modern { 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 18px; font-weight: 800; 
+            color: #fff; text-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            background: #111; padding: 5px 12px; border-radius: 6px; border: 1px solid #222;
         }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 15px;
-            margin-bottom: 25px;
+
+        .notif-bell { display: flex; align-items: center; gap: 8px; font-size: 9px; font-weight: 900; color: #444; cursor: pointer; position: relative; }
+        .alert-active { color: #ffcc00 !important; animation: blink 1s infinite; }
+        .bell-dot { width: 8px; height: 8px; background: #ffcc00; border-radius: 50%; position: absolute; top: -4px; right: -4px; display: none; box-shadow: 0 0 10px #ffcc00; }
+        
+        #notif-panel {
+            position: fixed; top: 100px; right: 15px; left: 15px; 
+            background: #0d0d0d; border: 1px solid #222; border-radius: 12px;
+            padding: 20px; display: none; z-index: 2000; box-shadow: 0 30px 60px rgba(0,0,0,1);
         }
-        h1 {
-            margin: 0;
-            font-size: 24px;
+        .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 10px; }
+        .notif-item { font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 10px 0; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .pulse { animation: pulse-glow 2s infinite ease-in-out; }
+        @keyframes pulse-glow { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+
+        .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #050505; }
+        .n-btn { flex: 1; padding: 16px; text-align: center; font-size: 10px; font-weight: 900; color: #222; background: none; border: none; letter-spacing: 1px; }
+        .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); }
+
+        .container { padding: 12px; display: flex; flex-direction: column; }
+        .c-asset { 
+            background: var(--card); border: 1px solid var(--border-dark);
+            border-radius: 12px; margin-bottom: 10px; padding: 20px 15px; 
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
         }
-        .panel {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+
+        .side-pill {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            background: #1a1a1a; transition: all 0.4s ease;
         }
-        .controls-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-        select, input, button {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid var(--border-color);
-            background-color: #0f172a;
-            color: var(--text-color);
-            font-size: 14px;
-        }
-        button {
-            background-color: var(--accent-color);
-            cursor: pointer;
-            font-weight: bold;
-            border: none;
-            transition: opacity 0.2s;
-        }
-        button:hover {
-            opacity: 0.9;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-        th {
-            background-color: #111827;
-        }
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .status-active { background-color: var(--success-color); color: #fff; }
-        .status-inactive { background-color: var(--danger-color); color: #fff; }
+
+        .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+        .a-left { display: flex; align-items: center; gap: 12px; }
+        .coin-icon { width: 32px; height: 32px; border-radius: 50%; background: #111; border: 1px solid #222; }
+        .a-info { display: flex; flex-direction: column; }
+        .a-sym { font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -1px; line-height: 1; }
+        .a-pair { font-size: 9px; color: #444; margin-top: 4px; font-weight: 900; }
+
+        .a-right { text-align: right; }
+        .a-price { font-size: 21px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; }
+        
+        .status-box { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 6px; }
+        .a-pct { font-size: 13px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+        .flow-tag { font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: #000; border: 1px solid #1a1a1a; color: #333; }
+
+        .chart-box { display: none; width: 100%; height: 450px; margin-top: 15px; border-top: 1px solid var(--border-dark); }
+        .c-asset.open .chart-box { display: block; }
+
+        .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+        .neg-bg { background: var(--red-nitido) !important; }
+        .pos-txt { color: var(--green-nitido) !important; }
+        .neg-txt { color: var(--red-nitido) !important; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Painel de Monitoramento</h1>
-            <div id="datetime">21/09/2026 06:30</div>
-        </header>
 
-        <!-- Painel de Controle Visual & Filtro de Volatilidade -->
-        <div class="panel">
-            <h2>Painel de Controle e Filtros</h2>
-            <div class="controls-grid">
-                <div>
-                    <label for="volatilityFilter">Filtro de Volatilidade</label>
-                    <select id="volatilityFilter" onchange="saveSettings()">
-                        <option value="all">Todas as Volatilidades</option>
-                        <option value="low">Baixa Volatilidade</option>
-                        <option value="medium">Média Volatilidade</option>
-                        <option value="high">Alta Volatilidade</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="soundAlerts">Alertas Sonoros</label>
-                    <select id="soundAlerts" onchange="saveSettings()">
-                        <option value="on">Ativado</option>
-                        <option value="off">Desativado</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="autoRefresh">Atualização Automática</label>
-                    <select id="autoRefresh" onchange="saveSettings()">
-                        <option value="5">A cada 5 segundos</option>
-                        <option value="10">A cada 10 segundos</option>
-                        <option value="30">A cada 30 segundos</option>
-                    </select>
-                </div>
-            </div>
-            <button onclick="testAlert()">Testar Alerta Sonoro</button>
+<!-- ========================================== -->
+// BLOCO 1: CABEÇALHO E ESTRUTURA VISUAL DO TERMINAL
+<!-- ========================================== -->
+<div class="st-bar" id="main-header">
+    <div class="st-top-row">
+        <div class="notif-bell" id="bell" onclick="toggleNotifs()">
+            <span id="last-alert">SISTEMA ONLINE</span>
+            <div class="bell-dot" id="dot"></div>
+            <span style="font-size: 12px;">🔔</span>
         </div>
-
-        <!-- Tabela de Dados Persistentes e Monitorados -->
-        <div class="panel">
-            <h2>Dados Monitorados</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID / Ativo</th>
-                        <th>Volatilidade</th>
-                        <th>Status</th>
-                        <th>Ação</th>
-                    </tr>
-                </thead>
-                <tbody id="dataTable">
-                    <tr>
-                        <td>Ativo 01</td>
-                        <td>Alta</td>
-                        <td><span class="status-badge status-active">Ativo</span></td>
-                        <td>Monitorando</td>
-                    </tr>
-                    <tr>
-                        <td>Ativo 02</td>
-                        <td>Baixa</td>
-                        <td><span class="status-badge status-inactive">Pausado</span></td>
-                        <td>Aguardando</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <div class="clock-modern" id="clock">00:00:00</div>
     </div>
+    <div class="st-metrics">
+        <div class="stat-box"><span class="stat-label">Organismo</span><span class="stat-val pulse" id="mkt-status">SINCRONIZANDO</span></div>
+        <div class="stat-box"><span class="stat-label">Domínio BTC</span><span class="stat-val" id="btc-dom">--%</span></div>
+        <div class="stat-box"><span class="stat-label">Fluxo Ativo</span><span class="stat-val pulse" id="mkt-flow">AGUARDANDO</span></div>
+    </div>
+</div>
 
-    <script>
-        // 1. Persistência de Estado no Navegador (localStorage)
-        function saveSettings() {
-            const volatility = document.getElementById('volatilityFilter').value;
-            const sound = document.getElementById('soundAlerts').value;
-            const refresh = document.getElementById('autoRefresh').value;
+<div id="notif-panel">
+    <div class="notif-header"><span style="font-size: 11px; font-weight: 900;">LOG DE ROTAÇÃO</span><span onclick="toggleNotifs()" style="cursor:pointer;">✕</span></div>
+    <div id="notif-list"></div>
+</div>
 
-            localStorage.setItem('volatilityFilter', volatility);
-            localStorage.setItem('soundAlerts', sound);
-            localStorage.setItem('autoRefresh', refresh);
-            
-            applyFilters();
-        }
+<div class="nav">
+    <button class="n-btn active">🔱 MONITORAMENTO</button>
+    <button class="n-btn">📊 PATRIMÔNIO</button>
+</div>
 
-        function loadSettings() {
-            if (localStorage.getItem('volatilityFilter')) {
-                document.getElementById('volatilityFilter').value = localStorage.getItem('volatilityFilter');
-            }
-            if (localStorage.getItem('soundAlerts')) {
-                document.getElementById('soundAlerts').value = localStorage.getItem('soundAlerts');
-            }
-            if (localStorage.getItem('autoRefresh')) {
-                document.getElementById('autoRefresh').value = localStorage.getItem('autoRefresh');
-            }
-            applyFilters();
-        }
+<div class="container" id="list"></div>
 
-        // 2. Alertas Sonoros (Web Audio API)
-        function playSoundAlert() {
-            const soundSetting = document.getElementById('soundAlerts').value;
-            if (soundSetting !== 'on') return;
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script>
+    // ==========================================
+    // BLOCO 2: CONFIGURAÇÕES E MAPEAMENTO DOS ATIVOS
+    // ==========================================
+    const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER", "NEAR", "SEI", "ADA", "DOT", "FET"];
+    const logoMap = {
+        "BTC": "btc", "ETH": "eth", "SOL": "sol", "LINK": "link", "STX": "stx",
+        "RENDER": "rndr", "NEAR": "near", "SEI": "sei", "ADA": "ada", "DOT": "dot", "FET": "fet"
+    };
 
+    let usdRate = 5.50;
+    let btcChange = 0;
+    let alerts = [];
+
+    function toggleNotifs() {
+        const panel = document.getElementById('notif-panel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        document.getElementById('dot').style.display = 'none';
+    }
+
+    function addAlert(msg) {
+        const time = new Date().toLocaleTimeString();
+        alerts.unshift(`[${time}] ${msg}`);
+        if(alerts.length > 8) alerts.pop();
+        document.getElementById('notif-list').innerHTML = alerts.map(a => `<div class="notif-item">${a}</div>`).join('');
+        document.getElementById('dot').style.display = 'block';
+        document.getElementById('last-alert').innerText = "ALERTA DE ROTAÇÃO";
+    }
+
+    async function fetchGlobalData() {
+        try {
+            const res = await fetch('https://api.coingecko.com/api/v3/global');
+            const data = await res.json();
+            const bDom = data.data.market_cap_percentage.btc.toFixed(1);
+            document.getElementById('btc-dom').innerText = bDom + "%";
+        } catch (e) {}
+    }
+
+    // ==========================================
+    // BLOCO 3: MOTOR DE SINCRONIZAÇÃO E CONSUMO DA API DO RENDER
+    // ==========================================
+    async function sync() {
+        try {
+            // Consumindo os dados diretamente do nosso bot no Render
+            let dadosBot = {};
             try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.2);
-            } catch (e) {
-                console.log("Áudio não suportado ou bloqueado pelo navegador.");
+                const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados');
+                dadosBot = await resBot.json();
+            } catch (err) {
+                console.log("Aviso: a buscar dados locais de fallback.");
             }
-        }
 
-        function testAlert() {
-            playSoundAlert();
-        }
+            const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL');
+            const dRate = await resRate.json();
+            usdRate = parseFloat(dRate.price);
 
-        // 3. Filtro de Volatilidade
-        function applyFilters() {
-            const selectedVolatility = document.getElementById('volatilityFilter').value;
-            const rows = document.querySelectorAll('#dataTable tr');
+            let assetData = [];
+            for (let s of coins) {
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`);
+                const data = await res.json();
+                
+                let variacaoOriginal = parseFloat(data.priceChangePercent);
+                let variacaoAjustada = variacaoOriginal * 0.50; // Aplicação da regra de -50% na projeção
 
-            rows.forEach(row => {
-                const volatilityText = row.cells[1].textContent.toLowerCase();
-                if (selectedVolatility === 'all') {
-                    row.style.display = '';
-                } else if (selectedVolatility === 'high' && volatilityText.includes('alta')) {
-                    row.style.display = '';
-                } else if (selectedVolatility === 'low' && volatilityText.includes('baixa')) {
-                    row.style.display = '';
-                } else if (selectedVolatility === 'medium' && volatilityText.includes('média')) {
-                    row.style.display = '';
+                // Se houver preço vindo da API do Render, usa-o; caso contrário, usa o da Binance
+                let precoUsd = dadosBot[s] ? dadosBot[s] : parseFloat(data.lastPrice);
+
+                assetData.push({
+                    s, 
+                    p: precoUsd * usdRate, 
+                    pct: variacaoAjustada
+                });
+            }
+
+            assetData.sort((a, b) => b.p - a.p);
+
+            assetData.forEach((asset, index) => {
+                let card = document.getElementById(`card-${asset.s}`);
+                if (!card) {
+                    card = document.createElement('div');
+                    card.id = `card-${asset.s}`;
+                    card.className = `c-asset`;
+                    card.onclick = () => toggle(asset.s);
+                    card.innerHTML = `
+                        <div class="side-pill" id="pill-${asset.s}"></div>
+                        <div class="asset-row">
+                            <div class="a-left">
+                                <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[asset.s]}-${asset.s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${asset.s}&background=111&color=fff'">
+                                <div class="a-info"><span class="a-sym">${asset.s}</span><span class="a-pair">VOLUME / BRL</span></div>
+                            </div>
+                            <div class="a-right">
+                                <div class="a-price" id="pr-${asset.s}">--</div>
+                                <div class="status-box">
+                                    <span class="flow-tag" id="tag-${asset.s}">--</span>
+                                    <span class="a-pct" id="pct-${asset.s}">--</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-box" id="tv-${asset.s}"></div>
+                    `;
+                    document.getElementById('list').appendChild(card);
+                }
+
+                card.style.order = index;
+                const isPos = asset.pct >= 0;
+                
+                document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
+                document.getElementById(`pr-${asset.s}`).innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: asset.p < 1 ? 4 : 2, maximumFractionDigits: asset.p < 1 ? 4 : 2});
+                
+                const pctEl = document.getElementById(`pct-${asset.s}`);
+                pctEl.innerText = (isPos ? '+' : '') + asset.pct.toFixed(2) + "%";
+                pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
+
+                const tagEl = document.getElementById(`tag-${asset.s}`);
+                if (asset.s !== "BTC" && asset.pct > 1) {
+                    if(tagEl.innerText !== "ENTRA | ALVO") addAlert(`Brecha em ${asset.s}`);
+                    tagEl.innerText = "ENTRA | ALVO"; tagEl.style.color = "var(--green-nitido)";
                 } else {
-                    row.style.display = 'none';
+                    tagEl.innerText = "LATERAL"; tagEl.style.color = "#444";
                 }
             });
-        }
 
-        // Inicialização ao carregar a página
-        window.onload = function() {
-            loadSettings();
-        };
-    </script>
+            document.getElementById('mkt-status').innerText = "VIVO | BULL";
+        } catch (e) {}
+    }
+
+    function toggle(id) {
+        const c = document.getElementById(`card-${id}`);
+        c.classList.toggle('open');
+        const containerId = `tv-${id}`;
+        if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
+            new TradingView.widget({
+                "autosize": true, "symbol": "BINANCE:" + id + "USDT",
+                "interval": "1", "theme": "dark", "container_id": containerId,
+                "hide_side_toolbar": true, "studies": ["RSI@tv-basicstudies"]
+            });
+        }
+    }
+
+    fetchGlobalData();
+    sync();
+    setInterval(sync, 5000);
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+</script>
 </body>
 </html>
+
+ É nesse daqui que eu devo atualizar. Acho que você mandou errado, você mandou esse daí do do men, não é?
