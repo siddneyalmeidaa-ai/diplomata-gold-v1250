@@ -25,7 +25,7 @@
         }
         
         .st-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .st-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; border-top: 1px solid #111; padding-top: 15px; }
+        .st-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; border-top: 1px solid #111; padding-top: 15px; }
         
         .stat-box { display: flex; flex-direction: column; }
         .stat-label { font-size: 8px; font-weight: 900; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
@@ -101,7 +101,7 @@
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
         <div class="notif-bell" id="bell" onclick="toggleNotifs()">
-            <span id="last-alert">SISTEMA ONLINE</span>
+            <span id="last-alert">FÊNIX PRIME // QUANTUM LOCK</span>
             <div class="bell-dot" id="dot"></div>
             <span style="font-size: 12px;">🔔</span>
         </div>
@@ -110,18 +110,19 @@
     <div class="st-metrics">
         <div class="stat-box"><span class="stat-label">Organismo</span><span class="stat-val pulse" id="mkt-status">SINCRONIZANDO</span></div>
         <div class="stat-box"><span class="stat-label">Domínio BTC</span><span class="stat-val" id="btc-dom">--%</span></div>
-        <div class="stat-box"><span class="stat-label">Fluxo Ativo</span><span class="stat-val pulse" id="mkt-flow">AGUARDANDO</span></div>
+        <div class="stat-box"><span class="stat-label">Risco (-50%)</span><span class="stat-val" id="risk-val">ATIVO</span></div>
+        <div class="stat-box"><span class="stat-label">Stake Fixa</span><span class="stat-val" id="stake-val">R$ 0,20</span></div>
     </div>
 </div>
 
 <div id="notif-panel">
-    <div class="notif-header"><span style="font-size: 11px; font-weight: 900;">LOG DE ROTAÇÃO</span><span onclick="toggleNotifs()" style="cursor:pointer;">✕</span></div>
+    <div class="notif-header"><span style="font-size: 11px; font-weight: 900;">HISTÓRICO QUÂNTICO (LOCALSTORAGE)</span><span onclick="toggleNotifs()" style="cursor:pointer;">✕</span></div>
     <div id="notif-list"></div>
 </div>
 
 <div class="nav">
-    <button class="n-btn active">🔱 MONITORAMENTO</button>
-    <button class="n-btn">📊 PATRIMÔNIO</button>
+    <button class="n-btn active">🔱 MONITORAMENTO SUPREMO</button>
+    <button class="n-btn">📊 MODO SUPREMACIA</button>
 </div>
 
 <div class="container" id="list"></div>
@@ -138,8 +139,9 @@
     };
 
     let usdRate = 5.50;
-    let btcChange = 0;
-    let alerts = [];
+    // Persistência Quântica via LocalStorage Avançado
+    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v3') || '[]');
+    let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v3') || '{}');
 
     function toggleNotifs() {
         const panel = document.getElementById('notif-panel');
@@ -147,14 +149,42 @@
         document.getElementById('dot').style.display = 'none';
     }
 
+    // Notificações Sonoras e Visuais de Alta Urgência
+    function playUrgentAlertSound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+            osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.25);
+        } catch(e) {}
+    }
+
     function addAlert(msg) {
         const time = new Date().toLocaleTimeString();
         alerts.unshift(`[${time}] ${msg}`);
-        if(alerts.length > 8) alerts.pop();
-        document.getElementById('notif-list').innerHTML = alerts.map(a => `<div class="notif-item">${a}</div>`).join('');
+        if(alerts.length > 20) alerts.pop();
+        localStorage.setItem('fenix_quantum_alerts_v3', JSON.stringify(alerts));
+        renderAlerts();
         document.getElementById('dot').style.display = 'block';
-        document.getElementById('last-alert').innerText = "ALERTA DE ROTAÇÃO";
+        document.getElementById('last-alert').innerText = "ALERTA DE ALTA URGÊNCIA";
+        playUrgentAlertSound();
     }
+
+    function renderAlerts() {
+        document.getElementById('notid-list')?.remove(); // limpeza segura se houver
+        const listEl = document.getElementById('notif-list');
+        if(listEl) {
+            listEl.innerHTML = alerts.map(a => `<div class="notif-item">${a}</div>`).join('');
+        }
+    }
+    renderAlerts();
 
     async function fetchGlobalData() {
         try {
@@ -166,11 +196,10 @@
     }
 
     // ==========================================
-    // BLOCO 3: MOTOR DE SINCRONIZAÇÃO E CONSUMO DA API DO RENDER
+    // BLOCO 3: MOTOR DE SINCRONIZAÇÃO E MELHORIAS DE SUPREMACIA
     // ==========================================
     async function sync() {
         try {
-            // Consumindo os dados diretamente do nosso bot no Render
             let dadosBot = {};
             try {
                 const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados');
@@ -189,15 +218,17 @@
                 const data = await res.json();
                 
                 let variacaoOriginal = parseFloat(data.priceChangePercent);
-                let variacaoAjustada = variacaoOriginal * 0.50; // Aplicação da regra de -50% na projeção
-
-                // Se houver preço vindo da API do Render, usa-o; caso contrário, usa o da Binance
+                let variacaoAjustada = variacaoOriginal * 0.50; // Regra de -50% na projeção de risco
                 let precoUsd = dadosBot[s] ? dadosBot[s] : parseFloat(data.lastPrice);
+
+                // Filtro de Volatilidade Inteligente (Modo Supremacia)
+                let spreadPressure = Math.abs(variacaoOriginal) > 4 ? "SUPREMO" : "ESTÁVEL";
 
                 assetData.push({
                     s, 
                     p: precoUsd * usdRate, 
-                    pct: variacaoAjustada
+                    pct: variacaoAjustada,
+                    pressure: spreadPressure
                 });
             }
 
@@ -215,7 +246,7 @@
                         <div class="asset-row">
                             <div class="a-left">
                                 <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[asset.s]}-${asset.s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${asset.s}&background=111&color=fff'">
-                                <div class="a-info"><span class="a-sym">${asset.s}</span><span class="a-pair">VOLUME / BRL</span></div>
+                                <div class="a-info"><span class="a-sym">${asset.s}</span><span class="a-pair" id="spread-${asset.s}">SUPREMACIA: OK</span></div>
                             </div>
                             <div class="a-right">
                                 <div class="a-price" id="pr-${asset.s}">--</div>
@@ -241,15 +272,29 @@
                 pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
 
                 const tagEl = document.getElementById(`tag-${asset.s}`);
-                if (asset.s !== "BTC" && asset.pct > 1) {
-                    if(tagEl.innerText !== "ENTRA | ALVO") addAlert(`Brecha em ${asset.s}`);
-                    tagEl.innerText = "ENTRA | ALVO"; tagEl.style.color = "var(--green-nitido)";
+                const spreadEl = document.getElementById(`spread-${asset.s}`);
+
+                // Painel de Controle de Risco Dinâmico & Alertas de Alta Urgência
+                if (asset.s !== "BTC" && asset.pct > 0.8 && asset.pressure === "SUPREMO") {
+                    tagEl.innerText = "ENTRA | ALVO"; 
+                    tagEl.style.color = "var(--green-nitido)";
+                    spreadEl.innerText = "STAKE: R$ 0,20";
+                    spreadEl.style.color = "var(--green-nitido)";
+
+                    if(!virtualTrades[asset.s]) {
+                        virtualTrades[asset.s] = { price: asset.p, time: new Date().toLocaleTimeString() };
+                        localStorage.setItem('fenix_quantum_trades_v3', JSON.stringify(virtualTrades));
+                        addAlert(`Oportunidade confirmada em ${asset.s} a R$ ${asset.p.toFixed(2)} | Stake: R$ 0,20`);
+                    }
                 } else {
-                    tagEl.innerText = "LATERAL"; tagEl.style.color = "#444";
+                    tagEl.innerText = "PULA / AGUARDA"; 
+                    tagEl.style.color = "#444";
+                    spreadEl.innerText = "MODO SUPREMACIA";
+                    spreadEl.style.color = "#444";
                 }
             });
 
-            document.getElementById('mkt-status').innerText = "VIVO | BULL";
+            document.getElementById('mkt-status').innerText = "VIVO | QUANTUM LOCK";
         } catch (e) {}
     }
 
@@ -273,5 +318,3 @@
 </script>
 </body>
 </html>
-
- É nesse daqui que eu devo atualizar. Acho que você mandou errado, você mandou esse daí do do men, não é?
