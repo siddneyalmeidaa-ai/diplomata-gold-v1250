@@ -158,7 +158,6 @@
 </div>
 
 <div class="container" id="list">
-    <!-- CARDS COM EVENTO DE CLIQUE DIRETO NO CORPO PARA ABRIR O GRÁFICO -->
     <div id="card-BTC" class="c-asset" onclick="toggle('BTC')"><div class="side-pill" id="pill-BTC"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/btc-btc-logo.png"><div class="a-info"><span class="a-sym">BTC</span><div class="a-subinfo"><span class="a-pair" id="spread-BTC">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-BTC">RSI: 52</span><span class="vol-tag" id="vol-BTC">VOL: 1.2B</span></div></div></div><div class="a-right"><div class="a-price" id="pr-BTC">R$ 350.000,00</div><div class="status-box"><span class="flow-tag" id="tag-BTC">AGUARDA</span><span class="a-pct pos-txt" id="pct-BTC">+1.45%</span></div></div></div><div class="chart-box" id="tv-BTC"></div></div>
     
     <div id="card-ETH" class="c-asset" onclick="toggle('ETH')"><div class="side-pill" id="pill-ETH"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/eth-eth-logo.png"><div class="a-info"><span class="a-sym">ETH</span><div class="a-subinfo"><span class="a-pair" id="spread-ETH">SPREAD: 0.12%</span><span class="rsi-tag" id="rsi-ETH">RSI: 58</span><span class="vol-tag" id="vol-ETH">VOL: 850M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-ETH">R$ 18.000,00</div><div class="status-box"><span class="flow-tag" id="tag-ETH">AGUARDA</span><span class="a-pct pos-txt" id="pct-ETH">+2.10%</span></div></div></div><div class="chart-box" id="tv-ETH"></div></div>
@@ -185,9 +184,22 @@
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER", "NEAR", "SEI", "ADA", "DOT", "FET"];
-    let usdRate = 5.50;
     let currentFilter = 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v6') || '[]');
+
+    const baseData = {
+        BTC: { price: 350000, pct: 1.45, spread: 0.10, rsi: 52, vol: "1.2B", volNum: 1200 },
+        ETH: { price: 18000, pct: 2.10, spread: 0.12, rsi: 58, vol: "850M", volNum: 850 },
+        SOL: { price: 850, pct: 3.40, spread: 0.15, rsi: 64, vol: "620M", volNum: 620 },
+        LINK: { price: 95, pct: 0.85, spread: 0.08, rsi: 48, vol: "120M", volNum: 120 },
+        STX: { price: 12, pct: 4.15, spread: 0.20, rsi: 72, vol: "95M", volNum: 95 },
+        RENDER: { price: 45, pct: 2.90, spread: 0.18, rsi: 61, vol: "210M", volNum: 210 },
+        NEAR: { price: 25, pct: 1.15, spread: 0.11, rsi: 50, vol: "180M", volNum: 180 },
+        SEI: { price: 2.50, pct: 1.80, spread: 0.14, rsi: 55, vol: "85M", volNum: 85 },
+        ADA: { price: 3.50, pct: -0.40, spread: 0.09, rsi: 45, vol: "310M", volNum: 310 },
+        DOT: { price: 30, pct: 0.95, spread: 0.13, rsi: 53, vol: "150M", volNum: 150 },
+        FET: { price: 7, pct: 3.80, spread: 0.22, rsi: 68, vol: "110M", volNum: 110 }
+    };
 
     function toggleTheme(mode) {
         if(mode === 'light') {
@@ -209,26 +221,4 @@
         currentFilter = filter;
         document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
         document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
-        document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
-        document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
-        sync();
-    }
-
-    function toggleNotifs() {
-        const panel = document.getElementById('notif-panel');
-        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        document.getElementById('dot').style.display = 'none';
-    }
-
-    function clearAlerts() {
-        alerts = [];
-        localStorage.removeItem('fenix_quantum_alerts_v6');
-        renderAlerts();
-        document.getElementById('last-alert').innerText = "FÊNIX PRIME // QUANTUM LOCK";
-    }
-
-    function exportAlerts() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(alerts, null, 2));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        
+        document.getElementById('
