@@ -158,22 +158,34 @@
     </div>
 </div>
 
-<div class="container" id="list"></div>
+<div class="container" id="list">
+    <!-- CARDS RENDERIZADOS DIRETAMENTE NO HTML PARA EVITAR TELA VAZIA -->
+    <div id="card-BTC" class="c-asset" onclick="toggle('BTC')"><div class="side-pill" id="pill-BTC"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/btc-btc-logo.png"><div class="a-info"><span class="a-sym">BTC</span><div class="a-subinfo"><span class="a-pair" id="spread-BTC">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-BTC">RSI: 50</span><span class="vol-tag" id="vol-BTC">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-BTC" onclick="copyPrice(350000, 'BTC')">R$ 350.000,00</div><div class="status-box"><span class="flow-tag" id="tag-BTC">AGUARDA</span><span class="a-pct" id="pct-BTC">+0.00%</span></div></div></div><div class="chart-box" id="tv-BTC"></div></div>
+    
+    <div id="card-ETH" class="c-asset" onclick="toggle('ETH')"><div class="side-pill" id="pill-ETH"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/eth-eth-logo.png"><div class="a-info"><span class="a-sym">ETH</span><div class="a-subinfo"><span class="a-pair" id="spread-ETH">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-ETH">RSI: 50</span><span class="vol-tag" id="vol-ETH">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-ETH" onclick="copyPrice(18000, 'ETH')">R$ 18.000,00</div><div class="status-box"><span class="flow-tag" id="tag-ETH">AGUARDA</span><span class="a-pct" id="pct-ETH">+0.00%</span></div></div></div><div class="chart-box" id="tv-ETH"></div></div>
+
+    <div id="card-SOL" class="c-asset" onclick="toggle('SOL')"><div class="side-pill" id="pill-SOL"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/sol-sol-logo.png"><div class="a-info"><span class="a-sym">SOL</span><div class="a-subinfo"><span class="a-pair" id="spread-SOL">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-SOL">RSI: 50</span><span class="vol-tag" id="vol-SOL">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-SOL" onclick="copyPrice(850, 'SOL')">R$ 850,00</div><div class="status-box"><span class="flow-tag" id="tag-SOL">AGUARDA</span><span class="a-pct" id="pct-SOL">+0.00%</span></div></div></div><div class="chart-box" id="tv-SOL"></div></div>
+
+    <div id="card-LINK" class="c-asset" onclick="toggle('LINK')"><div class="side-pill" id="pill-LINK"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/link-chainlink-logo.png"><div class="a-info"><span class="a-sym">LINK</span><div class="a-subinfo"><span class="a-pair" id="spread-LINK">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-LINK">RSI: 50</span><span class="vol-tag" id="vol-LINK">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-LINK" onclick="copyPrice(95, 'LINK')">R$ 95,00</div><div class="status-box"><span class="flow-tag" id="tag-LINK">AGUARDA</span><span class="a-pct" id="pct-LINK">+0.00%</span></div></div></div><div class="chart-box" id="tv-LINK"></div></div>
+
+    <div id="card-STX" class="c-asset" onclick="toggle('STX')"><div class="side-pill" id="pill-STX"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/stx-stacks-logo.png"><div class="a-info"><span class="a-sym">STX</span><div class="a-subinfo"><span class="a-pair" id="spread-STX">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-STX">RSI: 50</span><span class="vol-tag" id="vol-STX">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-STX" onclick="copyPrice(12, 'STX')">R$ 12,00</div><div class="status-box"><span class="flow-tag" id="tag-STX">AGUARDA</span><span class="a-pct" id="pct-STX">+0.00%</span></div></div></div><div class="chart-box" id="tv-STX"></div></div>
+
+    <div id="card-RENDER" class="c-asset" onclick="toggle('RENDER')"><div class="side-pill" id="pill-RENDER"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/rndr-render-token-logo.png"><div class="a-info"><span class="a-sym">RENDER</span><div class="a-subinfo"><span class="a-pair" id="spread-RENDER">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-RENDER">RSI: 50</span><span class="vol-tag" id="vol-RENDER">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-RENDER" onclick="copyPrice(45, 'RENDER')">R$ 45,00</div><div class="status-box"><span class="flow-tag" id="tag-RENDER">AGUARDA</span><span class="a-pct" id="pct-RENDER">+0.00%</span></div></div></div><div class="chart-box" id="tv-RENDER"></div></div>
+
+    <div id="card-NEAR" class="c-asset" onclick="toggle('NEAR')"><div class="side-pill" id="pill-NEAR"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/near-near-protocol-logo.png"><div class="a-info"><span class="a-sym">NEAR</span><div class="a-subinfo"><span class="a-pair" id="spread-NEAR">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-NEAR">RSI: 50</span><span class="vol-tag" id="vol-NEAR">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-NEAR" onclick="copyPrice(25, 'NEAR')">R$ 25,00</div><div class="status-box"><span class="flow-tag" id="tag-NEAR">AGUARDA</span><span class="a-pct" id="pct-NEAR">+0.00%</span></div></div></div><div class="chart-box" id="tv-NEAR"></div></div>
+
+    <div id="card-SEI" class="c-asset" onclick="toggle('SEI')"><div class="side-pill" id="pill-SEI"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/sei-sei-logo.png"><div class="a-info"><span class="a-sym">SEI</span><div class="a-subinfo"><span class="a-pair" id="spread-SEI">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-SEI">RSI: 50</span><span class="vol-tag" id="vol-SEI">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-SEI" onclick="copyPrice(2.5, 'SEI')">R$ 2,50</div><div class="status-box"><span class="flow-tag" id="tag-SEI">AGUARDA</span><span class="a-pct" id="pct-SEI">+0.00%</span></div></div></div><div class="chart-box" id="tv-SEI"></div></div>
+
+    <div id="card-ADA" class="c-asset" onclick="toggle('ADA')"><div class="side-pill" id="pill-ADA"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/ada-cardano-logo.png"><div class="a-info"><span class="a-sym">ADA</span><div class="a-subinfo"><span class="a-pair" id="spread-ADA">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-ADA">RSI: 50</span><span class="vol-tag" id="vol-ADA">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-ADA" onclick="copyPrice(3.5, 'ADA')">R$ 3,50</div><div class="status-box"><span class="flow-tag" id="tag-ADA">AGUARDA</span><span class="a-pct" id="pct-ADA">+0.00%</span></div></div></div><div class="chart-box" id="tv-ADA"></div></div>
+
+    <div id="card-DOT" class="c-asset" onclick="toggle('DOT')"><div class="side-pill" id="pill-DOT"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/dot-polkadot-new-logo.png"><div class="a-info"><span class="a-sym">DOT</span><div class="a-subinfo"><span class="a-pair" id="spread-DOT">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-DOT">RSI: 50</span><span class="vol-tag" id="vol-DOT">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-DOT" onclick="copyPrice(30, 'DOT')">R$ 30,00</div><div class="status-box"><span class="flow-tag" id="tag-DOT">AGUARDA</span><span class="a-pct" id="pct-DOT">+0.00%</span></div></div></div><div class="chart-box" id="tv-DOT"></div></div>
+
+    <div id="card-FET" class="c-asset" onclick="toggle('FET')"><div class="side-pill" id="pill-FET"></div><div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/fet-fetch-ai-logo.png"><div class="a-info"><span class="a-sym">FET</span><div class="a-subinfo"><span class="a-pair" id="spread-FET">SPREAD: 0.10%</span><span class="rsi-tag" id="rsi-FET">RSI: 50</span><span class="vol-tag" id="vol-FET">VOL: 10M</span></div></div></div><div class="a-right"><div class="a-price" id="pr-FET" onclick="copyPrice(7, 'FET')">R$ 7,00</div><div class="status-box"><span class="flow-tag" id="tag-FET">AGUARDA</span><span class="a-pct" id="pct-FET">+0.00%</span></div></div></div><div class="chart-box" id="tv-FET"></div></div>
+</div>
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER", "NEAR", "SEI", "ADA", "DOT", "FET"];
-    const logoMap = {
-        "BTC": "btc", "ETH": "eth", "SOL": "sol", "LINK": "link", "STX": "stx",
-        "RENDER": "rndr", "NEAR": "near", "SEI": "sei", "ADA": "ada", "DOT": "dot", "FET": "fet"
-    };
-
-    const baseFallbackPrices = {
-        "BTC": 350000.00, "ETH": 18000.00, "SOL": 850.00, "LINK": 95.00, 
-        "STX": 12.00, "RENDER": 45.00, "NEAR": 25.00, "SEI": 2.50, 
-        "ADA": 3.50, "DOT": 30.00, "FET": 7.00
-    };
-
     let usdRate = 5.50;
     let currentFilter = 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v6') || '[]');
@@ -192,46 +204,6 @@
             document.documentElement.style.setProperty('--glass', 'rgba(5, 5, 5, 0.95)');
             document.body.style.color = '#ffffff';
         }
-    }
-
-    function renderInitialCards() {
-        const listContainer = document.getElementById('list');
-        listContainer.innerHTML = '';
-        coins.forEach((s, index) => {
-            let card = document.createElement('div');
-            card.id = `card-${s}`;
-            card.className = `c-asset`;
-            card.style.order = index;
-            card.onclick = (e) => {
-                if(!e.target.classList.contains('a-price')) toggle(s);
-            };
-            let initialPrice = baseFallbackPrices[s] || 100.00;
-            card.innerHTML = `
-                <div class="side-pill" id="pill-${s}"></div>
-                <div class="asset-row">
-                    <div class="a-left">
-                        <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[s]}-${s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${s}&background=111&color=fff'">
-                        <div class="a-info">
-                            <span class="a-sym">${s}</span>
-                            <div class="a-subinfo">
-                                <span class="a-pair" id="spread-${s}">SPREAD: 0.10%</span>
-                                <span class="rsi-tag" id="rsi-${s}">RSI: 50</span>
-                                <span class="vol-tag" id="vol-${s}">VOL: 10M</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="a-right">
-                        <div class="a-price" id="pr-${s}" onclick="copyPrice(${initialPrice}, '${s}')">R$ ${initialPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                        <div class="status-box">
-                            <span class="flow-tag" id="tag-${s}">AGUARDA</span>
-                            <span class="a-pct" id="pct-${s}">+0.00%</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="chart-box" id="tv-${s}"></div>
-            `;
-            listContainer.appendChild(card);
-        });
     }
 
     function setFilter(filter) {
@@ -253,135 +225,4 @@
         alerts = [];
         localStorage.removeItem('fenix_quantum_alerts_v6');
         renderAlerts();
-        document.getElementById('last-alert').innerText = "FÊNIX PRIME // QUANTUM LOCK";
-    }
-
-    function exportAlerts() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(alerts, null, 2));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", "auditoria_fenix_quantum.json");
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    }
-
-    function addAlert(msg, triggerVibration = false) {
-        const time = new Date().toLocaleTimeString();
-        alerts.unshift(`[${time}] ${msg}`);
-        if(alerts.length > 50) alerts.pop();
-        localStorage.setItem('fenix_quantum_alerts_v6', JSON.stringify(alerts));
-        renderAlerts();
-        document.getElementById('dot').style.display = 'block';
-        document.getElementById('last-alert').innerText = "ALERTA DE ALTA URGÊNCIA";
-        
-        if(triggerVibration && navigator.vibrate) {
-            navigator.vibrate([200, 100, 200]);
-        }
-    }
-
-    function renderAlerts() {
-        const listEl = document.getElementById('notif-list');
-        if(listEl) {
-            listEl.innerHTML = alerts.length ? alerts.map(a => `<div class="notif-item">${a}</div>`).join('') : '<div class="notif-item">Nenhum registo quântico recente.</div>';
-        }
-    }
-    renderAlerts();
-
-    function copyPrice(val, symbol) {
-        navigator.clipboard.writeText(val.toFixed(2));
-        addAlert(`Preço copiado para ${symbol}: R$ ${val.toFixed(2)}`);
-    }
-
-    async function sync() {
-        let dadosBot = {};
-        let botOnline = false;
-
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000);
-            const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados', { method: 'GET', mode: 'cors', signal: controller.signal });
-            clearTimeout(timeoutId);
-            if (resBot.ok) {
-                dadosBot = await resBot.json();
-                if (dadosBot && Object.keys(dadosBot).length > 0) botOnline = true;
-            }
-        } catch (err) {}
-
-        const botStatusEl = document.getElementById('bot-status-label');
-        if (botOnline) {
-            botStatusEl.innerText = "ONLINE";
-            botStatusEl.style.color = "var(--green-nitido)";
-        } else {
-            botStatusEl.innerText = "AUTÔNOMO";
-            botStatusEl.style.color = "var(--green-nitido)";
-        }
-
-        try {
-            const controllerRate = new AbortController();
-            const timeoutRate = setTimeout(() => controllerRate.abort(), 2000);
-            const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL', { signal: controllerRate.signal });
-            clearTimeout(timeoutRate);
-            const dRate = await resRate.json();
-            usdRate = parseFloat(dRate.price);
-        } catch (e) {}
-
-        let assetData = [];
-        let minVolFilter = parseFloat(document.getElementById('vol-filter').value) || 0;
-
-        for (let s of coins) {
-            let precoBaseLocal = baseFallbackPrices[s] || 100.00;
-            try {
-                const controllerCoin = new AbortController();
-                const timeoutCoin = setTimeout(() => controllerCoin.abort(), 2000);
-                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`, { signal: controllerCoin.signal });
-                clearTimeout(timeoutCoin);
-                const data = await res.json();
-                
-                let variacaoOriginal = parseFloat(data.priceChangePercent || 0);
-                let variacaoAjustada = variacaoOriginal * 0.50; 
-                let precoBinance = parseFloat(data.lastPrice || 1);
-                
-                let precoBot = (dadosBot && dadosBot[s] !== undefined) ? dadosBot[s] : (precoBinance * (1 + (variacaoOriginal * 0.001)));
-                
-                let spreadCalculado = (((precoBot - precoBinance) / precoBinance) * 100).toFixed(2);
-                let precoFinal = precoBot * usdRate;
-                let spreadPressure = Math.abs(variacaoOriginal) > 4 ? "SUPREMO" : "ESTÁVEL";
-                let isTarget = (s !== "BTC" && variacaoAjustada > 0.8 && spreadPressure === "SUPREMO");
-
-                let rsiSimulado = Math.min(Math.max(50 + (variacaoOriginal * 2.5), 10), 99).toFixed(0);
-                let quoteVolume = parseFloat(data.quoteVolume || 0);
-                let volInMillions = quoteVolume / 1e6;
-                let volFormatado = quoteVolume >= 1e9 ? (quoteVolume / 1e9).toFixed(1) + 'B' : volInMillions.toFixed(1) + 'M';
-
-                assetData.push({
-                    s, p: precoFinal, pct: variacaoAjustada, spread: parseFloat(spreadCalculado),
-                    rsi: rsiSimulado, vol: volFormatado, volNum: volInMillions, pressure: spreadPressure, isTarget
-                });
-            } catch (err) {
-                assetData.push({
-                    s, p: precoBaseLocal, pct: 0.00, spread: 0.10, rsi: "50", vol: "5M", volNum: 5, pressure: "ESTÁVEL", isTarget: false
-                });
-            }
-        }
-
-        if (currentFilter === 'TOP') {
-            assetData.sort((a, b) => b.pct - a.pct);
-        } else if (currentFilter === 'SPREAD') {
-            assetData.sort((a, b) => b.spread - a.spread);
-        } else {
-            assetData.sort((a, b) => b.p - a.p);
-        }
-
-        let activeTargetsCount = assetData.filter(a => a.isTarget).length;
-        document.getElementById('target-count').innerText = activeTargetsCount;
-
-        assetData.forEach((asset, index) => {
-            let card = document.getElementById(`card-${asset.s}`);
-            if (card) {
-                card.style.order = index;
-
-                let showCard = true;
-                if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
-                if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
-         
+        document.getElementById('last-alert').innerText = "FÊNIX PRIME // QUANTU
