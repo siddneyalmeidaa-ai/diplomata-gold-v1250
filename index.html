@@ -214,17 +214,17 @@
                         <div class="a-info">
                             <span class="a-sym">${s}</span>
                             <div class="a-subinfo">
-                                <span class="a-pair" id="spread-${s}">SPREAD: --%</span>
-                                <span class="rsi-tag" id="rsi-${s}">RSI: --</span>
-                                <span class="vol-tag" id="vol-${s}">VOL: --</span>
+                                <span class="a-pair" id="spread-${s}">SPREAD: 0.10%</span>
+                                <span class="rsi-tag" id="rsi-${s}">RSI: 50</span>
+                                <span class="vol-tag" id="vol-${s}">VOL: 10M</span>
                             </div>
                         </div>
                     </div>
                     <div class="a-right">
                         <div class="a-price" id="pr-${s}" onclick="copyPrice(${initialPrice}, '${s}')">R$ ${initialPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                         <div class="status-box">
-                            <span class="flow-tag" id="tag-${s}">AUTÔNOMO</span>
-                            <span class="a-pct" id="pct-${s}">0.00%</span>
+                            <span class="flow-tag" id="tag-${s}">AGUARDA</span>
+                            <span class="a-pct" id="pct-${s}">+0.00%</span>
                         </div>
                     </div>
                 </div>
@@ -299,7 +299,7 @@
 
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2500);
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
             const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados', { method: 'GET', mode: 'cors', signal: controller.signal });
             clearTimeout(timeoutId);
             if (resBot.ok) {
@@ -319,7 +319,7 @@
 
         try {
             const controllerRate = new AbortController();
-            const timeoutRate = setTimeout(() => controllerRate.abort(), 2500);
+            const timeoutRate = setTimeout(() => controllerRate.abort(), 2000);
             const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL', { signal: controllerRate.signal });
             clearTimeout(timeoutRate);
             const dRate = await resRate.json();
@@ -333,7 +333,7 @@
             let precoBaseLocal = baseFallbackPrices[s] || 100.00;
             try {
                 const controllerCoin = new AbortController();
-                const timeoutCoin = setTimeout(() => controllerCoin.abort(), 2500);
+                const timeoutCoin = setTimeout(() => controllerCoin.abort(), 2000);
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`, { signal: controllerCoin.signal });
                 clearTimeout(timeoutCoin);
                 const data = await res.json();
@@ -384,4 +384,4 @@
                 let showCard = true;
                 if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
                 if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
-            
+         
