@@ -47,7 +47,10 @@
         }
         .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 10px; }
         .notif-item { font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 10px 0; border-bottom: 1px solid #1a1a1a; color: #aaa; }
+        
+        .panel-actions { display: flex; gap: 10px; align-items: center; }
         .clear-btn { background: #ff3e3e; color: #fff; border: none; padding: 4px 8px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
+        .export-btn { background: #60a5fa; color: #fff; border: none; padding: 4px 8px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
 
         .pulse { animation: pulse-glow 2s infinite ease-in-out; }
         @keyframes pulse-glow { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
@@ -55,6 +58,9 @@
         .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #050505; flex-wrap: wrap; }
         .n-btn { flex: 1; min-width: 25%; padding: 14px; text-align: center; font-size: 9px; font-weight: 900; color: #333; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
         .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); }
+
+        .extra-controls { display: flex; justify-content: space-between; align-items: center; background: #070707; padding: 8px 15px; border-bottom: 1px solid var(--border-dark); font-size: 9px; font-family: 'JetBrains Mono', monospace; color: #777; }
+        .extra-controls select, .extra-controls button { background: #111; color: #aaa; border: 1px solid #222; padding: 4px 8px; border-radius: 4px; font-size: 9px; cursor: pointer; }
 
         .container { padding: 12px; display: flex; flex-direction: column; }
         .c-asset { 
@@ -108,9 +114,9 @@
         <div class="clock-modern" id="clock">00:00:00</div>
     </div>
     <div class="st-metrics">
-        <div class="stat-box"><span class="stat-label">Organismo</span><span class="stat-val pulse" id="mkt-status">AUTÔNOMO LOCAL</span></div>
+        <div class="stat-box"><span class="stat-label">Organismo</span><span class="stat-val pulse" id="mkt-status">MODO AUTÔNOMO</span></div>
         <div class="stat-box"><span class="stat-label">Domínio BTC</span><span class="stat-val" id="btc-dom">54.2%</span></div>
-        <div class="stat-box"><span class="stat-label">Status Bot</span><span class="stat-val" id="bot-status-label" style="color: var(--green-nitido);">OFFLINE (LOCAL)</span></div>
+        <div class="stat-box"><span class="stat-label">Status Bot</span><span class="stat-val" id="bot-status-label" style="color: var(--green-nitido);">AUTÔNOMO</span></div>
         <div class="stat-box"><span class="stat-label">Alvos Ativos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
@@ -118,7 +124,8 @@
 <div id="notif-panel">
     <div class="notif-header">
         <span style="font-size: 11px; font-weight: 900;">HISTÓRICO QUÂNTICO & AUDITORIA</span>
-        <div style="display: flex; gap: 10px; align-items: center;">
+        <div class="panel-actions">
+            <button class="export-btn" onclick="exportAlerts()">EXPORTAR</button>
             <button class="clear-btn" onclick="clearAlerts()">LIMPAR</button>
             <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px;">✕</span>
         </div>
@@ -133,6 +140,24 @@
     <button class="n-btn" id="btn-spread" onclick="setFilter('SPREAD')">🚀 SPREAD</button>
 </div>
 
+<div class="extra-controls">
+    <div>
+        <span>TEMA:</span> 
+        <select id="theme-select" onchange="toggleTheme(this.value)">
+            <option value="dark">DARK SUPREMO</option>
+            <option value="light">LIGHT DIURNO</option>
+        </select>
+    </div>
+    <div>
+        <span>VOL MÍN:</span> 
+        <select id="vol-filter" onchange="sync()">
+            <option value="0">QUALQUER</option>
+            <option value="50"> > 50M</option>
+            <option value="100"> > 100M</option>
+        </select>
+    </div>
+</div>
+
 <div class="container" id="list"></div>
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
@@ -143,12 +168,32 @@
         "RENDER": "rndr", "NEAR": "near", "SEI": "sei", "ADA": "ada", "DOT": "dot", "FET": "fet"
     };
 
+    const baseFallbackPrices = {
+        "BTC": 350000.00, "ETH": 18000.00, "SOL": 850.00, "LINK": 95.00, 
+        "STX": 12.00, "RENDER": 45.00, "NEAR": 25.00, "SEI": 2.50, 
+        "ADA": 3.50, "DOT": 30.00, "FET": 7.00
+    };
+
     let usdRate = 5.50;
     let currentFilter = 'ALL';
-    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v5') || '[]');
-    let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v5') || '{}');
+    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v6') || '[]');
 
-    // Renderização imediata garantida na tela (mesmo sem internet)
+    function toggleTheme(mode) {
+        if(mode === 'light') {
+            document.documentElement.style.setProperty('--bg', '#f4f4f4');
+            document.documentElement.style.setProperty('--card', '#ffffff');
+            document.documentElement.style.setProperty('--border-dark', '#ddd');
+            document.documentElement.style.setProperty('--glass', 'rgba(240, 240, 240, 0.95)');
+            document.body.style.color = '#111';
+        } else {
+            document.documentElement.style.setProperty('--bg', '#020202');
+            document.documentElement.style.setProperty('--card', '#0a0a0a');
+            document.documentElement.style.setProperty('--border-dark', '#1a1a1a');
+            document.documentElement.style.setProperty('--glass', 'rgba(5, 5, 5, 0.95)');
+            document.body.style.color = '#ffffff';
+        }
+    }
+
     function renderInitialCards() {
         const listContainer = document.getElementById('list');
         listContainer.innerHTML = '';
@@ -160,25 +205,26 @@
             card.onclick = (e) => {
                 if(!e.target.classList.contains('a-price')) toggle(s);
             };
+            let initialPrice = baseFallbackPrices[s] || 100.00;
             card.innerHTML = `
-                <div class="side-pill pos-bg" id="pill-${s}"></div>
+                <div class="side-pill" id="pill-${s}"></div>
                 <div class="asset-row">
                     <div class="a-left">
                         <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[s]}-${s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${s}&background=111&color=fff'">
                         <div class="a-info">
                             <span class="a-sym">${s}</span>
                             <div class="a-subinfo">
-                                <span class="a-pair" id="spread-${s}">SPREAD: 0.50%</span>
-                                <span class="rsi-tag" id="rsi-${s}">RSI: 55</span>
-                                <span class="vol-tag" id="vol-${s}">VOL: 45M</span>
+                                <span class="a-pair" id="spread-${s}">SPREAD: --%</span>
+                                <span class="rsi-tag" id="rsi-${s}">RSI: --</span>
+                                <span class="vol-tag" id="vol-${s}">VOL: --</span>
                             </div>
                         </div>
                     </div>
                     <div class="a-right">
-                        <div class="a-price" id="pr-${s}" onclick="copyPrice(100.00, '${s}')">R$ 100,00</div>
+                        <div class="a-price" id="pr-${s}" onclick="copyPrice(${initialPrice}, '${s}')">R$ ${initialPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                         <div class="status-box">
-                            <span class="flow-tag" id="tag-${s}">AGUARDA</span>
-                            <span class="a-pct pos-txt" id="pct-${s}">+1.25%</span>
+                            <span class="flow-tag" id="tag-${s}">AUTÔNOMO</span>
+                            <span class="a-pct" id="pct-${s}">0.00%</span>
                         </div>
                     </div>
                 </div>
@@ -205,21 +251,33 @@
 
     function clearAlerts() {
         alerts = [];
-        virtualTrades = {};
-        localStorage.removeItem('fenix_quantum_alerts_v5');
-        localStorage.removeItem('fenix_quantum_trades_v5');
+        localStorage.removeItem('fenix_quantum_alerts_v6');
         renderAlerts();
         document.getElementById('last-alert').innerText = "FÊNIX PRIME // QUANTUM LOCK";
     }
 
-    function addAlert(msg) {
+    function exportAlerts() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(alerts, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "auditoria_fenix_quantum.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function addAlert(msg, triggerVibration = false) {
         const time = new Date().toLocaleTimeString();
         alerts.unshift(`[${time}] ${msg}`);
-        if(alerts.length > 30) alerts.pop();
-        localStorage.setItem('fenix_quantum_alerts_v5', JSON.stringify(alerts));
+        if(alerts.length > 50) alerts.pop();
+        localStorage.setItem('fenix_quantum_alerts_v6', JSON.stringify(alerts));
         renderAlerts();
         document.getElementById('dot').style.display = 'block';
         document.getElementById('last-alert').innerText = "ALERTA DE ALTA URGÊNCIA";
+        
+        if(triggerVibration && navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]);
+        }
     }
 
     function renderAlerts() {
@@ -241,7 +299,7 @@
 
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
             const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados', { method: 'GET', mode: 'cors', signal: controller.signal });
             clearTimeout(timeoutId);
             if (resBot.ok) {
@@ -261,20 +319,21 @@
 
         try {
             const controllerRate = new AbortController();
-            const timeoutRate = setTimeout(() => controllerRate.abort(), 2000);
+            const timeoutRate = setTimeout(() => controllerRate.abort(), 2500);
             const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL', { signal: controllerRate.signal });
             clearTimeout(timeoutRate);
             const dRate = await resRate.json();
             usdRate = parseFloat(dRate.price);
-        } catch (e) {
-            usdRate = 5.50;
-        }
+        } catch (e) {}
 
         let assetData = [];
+        let minVolFilter = parseFloat(document.getElementById('vol-filter').value) || 0;
+
         for (let s of coins) {
+            let precoBaseLocal = baseFallbackPrices[s] || 100.00;
             try {
                 const controllerCoin = new AbortController();
-                const timeoutCoin = setTimeout(() => controllerCoin.abort(), 2000);
+                const timeoutCoin = setTimeout(() => controllerCoin.abort(), 2500);
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`, { signal: controllerCoin.signal });
                 clearTimeout(timeoutCoin);
                 const data = await res.json();
@@ -292,16 +351,16 @@
 
                 let rsiSimulado = Math.min(Math.max(50 + (variacaoOriginal * 2.5), 10), 99).toFixed(0);
                 let quoteVolume = parseFloat(data.quoteVolume || 0);
-                let volFormatado = quoteVolume >= 1e9 ? (quoteVolume / 1e9).toFixed(1) + 'B' : (quoteVolume / 1e6).toFixed(1) + 'M';
+                let volInMillions = quoteVolume / 1e6;
+                let volFormatado = quoteVolume >= 1e9 ? (quoteVolume / 1e9).toFixed(1) + 'B' : volInMillions.toFixed(1) + 'M';
 
                 assetData.push({
                     s, p: precoFinal, pct: variacaoAjustada, spread: parseFloat(spreadCalculado),
-                    rsi: rsiSimulado, vol: volFormatado, pressure: spreadPressure, isTarget
+                    rsi: rsiSimulado, vol: volFormatado, volNum: volInMillions, pressure: spreadPressure, isTarget
                 });
             } catch (err) {
-                // Fallback de segurança se falhar individualmente na rede
                 assetData.push({
-                    s, p: 150.00, pct: 0.50, spread: 0.20, rsi: "50", vol: "10M", pressure: "ESTÁVEL", isTarget: false
+                    s, p: precoBaseLocal, pct: 0.00, spread: 0.10, rsi: "50", vol: "5M", volNum: 5, pressure: "ESTÁVEL", isTarget: false
                 });
             }
         }
@@ -325,65 +384,4 @@
                 let showCard = true;
                 if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
                 if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
-
-                card.style.display = showCard ? 'flex' : 'none';
-
-                const isPos = asset.pct >= 0;
-                document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
-                
-                const priceEl = document.getElementById(`pr-${asset.s}`);
-                priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: asset.p < 1 ? 4 : 2, maximumFractionDigits: asset.p < 1 ? 4 : 2});
-                priceEl.setAttribute('onclick', `copyPrice(${asset.p}, '${asset.s}')`);
-
-                document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
-                
-                const rsiEl = document.getElementById(`rsi-${asset.s}`);
-                rsiEl.innerText = `RSI: ${asset.rsi}`;
-                rsiEl.style.color = asset.rsi > 70 ? '#ff3e3e' : '#00ff88';
-
-                document.getElementById(`vol-${asset.s}`).innerText = `VOL: ${asset.vol}`;
-
-                const pctEl = document.getElementById(`pct-${asset.s}`);
-                pctEl.innerText = (isPos ? '+' : '') + asset.pct.toFixed(2) + "%";
-                pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
-
-                const tagEl = document.getElementById(`tag-${asset.s}`);
-                if (asset.isTarget) {
-                    tagEl.innerText = "ENTRA | ALVO"; 
-                    tagEl.style.color = "var(--green-nitido)";
-                    card.classList.add('pulse');
-                } else {
-                    tagEl.innerText = "PULA / AGUARDA"; 
-                    tagEl.style.color = "#444";
-                    card.classList.remove('pulse');
-                }
-            }
-        });
-
-        document.getElementById('mkt-status').innerText = "VIVO | QUANTUM LOCK";
-    }
-
-    function toggle(id) {
-        const c = document.getElementById(`card-${id}`);
-        c.classList.toggle('open');
-        const containerId = `tv-${id}`;
-        if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
-            new TradingView.widget({
-                "autosize": true, "symbol": "BINANCE:" + id + "USDT",
-                "interval": "1", "theme": "dark", "container_id": containerId,
-                "hide_side_toolbar": true, "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
-            });
-        }
-    }
-
-    // Inicializa imediatamente os elementos visuais na tela
-    renderInitialCards();
-    
-    // Tenta sincronizar em segundo plano com timeout rápido
-    sync();
-    setInterval(sync, 5000);
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-</script>
-</body>
-</html>
-
+            
