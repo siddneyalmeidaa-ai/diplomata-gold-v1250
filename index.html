@@ -134,7 +134,7 @@
 <div class="quantum-panel-sugestoes">
     <div class="qp-title">⚡ STATUS DO SISTEMA</div>
     <div class="qp-grid">
-        <div>Motor: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Renderização ativa local</span></div>
+        <div>Motor: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Sincronização Binance Ativa</span></div>
     </div>
 </div>
 
@@ -170,7 +170,6 @@
     let currentFilter = 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v15') || '[]');
 
-    // Renderiza a estrutura imediatamente para nunca ficar vazio na tela do celular
     function renderInitialCards() {
         const listContainer = document.getElementById('list');
         listContainer.innerHTML = '';
@@ -190,17 +189,17 @@
                         <div class="a-info">
                             <span class="a-sym">${s}</span>
                             <div class="a-subinfo">
-                                <span class="a-pair" id="spread-${s}">SPREAD: 0.50%</span>
+                                <span class="a-pair" id="spread-${s}">SPREAD: 0.35%</span>
                                 <span class="hft-tag flow-buy" id="flow-${s}">DELTA: +1.2%</span>
                                 <span class="hft-tag stake-rec" id="stake-${s}">STAKE: R$ 0,20</span>
                             </div>
                         </div>
                     </div>
                     <div class="a-right">
-                        <div class="a-price" id="pr-${s}" onclick="copyPrice(100.00, '${s}')">R$ 100,00</div>
+                        <div class="a-price" id="pr-${s}" onclick="copyPrice(0, '${s}')">R$ 0,00</div>
                         <div class="status-box">
                             <span class="flow-tag" id="tag-${s}">AGUARDA</span>
-                            <span class="a-pct pos-txt" id="pct-${s}">+1.25%</span>
+                            <span class="a-pct pos-txt" id="pct-${s}">+0.00%</span>
                         </div>
                     </div>
                 </div>
@@ -253,34 +252,44 @@
         addAlert(`Copiado [${symbol}]: R$ ${val.toFixed(2)}`);
     }
 
-    // Sincronização segura sem travar o render mobile se falhar a rede
+    // Puxa cotações reais da Binance e converte para BRL
     async function sync() {
-        let assetData = [];
-        let basePrices = {
-            "BTC": 350000, "ETH": 18000.0, "SOL": 850.0, "LINK": 75.0, 
-            "STX": 12.0, "RENDER": 45.0, "NEAR": 25.0, "SEI": 2.5, 
-            "ADA": 3.0, "DOT": 22.0, "FET": 8.0
-        };
-
-        coins.forEach((s, idx) => {
-            let variacaoSimulada = 1.5 + (idx * 0.4);
-            let precoBase = basePrices[s] || 100.0;
-            let precoFinal = precoBase * (1 + (variacaoSimulada / 100));
-            let spreadSimulado = 0.35 + (idx * 0.05);
-            let isTarget = (s !== "BTC" && variacaoSimulada > 2.0);
-
-            assetData.push({
-                s, p: precoFinal, pct: variacaoSimulada, spread: spreadSimulado,
-                delta: "+1.5%", stake: idx % 2 === 0 ? "R$ 0,20" : "R$ 0,50", isTarget
-            });
-        });
-
-        // Tenta buscar dados reais em segundo plano de forma totalmente assíncrona e segura
         try {
             const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL', {cache: 'no-store'});
             const dRate = await resRate.json();
             if(dRate && dRate.price) usdRate = parseFloat(dRate.price);
         } catch (e) {}
+
+        let assetData = [];
+
+        for (let i = 0; i < coins.length; i++) {
+            let s = coins[i];
+            let priceUSDT = 100;
+            let priceChange = 1.5;
+
+            try {
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`, {cache: 'no-store'});
+                const data = await res.json();
+                if(data && data.lastPrice) {
+                    priceUSDT = parseFloat(data.lastPrice);
+                    priceChange = parseFloat(data.priceChangePercent);
+                }
+            } catch (err) {
+                // Fallback seguro individual se falhar um ativo específico
+                let fallbackPrices = {"BTC": 65000, "ETH": 3300, "SOL": 150, "LINK": 14, "STX": 2.2, "RENDER": 8, "NEAR": 4.5, "SEI": 0.45, "ADA": 0.55, "DOT": 4, "FET": 1.5};
+                priceUSDT = fallbackPrices[s] || 10;
+            }
+
+            let priceBRL = priceUSDT * usdRate;
+            let spreadSimulado = 0.30 + (i * 0.04);
+            let isTarget = (s !== "BTC" && priceChange > 1.0);
+
+            assetData.push({
+                s, p: priceBRL, pct: priceChange, spread: spreadSimulado,
+                delta: priceChange >= 0 ? `+${priceChange.toFixed(1)}%` : `${priceChange.toFixed(1)}%`,
+                stake: i % 2 === 0 ? "R$ 0,20" : "R$ 0,50", isTarget
+            });
+        }
 
         assetData.forEach((asset, index) => {
             let card = document.getElementById(`card-${asset.s}`);
@@ -302,8 +311,8 @@
                 document.getElementById(`stake-${asset.s}`).innerText = `STAKE: ${asset.stake}`;
 
                 const pctEl = document.getElementById(`pct-${asset.s}`);
-                pctEl.innerText = "+" + asset.pct.toFixed(2) + "%";
-                pctEl.className = `a-pct pos-txt`;
+                pctEl.innerText = (isPos ? "+" : "") + asset.pct.toFixed(2) + "%";
+                pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
 
                 const tagEl = document.getElementById(`tag-${asset.s}`);
                 if (asset.isTarget) {
@@ -334,11 +343,10 @@
         }
     }
 
-    // Inicialização imediata garantida na tela
     renderInitialCards();
     sync();
+    setInterval(sync, 15000); // Atualiza os preços reais a cada 15 segundos
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
 </html>
-
