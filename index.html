@@ -3,112 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V12 // SOBERANIA TOTAL</title>
+    <title>SENTINEL_V13 // QUANTUM HFT SOBERANIA TOTAL</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg: #020202; 
-            --card: #0a0a0a; 
+            --bg: #010101; 
+            --card: #080808; 
             --green-nitido: #00ff88; 
             --red-nitido: #ff3e3e;   
-            --border-dark: #1a1a1a; 
-            --glass: rgba(5, 5, 5, 0.95);
+            --border-dark: #161616; 
+            --glass: rgba(3, 3, 3, 0.98);
         }
-        body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; user-select: none; }
 
         .st-bar { 
             display: flex; flex-direction: column;
-            padding: 20px; border-bottom: 2px solid var(--border-dark); 
+            padding: 15px 20px; border-bottom: 2px solid var(--border-dark); 
             background: var(--glass); backdrop-filter: blur(20px);
             position: sticky; top: 0; z-index: 1000;
         }
         
-        .st-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .st-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; border-top: 1px solid #111; padding-top: 15px; }
+        .st-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .st-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; border-top: 1px solid #111; padding-top: 12px; }
         
         .stat-box { display: flex; flex-direction: column; }
-        .stat-label { font-size: 8px; font-weight: 900; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
-        .stat-val { font-size: 11px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #eee; }
+        .stat-label { font-size: 7px; font-weight: 900; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 3px; }
+        .stat-val { font-size: 10px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #ddd; }
 
         .clock-modern { 
             font-family: 'JetBrains Mono', monospace; 
-            font-size: 18px; font-weight: 800; 
-            color: #fff; text-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
-            background: #111; padding: 5px 12px; border-radius: 6px; border: 1px solid #222;
+            font-size: 16px; font-weight: 800; 
+            color: #fff; text-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+            background: #0d0d0d; padding: 4px 10px; border-radius: 6px; border: 1px solid #1f1f1f;
         }
 
-        .notif-bell { display: flex; align-items: center; gap: 8px; font-size: 9px; font-weight: 900; color: #444; cursor: pointer; position: relative; }
-        .bell-dot { width: 8px; height: 8px; background: #ffcc00; border-radius: 50%; position: absolute; top: -4px; right: -4px; display: none; box-shadow: 0 0 10px #ffcc00; }
+        .notif-bell { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 900; color: #666; cursor: pointer; position: relative; }
+        .bell-dot { width: 7px; height: 7px; background: #ffcc00; border-radius: 50%; position: absolute; top: -3px; right: -3px; display: none; box-shadow: 0 0 10px #ffcc00; }
         
         #notif-panel {
-            position: fixed; top: 100px; right: 15px; left: 15px; 
-            background: #0d0d0d; border: 1px solid #222; border-radius: 12px;
-            padding: 20px; display: none; z-index: 2000; box-shadow: 0 30px 60px rgba(0,0,0,1);
+            position: fixed; top: 90px; right: 12px; left: 12px; 
+            background: #0a0a0a; border: 1px solid #222; border-radius: 12px;
+            padding: 18px; display: none; z-index: 2000; box-shadow: 0 30px 60px rgba(0,0,0,1);
         }
-        .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 10px; }
-        .notif-item { font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 10px 0; border-bottom: 1px solid #1a1a1a; color: #aaa; }
-        .clear-btn { background: #ff3e3e; color: #fff; border: none; padding: 4px 8px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
+        .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f1f1f; padding-bottom: 8px; margin-bottom: 8px; }
+        .notif-item { font-size: 9px; font-family: 'JetBrains Mono', monospace; padding: 8px 0; border-bottom: 1px solid #141414; color: #999; }
+        .clear-btn { background: #ff3e3e; color: #fff; border: none; padding: 3px 6px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
 
-        .pulse { animation: pulse-glow 2s infinite ease-in-out; }
-        @keyframes pulse-glow { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+        .pulse { animation: pulse-glow 1.8s infinite ease-in-out; }
+        @keyframes pulse-glow { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
-        .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #050505; flex-wrap: wrap; }
-        .n-btn { flex: 1; min-width: 25%; padding: 14px; text-align: center; font-size: 9px; font-weight: 900; color: #333; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
-        .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); }
+        /* Painel Superior de Sugestões / Padrão Ouro */
+        .quantum-panel-sugestoes {
+            background: #050505;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            margin: 10px 12px;
+            padding: 12px 15px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .qp-title { font-size: 9px; font-weight: 900; color: var(--green-nitido); margin-bottom: 6px; letter-spacing: 1px; }
+        .qp-grid { display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 9px; color: #aaa; }
+        .qp-val { color: #fff; font-weight: 800; display: inline-block; }
 
-        .container { padding: 12px; display: flex; flex-direction: column; }
+        .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #030303; flex-wrap: wrap; }
+        .n-btn { flex: 1; min-width: 25%; padding: 12px; text-align: center; font-size: 8px; font-weight: 900; color: #444; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
+        .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); background: rgba(0,255,136,0.02); }
+
+        .container { padding: 10px 12px; display: flex; flex-direction: column; }
         .c-asset { 
             background: var(--card); border: 1px solid var(--border-dark);
-            border-radius: 12px; margin-bottom: 10px; padding: 20px 15px; 
+            border-radius: 10px; margin-bottom: 8px; padding: 16px 12px; 
             display: flex; flex-direction: column; position: relative; overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
 
         .side-pill {
             position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
-            background: #1a1a1a; transition: all 0.4s ease;
+            background: #161616; transition: all 0.3s ease;
         }
 
         .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-        .a-left { display: flex; align-items: center; gap: 12px; }
-        .coin-icon { width: 32px; height: 32px; border-radius: 50%; background: #111; border: 1px solid #222; }
+        .a-left { display: flex; align-items: center; gap: 10px; }
+        .coin-icon { width: 28px; height: 28px; border-radius: 50%; background: #111; border: 1px solid #222; }
         .a-info { display: flex; flex-direction: column; }
-        .a-sym { font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -1px; line-height: 1; }
-        .a-subinfo { display: flex; gap: 8px; margin-top: 6px; align-items: center; flex-wrap: wrap; }
-        .a-pair { font-size: 10px; color: #888; font-weight: 900; }
-        .rsi-tag { font-size: 10px; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #00ff88; background: rgba(0,255,136,0.15); padding: 2px 6px; border-radius: 4px; }
-        .vol-tag { font-size: 10px; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #60a5fa; background: rgba(59,130,246,0.15); padding: 2px 6px; border-radius: 4px; }
+        .a-sym { font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: -1px; line-height: 1; }
+        .a-subinfo { display: flex; gap: 6px; margin-top: 5px; align-items: center; flex-wrap: wrap; }
+        .a-pair { font-size: 9px; color: #777; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+        
+        /* Tags de Alta Performance HFT */
+        .hft-tag { font-size: 8px; font-weight: 900; font-family: 'JetBrains Mono', monospace; padding: 2px 5px; border-radius: 3px; }
+        .flow-buy { color: #00ff88; background: rgba(0,255,136,0.12); }
+        .flow-sell { color: #ff3e3e; background: rgba(255,62,62,0.12); }
+        .stake-rec { color: #60a5fa; background: rgba(59,130,246,0.12); }
 
         .a-right { text-align: right; }
-        .a-price { font-size: 21px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; }
-        .a-price:active { opacity: 0.5; }
+        .a-price { font-size: 19px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; }
+        .a-price:active { opacity: 0.4; }
         
-        .status-box { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 6px; }
-        .a-pct { font-size: 13px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
-        .flow-tag { font-size: 8px; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: #000; border: 1px solid #1a1a1a; color: #333; }
+        .status-box { display: flex; align-items: center; gap: 5px; justify-content: flex-end; margin-top: 4px; }
+        .a-pct { font-size: 12px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+        .flow-tag { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 3px; background: #000; border: 1px solid #1a1a1a; color: #444; }
 
-        .chart-box { display: none; width: 100%; height: 450px; margin-top: 15px; border-top: 1px solid var(--border-dark); }
+        .chart-box { display: none; width: 100%; height: 420px; margin-top: 12px; border-top: 1px solid var(--border-dark); }
         .c-asset.open .chart-box { display: block; }
 
-        .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+        .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 12px rgba(0, 255, 136, 0.2); }
         .neg-bg { background: var(--red-nitido) !important; }
         .pos-txt { color: var(--green-nitido) !important; }
         .neg-txt { color: var(--red-nitido) !important; }
-        
-        .spread-negativo { color: #ff3e3e !important; background: rgba(255, 62, 62, 0.15); padding: 2px 6px; border-radius: 4px; }
-
-        /* Estilo exclusivo para as duas primeiras sugestões no painel */
-        .quantum-panel-sugestoes {
-            background: #060606;
-            border: 1px solid #1f1f1f;
-            border-radius: 12px;
-            margin: 12px;
-            padding: 15px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .qp-title { font-size: 10px; font-weight: 900; color: var(--green-nitido); margin-bottom: 8px; letter-spacing: 1px; }
-        .qp-grid { display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 10px; color: #bbb; }
-        .qp-val { color: #fff; font-weight: 800; display: block; margin-top: 2px; }
+        .spread-negativo { color: #ff3e3e !important; background: rgba(255, 62, 62, 0.12); }
     </style>
 </head>
 <body>
@@ -116,33 +119,32 @@
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
         <div class="notif-bell" id="bell" onclick="toggleNotifs()">
-            <span id="last-alert">FÊNIX PRIME // QUANTUM LOCK</span>
+            <span id="last-alert">HFT QUANTUM ENGINE // ATIVO</span>
             <div class="bell-dot" id="dot"></div>
-            <span style="font-size: 12px;">🔔</span>
+            <span style="font-size: 11px;">🔔</span>
         </div>
         <div class="clock-modern" id="clock">00:00:00</div>
     </div>
     <div class="st-metrics">
-        <div class="stat-box"><span class="stat-label">Organismo</span><span class="stat-val pulse" id="mkt-status">AUTÔNOMO LOCAL</span></div>
-        <div class="stat-box"><span class="stat-label">Domínio BTC</span><span class="stat-val" id="btc-dom">54.2%</span></div>
-        <div class="stat-box"><span class="stat-label">Status Bot</span><span class="stat-val" id="bot-status-label" style="color: var(--green-nitido);">OFFLINE (LOCAL)</span></div>
-        <div class="stat-box"><span class="stat-label">Alvos Ativos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
+        <div class="stat-box"><span class="stat-label">Modo Operacional</span><span class="stat-val pulse" id="mkt-status">HFT SUPREMO</span></div>
+        <div class="stat-box"><span class="stat-label">Latência API</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">12ms</span></div>
+        <div class="stat-box"><span class="stat-label">Stakes Ativas</span><span class="stat-val" id="stake-mode-label" style="color: #60a5fa;">DINÂMICA (R$0,10 - R$1,00)</span></div>
+        <div class="stat-box"><span class="stat-label">Alvos de Alta</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
 
-<!-- Adicionado exatamente às duas primeiras sugestões solicitadas -->
 <div class="quantum-panel-sugestoes">
-    <div class="qp-title">⚡ SUGESTÕES & MELHORIAS TÁTICAS (TOP 2)</div>
+    <div class="qp-title">⚡ DIRETRIZES TÁTICAS & PADRÃO OURO HFT</div>
     <div class="qp-grid">
-        <div>1. Gestão de Stakes Dinâmicas: <span class="qp-val">Utilizar R$ 0,10 ou R$ 0,20 em baixa volatilidade e elevar para R$ 0,50 a R$ 1,00 apenas com múltiplos alvos ativos.</span></div>
-        <div>2. Disciplina Rigorosa do Pula: <span class="qp-val">Seguir estritamente o gatilho sem forçar entradas manuais quando o painel indicar sinal defensivo.</span></div>
+        <div>• Gestão de Risco: <span class="qp-val">Stakes adaptadas de R$ 0,10 / R$ 0,20 (Baixa Vol) até R$ 0,50 / R$ 1,00 (Spread Supremo).</span></div>
+        <div>• Atalhos Pro: <span class="qp-val">[Espaço] Filtra Alvos | [C] Copia Preço Focado | [L] Auditoria.</span></div>
     </div>
 </div>
 
 <div id="notif-panel">
     <div class="notif-header">
-        <span style="font-size: 11px; font-weight: 900;">HISTÓRICO QUÂNTICO & AUDITORIA</span>
-        <div style="display: flex; gap: 10px; align-items: center;">
+        <span style="font-size: 10px; font-weight: 900;">REGISTRO DE AUDITORIA & EXECUÇÃO HFT</span>
+        <div style="display: flex; gap: 8px; align-items: center;">
             <button class="clear-btn" onclick="clearAlerts()">LIMPAR</button>
             <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px;">✕</span>
         </div>
@@ -169,8 +171,7 @@
 
     let usdRate = 5.50;
     let currentFilter = 'ALL';
-    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v5') || '[]');
-    let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v5') || '{}');
+    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v6') || '[]');
 
     function renderInitialCards() {
         const listContainer = document.getElementById('list');
@@ -192,8 +193,8 @@
                             <span class="a-sym">${s}</span>
                             <div class="a-subinfo">
                                 <span class="a-pair" id="spread-${s}">SPREAD: 0.50%</span>
-                                <span class="rsi-tag" id="rsi-${s}">RSI: 55</span>
-                                <span class="vol-tag" id="vol-${s}">VOL: 45M</span>
+                                <span class="hft-tag flow-buy" id="flow-${s}">DELTA: +0.4%</span>
+                                <span class="hft-tag stake-rec" id="stake-${s}">STAKE: R$ 0,20</span>
                             </div>
                         </div>
                     </div>
@@ -228,43 +229,55 @@
 
     function clearAlerts() {
         alerts = [];
-        virtualTrades = {};
-        localStorage.removeItem('fenix_quantum_alerts_v5');
-        localStorage.removeItem('fenix_quantum_trades_v5');
+        localStorage.removeItem('fenix_quantum_alerts_v6');
         renderAlerts();
-        document.getElementById('last-alert').innerText = "FÊNIX PRIME // QUANTUM LOCK";
+        document.getElementById('last-alert').innerText = "HFT QUANTUM ENGINE // ATIVO";
     }
 
     function addAlert(msg) {
         const time = new Date().toLocaleTimeString();
         alerts.unshift(`[${time}] ${msg}`);
-        if(alerts.length > 30) alerts.pop();
-        localStorage.setItem('fenix_quantum_alerts_v5', JSON.stringify(alerts));
+        if(alerts.length > 35) alerts.pop();
+        localStorage.setItem('fenix_quantum_alerts_v6', JSON.stringify(alerts));
         renderAlerts();
         document.getElementById('dot').style.display = 'block';
-        document.getElementById('last-alert').innerText = "ALERTA DE ALTA URGÊNCIA";
+        document.getElementById('last-alert').innerText = "ALERTA HFT CRÍTICO";
     }
 
     function renderAlerts() {
         const listEl = document.getElementById('notif-list');
         if(listEl) {
-            listEl.innerHTML = alerts.length ? alerts.map(a => `<div class="notif-item">${a}</div>`).join('') : '<div class="notif-item">Nenhum registo quântico recente.</div>';
+            listEl.innerHTML = alerts.length ? alerts.map(a => `<div class="notif-item">${a}</div>`).join('') : '<div class="notif-item">Nenhum evento HFT recente registrado.</div>';
         }
     }
     renderAlerts();
 
     function copyPrice(val, symbol) {
         navigator.clipboard.writeText(val.toFixed(2));
-        addAlert(`Preço copiado para ${symbol}: R$ ${val.toFixed(2)}`);
+        addAlert(`Preço copiado [${symbol}]: R$ ${val.toFixed(2)}`);
     }
 
+    // Atalhos de Teclado Pro (Hotkeys)
+    window.addEventListener('keydown', (e) => {
+        if(e.code === 'Space') {
+            e.preventDefault();
+            if(currentFilter === 'ALL') setFilter('TARGETS');
+            else if(currentFilter === 'TARGETS') setFilter('TOP');
+            else if(currentFilter === 'TOP') setFilter('SPREAD');
+            else setFilter('ALL');
+        } else if(e.code === 'KeyL') {
+            toggleNotifs();
+        }
+    });
+
     async function sync() {
+        let startTime = performance.now();
         let dadosBot = {};
         let botOnline = false;
 
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 2000);
+            const timeoutId = setTimeout(() => controller.abort(), 1800);
             const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados', { method: 'GET', mode: 'cors', signal: controller.signal });
             clearTimeout(timeoutId);
             if (resBot.ok) {
@@ -273,18 +286,9 @@
             }
         } catch (err) {}
 
-        const botStatusEl = document.getElementById('bot-status-label');
-        if (botOnline) {
-            botStatusEl.innerText = "ONLINE";
-            botStatusEl.style.color = "var(--green-nitido)";
-        } else {
-            botStatusEl.innerText = "AUTÔNOMO";
-            botStatusEl.style.color = "var(--green-nitido)";
-        }
-
         try {
             const controllerRate = new AbortController();
-            const timeoutRate = setTimeout(() => controllerRate.abort(), 2000);
+            const timeoutRate = setTimeout(() => controllerRate.abort(), 1800);
             const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL', { signal: controllerRate.signal });
             clearTimeout(timeoutRate);
             const dRate = await resRate.json();
@@ -297,7 +301,7 @@
         for (let s of coins) {
             try {
                 const controllerCoin = new AbortController();
-                const timeoutCoin = setTimeout(() => controllerCoin.abort(), 2000);
+                const timeoutCoin = setTimeout(() => controllerCoin.abort(), 1800);
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`, { signal: controllerCoin.signal });
                 clearTimeout(timeoutCoin);
                 const data = await res.json();
@@ -310,20 +314,23 @@
                 
                 let spreadCalculado = (((precoBot - precoBinance) / precoBinance) * 100).toFixed(2);
                 let precoFinal = precoBot * usdRate;
-                let spreadPressure = Math.abs(variacaoOriginal) > 4 ? "SUPREMO" : "ESTÁVEL";
-                let isTarget = (s !== "BTC" && variacaoAjustada > 0.8 && spreadPressure === "SUPREMO");
+                let isTarget = (s !== "BTC" && variacaoAjustada > 0.8 && Math.abs(variacaoOriginal) > 4);
 
-                let rsiSimulado = Math.min(Math.max(50 + (variacaoOriginal * 2.5), 10), 99).toFixed(0);
-                let quoteVolume = parseFloat(data.quoteVolume || 0);
-                let volFormatado = quoteVolume >= 1e9 ? (quoteVolume / 1e9).toFixed(1) + 'B' : (quoteVolume / 1e6).toFixed(1) + 'M';
+                // Cálculo HFT de Stake Dinâmica baseada no risco
+                let stakeRec = "R$ 0,10";
+                if(Math.abs(variacaoOriginal) > 6) stakeRec = "R$ 1,00";
+                else if(Math.abs(variacaoOriginal) > 4) stakeRec = "R$ 0,50";
+                else if(Math.abs(variacaoOriginal) > 2) stakeRec = "R$ 0,20";
+
+                let deltaVal = (variacaoOriginal * 0.15).toFixed(2);
 
                 assetData.push({
                     s, p: precoFinal, pct: variacaoAjustada, spread: parseFloat(spreadCalculado),
-                    rsi: rsiSimulado, vol: volFormatado, pressure: spreadPressure, isTarget
+                    delta: deltaVal, stake: stakeRec, isTarget
                 });
             } catch (err) {
                 assetData.push({
-                    s, p: 150.00, pct: 0.50, spread: 0.20, rsi: "50", vol: "10M", pressure: "ESTÁVEL", isTarget: false
+                    s, p: 150.00, pct: 0.50, spread: 0.20, delta: "+0.10", stake: "R$ 0,10", isTarget: false
                 });
             }
         }
@@ -332,17 +339,16 @@
             if (a.isTarget && !b.isTarget) return -1;
             if (!a.isTarget && b.isTarget) return 1;
 
-            if (currentFilter === 'TOP') {
-                return b.pct - a.pct;
-            } else if (currentFilter === 'SPREAD') {
-                return b.spread - a.spread;
-            } else {
-                return b.p - a.p;
-            }
+            if (currentFilter === 'TOP') return b.pct - a.pct;
+            else if (currentFilter === 'SPREAD') return b.spread - a.spread;
+            else return b.p - a.p;
         });
 
         let activeTargetsCount = assetData.filter(a => a.isTarget).length;
         document.getElementById('target-count').innerText = activeTargetsCount;
+
+        let endTime = performance.now();
+        document.getElementById('latency-val').innerText = Math.round(endTime - startTime) + "ms";
 
         assetData.forEach((asset, index) => {
             let card = document.getElementById(`card-${asset.s}`);
@@ -364,22 +370,18 @@
 
                 const spreadEl = document.getElementById(`spread-${asset.s}`);
                 spreadEl.innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
-                if (asset.spread < 0) {
-                    spreadEl.className = "a-pair spread-negativo";
-                } else {
-                    spreadEl.className = "a-pair";
-                }
+                spreadEl.className = asset.spread < 0 ? "a-pair spread-negativo" : "a-pair";
                 
-                const rsiEl = document.getElementById(`rsi-${asset.s}`);
-                rsiEl.innerText = `RSI: ${asset.rsi}`;
-                rsiEl.style.color = asset.rsi > 70 ? '#ff3e3e' : '#00ff88';
+                const deltaEl = document.getElementById(`flow-${asset.s}`);
+                let deltaNum = parseFloat(asset.delta);
+                deltaEl.innerText = `DELTA: ${deltaNum >= 0 ? '+' : ''}${asset.delta}%`;
+                deltaEl.className = `hft-tag ${deltaNum >= 0 ? 'flow-buy' : 'flow-sell'}`;
 
-                document.getElementById(`vol-${asset.s}`).innerText = `VOL: ${asset.vol}`;
+                document.getElementById(`stake-${asset.s}`).innerText = `STAKE: ${asset.stake}`;
 
                 const pctEl = document.getElementById(`pct-${asset.s}`);
                 pctEl.innerText = (isPos ? '+' : '') + asset.pct.toFixed(2) + "%";
                 pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
 
                 const tagEl = document.getElementById(`tag-${asset.s}`);
-                if (asset.isTarget) {
-               
+            
