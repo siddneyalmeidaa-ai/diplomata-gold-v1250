@@ -164,6 +164,7 @@
         let usdRate = 5.50;
         let currentFilter = 'ALL';
         let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v19') || '[]');
+        let activeCharts = {};
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playBeep(type = 'success') {
@@ -221,7 +222,7 @@
                             </div>
                         </div>
                         <div class="a-right">
-                            <div class="a-price" id="pr-${s}">R$ 0,00</div>
+                            <div class="a-price" id="pr-${s}" onclick="copyPrice(window['price_${s}'] || 0, '${s}')">R$ 0,00</div>
                             <div class="status-box">
                                 <span class="flow-tag" id="tag-${s}">AGUARDA</span>
                                 <span class="a-pct pos-txt" id="pct-${s}">+0.00%</span>
@@ -234,12 +235,58 @@
             });
         }
 
+        function toggle(s) {
+            const card = document.getElementById(`card-${s}`);
+            if(!card) return;
+            const isOpen = card.classList.contains('open');
+            
+            document.querySelectorAll('.c-asset').forEach(c => c.classList.remove('open'));
+            
+            if(!isOpen) {
+                card.classList.add('open');
+                if(!activeCharts[s]) {
+                    try {
+                        activeCharts[s] = new TradingView.widget({
+                            "width": "100%",
+                            "height": "220",
+                            "symbol": `BINANCE:${s}USDT`,
+                            "interval": "1",
+                            "timezone": "Etc/UTC",
+                            "theme": "dark",
+                            "style": "1",
+                            "locale": "br",
+                            "toolbar_bg": "#f1f3f6",
+                            "enable_publishing": false,
+                            "hide_top_toolbar": true,
+                            "save_image": false,
+                            "container_id": `tv-${s}`
+                        });
+                    } catch(err) {}
+                }
+            }
+        }
+
         function setFilter(filter) {
             currentFilter = filter;
             document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
             document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
             document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
             document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
+            
+            coins.forEach(s => {
+                const card = document.getElementById(`card-${s}`);
+                if(!card) return;
+                let show = true;
+                const isTarget = card.dataset.target === "true";
+                const isTop = card.dataset.top === "true";
+                const isSpread = card.dataset.spread === "true";
+
+                if(filter === 'TARGETS' && !isTarget) show = false;
+                if(filter === 'TOP' && !isTop) show = false;
+                if(filter === 'SPREAD' && !isSpread) show = false;
+
+                card.style.display = show ? 'flex' : 'none';
+            });
         }
 
         function toggleNotifs() {
@@ -310,48 +357,4 @@
                         <div class="advisor-card" style="border-left-color: ${color};">
                             <div class="advisor-header">
                                 <span>[${a.dateTimeStr}] // ${a.symbol || 'SYS'}</span>
-                                <span style="color: ${color};">${a.level}</span>
-                            </div>
-                            <div class="advisor-body"><strong>Análise:</strong> ${a.analysis}</div>
-                            <div class="advisor-action">👉 O QUE FAZER: ${a.action}</div>
-                        </div>
-                    `;
-                }).join('');
-            }
-        }
-
-        function exportLogs(type) {
-            if (!alerts.length) return alert('Sem dados para exportar.');
-            let dataStr = "", fileName = `consultor_sentinel_${Date.now()}`;
-            if (type === 'json') {
-                dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(alerts, null, 2));
-                fileName += ".json";
-            } else {
-                let csvContent = "DateTime,Symbol,Level,Message,Action\n";
-                alerts.forEach(a => {
-                    csvContent += `"${a.dateTimeStr}","${a.symbol || ''}","${a.level}","${a.message}","${a.action}"\n`;
-                });
-                dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
-                fileName += ".csv";
-            }
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", fileName);
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        window.onload = () => {
-            renderInitialCards();
-            renderAlerts();
-            setInterval(() => {
-                const now = new Date();
-                const clockEl = document.getElementById('clock');
-                if(clockEl) clockEl.innerText = now.toLocaleTimeString('pt-BR');
-            }, 1000);
-        };
-    </script>
-</body>
-</html>
-
+                               
