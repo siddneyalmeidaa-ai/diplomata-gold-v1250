@@ -95,7 +95,6 @@
         .pos-txt { color: var(--green-nitido) !important; }
         .neg-txt { color: var(--red-nitido) !important; }
         
-        /* Nova blindagem visual para spread negativo */
         .spread-negativo { color: #ff3e3e !important; background: rgba(255, 62, 62, 0.15); padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
@@ -151,7 +150,6 @@
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v5') || '[]');
     let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v5') || '{}');
 
-    // Renderização imediata garantida na tela (mesmo sem internet)
     function renderInitialCards() {
         const listContainer = document.getElementById('list');
         listContainer.innerHTML = '';
@@ -302,14 +300,12 @@
                     rsi: rsiSimulado, vol: volFormatado, pressure: spreadPressure, isTarget
                 });
             } catch (err) {
-                // Fallback de segurança se falhar individualmente na rede
                 assetData.push({
                     s, p: 150.00, pct: 0.50, spread: 0.20, rsi: "50", vol: "10M", pressure: "ESTÁVEL", isTarget: false
                 });
             }
         }
 
-        // Filtro Automático Avançado: Se o status for PULA / AGUARDA com RSI fraco, desloca para o final da lista (priorizando ENTRA no topo)
         assetData.sort((a, b) => {
             if (a.isTarget && !b.isTarget) return -1;
             if (!a.isTarget && b.isTarget) return 1;
@@ -344,7 +340,6 @@
                 priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: asset.p < 1 ? 4 : 2, maximumFractionDigits: asset.p < 1 ? 4 : 2});
                 priceEl.setAttribute('onclick', `copyPrice(${asset.p}, '${asset.s}')`);
 
-                // Blindagem de cores para o Spread (destacando negativos com tom avermelhado forte)
                 const spreadEl = document.getElementById(`spread-${asset.s}`);
                 spreadEl.innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
                 if (asset.spread < 0) {
@@ -385,4 +380,16 @@
         const containerId = `tv-${id}`;
         if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
             new TradingView.widget({
-                "autosize": true, "sy
+                "autosize": true, "symbol": "BINANCE:" + id + "USDT",
+                "interval": "30", "theme": "dark", "container_id": containerId,
+                "hide_side_toolbar": true, "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
+            });
+        }
+    }
+
+    renderInitialCards();
+    sync();
+    setInterval(sync, 5000);
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+</script>
+<
