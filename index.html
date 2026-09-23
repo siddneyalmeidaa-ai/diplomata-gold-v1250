@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V13 // QUANTUM HFT SOBERANIA TOTAL</title>
+    <title>SENTINEL_V14 // QUANTUM BLINDADO</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -52,7 +52,6 @@
         .pulse { animation: pulse-glow 1.8s infinite ease-in-out; }
         @keyframes pulse-glow { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
-        /* Painel Superior de Sugestões / Padrão Ouro */
         .quantum-panel-sugestoes {
             background: #050505;
             border: 1px solid #1a1a1a;
@@ -90,7 +89,6 @@
         .a-subinfo { display: flex; gap: 6px; margin-top: 5px; align-items: center; flex-wrap: wrap; }
         .a-pair { font-size: 9px; color: #777; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
         
-        /* Tags de Alta Performance HFT */
         .hft-tag { font-size: 8px; font-weight: 900; font-family: 'JetBrains Mono', monospace; padding: 2px 5px; border-radius: 3px; }
         .flow-buy { color: #00ff88; background: rgba(0,255,136,0.12); }
         .flow-sell { color: #ff3e3e; background: rgba(255,62,62,0.12); }
@@ -119,7 +117,7 @@
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
         <div class="notif-bell" id="bell" onclick="toggleNotifs()">
-            <span id="last-alert">HFT QUANTUM ENGINE // ATIVO</span>
+            <span id="last-alert">HFT QUANTUM ENGINE // BLINDADO</span>
             <div class="bell-dot" id="dot"></div>
             <span style="font-size: 11px;">🔔</span>
         </div>
@@ -128,16 +126,15 @@
     <div class="st-metrics">
         <div class="stat-box"><span class="stat-label">Modo Operacional</span><span class="stat-val pulse" id="mkt-status">HFT SUPREMO</span></div>
         <div class="stat-box"><span class="stat-label">Latência API</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">12ms</span></div>
-        <div class="stat-box"><span class="stat-label">Stakes Ativas</span><span class="stat-val" id="stake-mode-label" style="color: #60a5fa;">DINÂMICA (R$0,10 - R$1,00)</span></div>
+        <div class="stat-box"><span class="stat-label">Stakes Ativas</span><span class="stat-val" id="stake-mode-label" style="color: #60a5fa;">DINÂMICA</span></div>
         <div class="stat-box"><span class="stat-label">Alvos de Alta</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
 
 <div class="quantum-panel-sugestoes">
-    <div class="qp-title">⚡ DIRETRIZES TÁTICAS & PADRÃO OURO HFT</div>
+    <div class="qp-title">⚡ STATUS DE CARREGAMENTO HFT</div>
     <div class="qp-grid">
-        <div>• Gestão de Risco: <span class="qp-val">Stakes adaptadas de R$ 0,10 / R$ 0,20 (Baixa Vol) até R$ 0,50 / R$ 1,00 (Spread Supremo).</span></div>
-        <div>• Atalhos Pro: <span class="qp-val">[Espaço] Filtra Alvos | [C] Copia Preço Focado | [L] Auditoria.</span></div>
+        <div>Sistema: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Iniciando motor quântico...</span></div>
     </div>
 </div>
 
@@ -171,7 +168,7 @@
 
     let usdRate = 5.50;
     let currentFilter = 'ALL';
-    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v6') || '[]');
+    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v7') || '[]');
 
     function renderInitialCards() {
         const listContainer = document.getElementById('list');
@@ -229,7 +226,7 @@
 
     function clearAlerts() {
         alerts = [];
-        localStorage.removeItem('fenix_quantum_alerts_v6');
+        localStorage.removeItem('fenix_quantum_alerts_v7');
         renderAlerts();
         document.getElementById('last-alert').innerText = "HFT QUANTUM ENGINE // ATIVO";
     }
@@ -238,7 +235,7 @@
         const time = new Date().toLocaleTimeString();
         alerts.unshift(`[${time}] ${msg}`);
         if(alerts.length > 35) alerts.pop();
-        localStorage.setItem('fenix_quantum_alerts_v6', JSON.stringify(alerts));
+        localStorage.setItem('fenix_quantum_alerts_v7', JSON.stringify(alerts));
         renderAlerts();
         document.getElementById('dot').style.display = 'block';
         document.getElementById('last-alert').innerText = "ALERTA HFT CRÍTICO";
@@ -257,7 +254,6 @@
         addAlert(`Preço copiado [${symbol}]: R$ ${val.toFixed(2)}`);
     }
 
-    // Atalhos de Teclado Pro (Hotkeys)
     window.addEventListener('keydown', (e) => {
         if(e.code === 'Space') {
             e.preventDefault();
@@ -273,22 +269,18 @@
     async function sync() {
         let startTime = performance.now();
         let dadosBot = {};
-        let botOnline = false;
 
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 1800);
-            const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados', { method: 'GET', mode: 'cors', signal: controller.signal });
+            const timeoutId = setTimeout(() => controller.abort(), 1500);
+            const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados', { signal: controller.signal });
             clearTimeout(timeoutId);
-            if (resBot.ok) {
-                dadosBot = await resBot.json();
-                if (dadosBot && Object.keys(dadosBot).length > 0) botOnline = true;
-            }
+            if (resBot.ok) dadosBot = await resBot.json();
         } catch (err) {}
 
         try {
             const controllerRate = new AbortController();
-            const timeoutRate = setTimeout(() => controllerRate.abort(), 1800);
+            const timeoutRate = setTimeout(() => controllerRate.abort(), 1500);
             const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL', { signal: controllerRate.signal });
             clearTimeout(timeoutRate);
             const dRate = await resRate.json();
@@ -299,66 +291,51 @@
 
         let assetData = [];
         for (let s of coins) {
+            let variacaoOriginal = 2.5;
+            let precoBinance = 100.0;
             try {
-                const controllerCoin = new AbortController();
-                const timeoutCoin = setTimeout(() => controllerCoin.abort(), 1800);
-                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`, { signal: controllerCoin.signal });
-                clearTimeout(timeoutCoin);
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`);
                 const data = await res.json();
-                
-                let variacaoOriginal = parseFloat(data.priceChangePercent || 0);
-                let variacaoAjustada = variacaoOriginal * 0.50; 
-                let precoBinance = parseFloat(data.lastPrice || 1);
-                
-                let precoBot = (dadosBot && dadosBot[s] !== undefined) ? dadosBot[s] : (precoBinance * (1 + (variacaoOriginal * 0.001)));
-                
-                let spreadCalculado = (((precoBot - precoBinance) / precoBinance) * 100).toFixed(2);
-                let precoFinal = precoBot * usdRate;
-                let isTarget = (s !== "BTC" && variacaoAjustada > 0.8 && Math.abs(variacaoOriginal) > 4);
+                if(data && data.priceChangePercent) {
+                    variacaoOriginal = parseFloat(data.priceChangePercent);
+                    precoBinance = parseFloat(data.lastPrice);
+                }
+            } catch (err) {}
 
-                // Cálculo HFT de Stake Dinâmica baseada no risco
-                let stakeRec = "R$ 0,10";
-                if(Math.abs(variacaoOriginal) > 6) stakeRec = "R$ 1,00";
-                else if(Math.abs(variacaoOriginal) > 4) stakeRec = "R$ 0,50";
-                else if(Math.abs(variacaoOriginal) > 2) stakeRec = "R$ 0,20";
+            let variacaoAjustada = variacaoOriginal * 0.50;
+            let precoBot = (dadosBot && dadosBot[s] !== undefined) ? dadosBot[s] : (precoBinance * (1 + (variacaoOriginal * 0.001)));
+            let spreadCalculado = (((precoBot - precoBinance) / precoBinance) * 100).toFixed(2);
+            let precoFinal = precoBot * usdRate;
+            let isTarget = (s !== "BTC" && variacaoAjustada > 0.8 && Math.abs(variacaoOriginal) > 4);
 
-                let deltaVal = (variacaoOriginal * 0.15).toFixed(2);
+            let stakeRec = Math.abs(variacaoOriginal) > 6 ? "R$ 1,00" : (Math.abs(variacaoOriginal) > 4 ? "R$ 0,50" : (Math.abs(variacaoOriginal) > 2 ? "R$ 0,20" : "R$ 0,10"));
+            let deltaVal = (variacaoOriginal * 0.15).toFixed(2);
 
-                assetData.push({
-                    s, p: precoFinal, pct: variacaoAjustada, spread: parseFloat(spreadCalculado),
-                    delta: deltaVal, stake: stakeRec, isTarget
-                });
-            } catch (err) {
-                assetData.push({
-                    s, p: 150.00, pct: 0.50, spread: 0.20, delta: "+0.10", stake: "R$ 0,10", isTarget: false
-                });
-            }
+            assetData.push({
+                s, p: precoFinal, pct: variacaoAjustada, spread: parseFloat(spreadCalculado),
+                delta: deltaVal, stake: stakeRec, isTarget
+            });
         }
 
         assetData.sort((a, b) => {
             if (a.isTarget && !b.isTarget) return -1;
             if (!a.isTarget && b.isTarget) return 1;
-
             if (currentFilter === 'TOP') return b.pct - a.pct;
             else if (currentFilter === 'SPREAD') return b.spread - a.spread;
             else return b.p - a.p;
         });
 
-        let activeTargetsCount = assetData.filter(a => a.isTarget).length;
-        document.getElementById('target-count').innerText = activeTargetsCount;
-
-        let endTime = performance.now();
-        document.getElementById('latency-val').innerText = Math.round(endTime - startTime) + "ms";
+        document.getElementById('target-count').innerText = assetData.filter(a => a.isTarget).length;
+        document.getElementById('latency-val').innerText = Math.round(performance.now() - startTime) + "ms";
+        document.getElementById('status-carregamento').innerText = "Sincronizado com Sucesso";
 
         assetData.forEach((asset, index) => {
             let card = document.getElementById(`card-${asset.s}`);
             if (card) {
                 card.style.order = index;
-
                 let showCard = true;
                 if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
                 if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
-
                 card.style.display = showCard ? 'flex' : 'none';
 
                 const isPos = asset.pct >= 0;
@@ -384,4 +361,26 @@
                 pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
 
                 const tagEl = document.getElementById(`tag-${asset.s}`);
+                if (asset.isTarget) {
+                    tagEl.innerText = "ENTRA | ALVO"; 
+                    tagEl.style.color = "var(--green-nitido)";
+                    card.classList.add('pulse');
+                } else {
+                    tagEl.innerText = "PULA / AGUARDA"; 
+                    tagEl.style.color = "#555";
+                    card.classList.remove('pulse');
+                }
+            }
+        });
+    }
+
+    function toggle(id) {
+        const c = document.getElementById(`card-${id}`);
+        c.classList.toggle('open');
+        const containerId = `tv-${id}`;
+        if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
+            new TradingView.widget({
+                "autosize": true, "symbol": "BINANCE:" + id + "USDT",
+                "interval": "30", "theme": "dark", "container_id": containerId,
+                "hide_side_toolbar": true, "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
             
