@@ -96,6 +96,19 @@
         .neg-txt { color: var(--red-nitido) !important; }
         
         .spread-negativo { color: #ff3e3e !important; background: rgba(255, 62, 62, 0.15); padding: 2px 6px; border-radius: 4px; }
+
+        /* Estilo exclusivo para as duas primeiras sugestões no painel */
+        .quantum-panel-sugestoes {
+            background: #060606;
+            border: 1px solid #1f1f1f;
+            border-radius: 12px;
+            margin: 12px;
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .qp-title { font-size: 10px; font-weight: 900; color: var(--green-nitido); margin-bottom: 8px; letter-spacing: 1px; }
+        .qp-grid { display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 10px; color: #bbb; }
+        .qp-val { color: #fff; font-weight: 800; display: block; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -114,6 +127,15 @@
         <div class="stat-box"><span class="stat-label">Domínio BTC</span><span class="stat-val" id="btc-dom">54.2%</span></div>
         <div class="stat-box"><span class="stat-label">Status Bot</span><span class="stat-val" id="bot-status-label" style="color: var(--green-nitido);">OFFLINE (LOCAL)</span></div>
         <div class="stat-box"><span class="stat-label">Alvos Ativos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
+    </div>
+</div>
+
+<!-- Adicionado exatamente às duas primeiras sugestões solicitadas -->
+<div class="quantum-panel-sugestoes">
+    <div class="qp-title">⚡ SUGESTÕES & MELHORIAS TÁTICAS (TOP 2)</div>
+    <div class="qp-grid">
+        <div>1. Gestão de Stakes Dinâmicas: <span class="qp-val">Utilizar R$ 0,10 ou R$ 0,20 em baixa volatilidade e elevar para R$ 0,50 a R$ 1,00 apenas com múltiplos alvos ativos.</span></div>
+        <div>2. Disciplina Rigorosa do Pula: <span class="qp-val">Seguir estritamente o gatilho sem forçar entradas manuais quando o painel indicar sinal defensivo.</span></div>
     </div>
 </div>
 
@@ -360,36 +382,4 @@
 
                 const tagEl = document.getElementById(`tag-${asset.s}`);
                 if (asset.isTarget) {
-                    tagEl.innerText = "ENTRA | ALVO"; 
-                    tagEl.style.color = "var(--green-nitido)";
-                    card.classList.add('pulse');
-                } else {
-                    tagEl.innerText = "PULA / AGUARDA"; 
-                    tagEl.style.color = "#444";
-                    card.classList.remove('pulse');
-                }
-            }
-        });
-
-        document.getElementById('mkt-status').innerText = "VIVO | QUANTUM LOCK";
-    }
-
-    function toggle(id) {
-        const c = document.getElementById(`card-${id}`);
-        c.classList.toggle('open');
-        const containerId = `tv-${id}`;
-        if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
-            new TradingView.widget({
-                "autosize": true, "symbol": "BINANCE:" + id + "USDT",
-                "interval": "30", "theme": "dark", "container_id": containerId,
-                "hide_side_toolbar": true, "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
-            });
-        }
-    }
-
-    renderInitialCards();
-    sync();
-    setInterval(sync, 5000);
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-</script>
-<
+               
