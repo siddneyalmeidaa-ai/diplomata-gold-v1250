@@ -53,8 +53,12 @@
         .c-asset.open { border-color: var(--accent-blue); background: var(--bg-card-hover); }
 
         .asset-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .a-left { display: flex; align-items: center; gap: 8px; }
-        .coin-icon { width: 22px; height: 22px; border-radius: 50%; }
+        .a-left { display: flex; align-items: center; gap: 10px; }
+        
+        /* Ajuste do ícone lado a lado com alinhamento perfeito */
+        .coin-icon-wrapper { display: flex; align-items: center; gap: 8px; min-width: 75px; }
+        .coin-icon { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
+        
         .a-info { display: flex; flex-direction: column; }
         .a-sym { font-size: 11px; font-weight: 800; color: var(--text-main); }
         .a-subinfo { display: flex; gap: 6px; align-items: center; margin-top: 2px; }
@@ -211,9 +215,11 @@
                     <div class="side-pill pos-bg" id="pill-${s}"></div>
                     <div class="asset-row">
                         <div class="a-left">
-                            <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[s]}-${s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${s}&background=111&color=fff'">
-                            <div class="a-info">
+                            <div class="coin-icon-wrapper">
+                                <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[s]}-${s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${s}&background=111&color=fff'">
                                 <span class="a-sym">${s}</span>
+                            </div>
+                            <div class="a-info">
                                 <div class="a-subinfo">
                                     <span class="a-pair" id="spread-${s}">SPREAD: 0.35%</span>
                                     <span class="hft-tag flow-buy" id="flow-${s}">DELTA: +1.2%</span>
@@ -352,9 +358,4 @@
                     let color = "var(--accent-blue)";
                     if(a.level === 'SUCCESS') color = "var(--green-nitido)";
                     if(a.level === 'WARN') color = "var(--accent-yellow)";
-                    
-                    return `
-                        <div class="advisor-card" style="border-left-color: ${color};">
-                            <div class="advisor-header">
-                                <span>[${a.dateTimeStr}] // ${a.symbol || 'SYS'}</span>
-                               
+                   
