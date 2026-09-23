@@ -152,189 +152,206 @@
         <button class="f-btn" id="btn-spread" onclick="setFilter('SPREAD')">🚀 SPREAD</button>
     </div>
 
-    <!-- CARDS FIXOS DIRETAMENTE NO HTML (NÃO DEPENDEM DE INJEÇÃO JS) -->
-    <div class="list" id="list">
-        <div id="card-BTC" class="c-asset" onclick="toggle('BTC')">
-            <div class="side-pill pos-bg" id="pill-BTC"></div>
-            <div class="asset-row">
-                <div class="a-left">
-                    <img class="coin-icon" src="https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=025">
-                    <div class="a-info">
-                        <span class="a-sym">BTC</span>
-                        <div class="a-subinfo">
-                            <span class="a-pair" id="spread-BTC">SPREAD: 0.30%</span>
-                            <span class="hft-tag flow-buy" id="flow-BTC">DELTA: +1.2%</span>
-                            <span class="hft-tag rsi-tag" id="rsi-BTC">RSI: 50.0</span>
+    <div class="list" id="list"></div>
+
+    <script>
+        const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER", "NEAR", "SEI", "ADA", "DOT", "FET"];
+        const logoMap = {
+            "BTC": "btc", "ETH": "eth", "SOL": "sol", "LINK": "link", "STX": "stx",
+            "RENDER": "rndr", "NEAR": "near", "SEI": "sei", "ADA": "ada", "DOT": "dot", "FET": "fet"
+        };
+
+        let usdRate = 5.50;
+        let currentFilter = 'ALL';
+        let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v19') || '[]');
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(type = 'success') {
+            try {
+                if(audioCtx.state === 'suspended') { audioCtx.resume(); }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if(type === 'success') {
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
+                    osc.frequency.setValueAtTime(1320, audioCtx.currentTime + 0.1); 
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.25);
+                    if(navigator.vibrate) navigator.vibrate([80, 50, 80]);
+                } else {
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime); 
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                    if(navigator.vibrate) navigator.vibrate(200);
+                }
+            } catch(e) {}
+        }
+
+        function renderInitialCards() {
+            const listContainer = document.getElementById('list');
+            if(!listContainer) return;
+            listContainer.innerHTML = '';
+            coins.forEach((s, index) => {
+                let card = document.createElement('div');
+                card.id = `card-${s}`;
+                card.className = `c-asset`;
+                card.style.order = index;
+                card.style.display = 'flex';
+                card.onclick = (e) => {
+                    if(!e.target.classList.contains('a-price')) toggle(s);
+                };
+                card.innerHTML = `
+                    <div class="side-pill pos-bg" id="pill-${s}"></div>
+                    <div class="asset-row">
+                        <div class="a-left">
+                            <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[s]}-${s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${s}&background=111&color=fff'">
+                            <div class="a-info">
+                                <span class="a-sym">${s}</span>
+                                <div class="a-subinfo">
+                                    <span class="a-pair" id="spread-${s}">SPREAD: 0.35%</span>
+                                    <span class="hft-tag flow-buy" id="flow-${s}">DELTA: +1.2%</span>
+                                    <span class="hft-tag rsi-tag" id="rsi-${s}">RSI: 50.0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="a-right">
+                            <div class="a-price" id="pr-${s}">R$ 0,00</div>
+                            <div class="status-box">
+                                <span class="flow-tag" id="tag-${s}">AGUARDA</span>
+                                <span class="a-pct pos-txt" id="pct-${s}">+0.00%</span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="a-right">
-                    <div class="a-price" id="pr-BTC">R$ 0,00</div>
-                    <div class="status-box">
-                        <span class="flow-tag" id="tag-BTC">AGUARDA</span>
-                        <span class="a-pct pos-txt" id="pct-BTC">+0.00%</span>
-                    </div>
-                </div>
-            </div>
-            <div class="chart-box" id="tv-BTC"></div>
-        </div>
+                    <div class="chart-box" id="tv-${s}"></div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
 
-        <div id="card-ETH" class="c-asset" onclick="toggle('ETH')">
-            <div class="side-pill pos-bg" id="pill-ETH"></div>
-            <div class="asset-row">
-                <div class="a-left">
-                    <img class="coin-icon" src="https://cryptologos.cc/logos/ethereum-eth-logo.png?v=025">
-                    <div class="a-info">
-                        <span class="a-sym">ETH</span>
-                        <div class="a-subinfo">
-                            <span class="a-pair" id="spread-ETH">SPREAD: 0.34%</span>
-                            <span class="hft-tag flow-buy" id="flow-ETH">DELTA: +1.2%</span>
-                            <span class="hft-tag rsi-tag" id="rsi-ETH">RSI: 50.0</span>
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
+            document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
+            document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
+            document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
+        }
+
+        function toggleNotifs() {
+            const panel = document.getElementById('notif-panel');
+            if(panel) {
+                panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+                document.getElementById('dot').style.display = 'none';
+            }
+        }
+
+        function clearAlerts() {
+            alerts = [];
+            localStorage.removeItem('fenix_quantum_alerts_v19');
+            renderAlerts();
+        }
+
+        function addAlertStructured(level, symbol, msg, dataObj = {}) {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('pt-BR');
+            const timeStr = now.toLocaleTimeString('pt-BR');
+            
+            let advisorAnalysis = "Cenário estável. Aguarde novas confirmações de fluxo.";
+            let recommendedAction = "MANTER FORA (Pular rodada)";
+            
+            if (level === 'SUCCESS') {
+                advisorAnalysis = `O ativo ${symbol} atingiu zona de alta probabilidade com RSI em ${dataObj.rsi?.toFixed(1)} e variação de +${dataObj.pct?.toFixed(2)}%.`;
+                recommendedAction = `ENTRAR AGORA | Copie o preço R$ ${dataObj.p?.toFixed(2)} e execute a ordem.`;
+                playBeep('success');
+            } else if (level === 'WARN') {
+                advisorAnalysis = `Distorção de spread detectada no ativo ${symbol}.`;
+                recommendedAction = `ATENÇÃO | Pule esta rodada.`;
+                playBeep('warn');
+            }
+
+            const entry = {
+                id: Date.now(),
+                timestamp: now.toISOString(),
+                dateTimeStr: `${dateStr} ${timeStr}`,
+                level: level,
+                symbol: symbol,
+                message: msg,
+                analysis: advisorAnalysis,
+                action: recommendedAction,
+                data: dataObj
+            };
+
+            alerts.unshift(entry);
+            if(alerts.length > 50) alerts.pop();
+            localStorage.setItem('fenix_quantum_alerts_v19', JSON.stringify(alerts));
+            renderAlerts();
+            const dot = document.getElementById('dot');
+            if(dot) dot.style.display = 'block';
+        }
+
+        function renderAlerts() {
+            const listEl = document.getElementById('notif-list');
+            if(listEl) {
+                if(!alerts.length) {
+                    listEl.innerHTML = '<div style="font-family: \'JetBrains Mono\', monospace; font-size: 9px; color: #666; padding: 8px 0;">Sem eventos registrados.</div>';
+                    return;
+                }
+                listEl.innerHTML = alerts.map(a => {
+                    let color = "var(--accent-blue)";
+                    if(a.level === 'SUCCESS') color = "var(--green-nitido)";
+                    if(a.level === 'WARN') color = "var(--accent-yellow)";
+                    
+                    return `
+                        <div class="advisor-card" style="border-left-color: ${color};">
+                            <div class="advisor-header">
+                                <span>[${a.dateTimeStr}] // ${a.symbol || 'SYS'}</span>
+                                <span style="color: ${color};">${a.level}</span>
+                            </div>
+                            <div class="advisor-body"><strong>Análise:</strong> ${a.analysis}</div>
+                            <div class="advisor-action">👉 O QUE FAZER: ${a.action}</div>
                         </div>
-                    </div>
-                </div>
-                <div class="a-right">
-                    <div class="a-price" id="pr-ETH">R$ 0,00</div>
-                    <div class="status-box">
-                        <span class="flow-tag" id="tag-ETH">AGUARDA</span>
-                        <span class="a-pct pos-txt" id="pct-ETH">+0.00%</span>
-                    </div>
-                </div>
-            </div>
-            <div class="chart-box" id="tv-ETH"></div>
-        </div>
+                    `;
+                }).join('');
+            }
+        }
 
-        <div id="card-SOL" class="c-asset" onclick="toggle('SOL')">
-            <div class="side-pill pos-bg" id="pill-SOL"></div>
-            <div class="asset-row">
-                <div class="a-left">
-                    <img class="coin-icon" src="https://cryptologos.cc/logos/solana-sol-logo.png?v=025">
-                    <div class="a-info">
-                        <span class="a-sym">SOL</span>
-                        <div class="a-subinfo">
-                            <span class="a-pair" id="spread-SOL">SPREAD: 0.38%</span>
-                            <span class="hft-tag flow-buy" id="flow-SOL">DELTA: +1.2%</span>
-                            <span class="hft-tag rsi-tag" id="rsi-SOL">RSI: 50.0</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="a-right">
-                    <div class="a-price" id="pr-SOL">R$ 0,00</div>
-                    <div class="status-box">
-                        <span class="flow-tag" id="tag-SOL">AGUARDA</span>
-                        <span class="a-pct pos-txt" id="pct-SOL">+0.00%</span>
-                    </div>
-                </div>
-            </div>
-            <div class="chart-box" id="tv-SOL"></div>
-        </div>
+        function exportLogs(type) {
+            if (!alerts.length) return alert('Sem dados para exportar.');
+            let dataStr = "", fileName = `consultor_sentinel_${Date.now()}`;
+            if (type === 'json') {
+                dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(alerts, null, 2));
+                fileName += ".json";
+            } else {
+                let csvContent = "DateTime,Symbol,Level,Message,Action\n";
+                alerts.forEach(a => {
+                    csvContent += `"${a.dateTimeStr}","${a.symbol || ''}","${a.level}","${a.message}","${a.action}"\n`;
+                });
+                dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
+                fileName += ".csv";
+            }
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", fileName);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
 
-        <div id="card-LINK" class="c-asset" onclick="toggle('LINK')">
-            <div class="side-pill pos-bg" id="pill-LINK"></div>
-            <div class="asset-row">
-                <div class="a-left">
-                    <img class="coin-icon" src="https://cryptologos.cc/logos/chainlink-link-logo.png?v=025">
-                    <div class="a-info">
-                        <span class="a-sym">LINK</span>
-                        <div class="a-subinfo">
-                            <span class="a-pair" id="spread-LINK">SPREAD: 0.42%</span>
-                            <span class="hft-tag flow-buy" id="flow-LINK">DELTA: +1.2%</span>
-                            <span class="hft-tag rsi-tag" id="rsi-LINK">RSI: 50.0</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="a-right">
-                    <div class="a-price" id="pr-LINK">R$ 0,00</div>
-                    <div class="status-box">
-                        <span class="flow-tag" id="tag-LINK">AGUARDA</span>
-                        <span class="a-pct pos-txt" id="pct-LINK">+0.00%</span>
-                    </div>
-                </div>
-            </div>
-            <div class="chart-box" id="tv-LINK"></div>
-        </div>
+        window.onload = () => {
+            renderInitialCards();
+            renderAlerts();
+            setInterval(() => {
+                const now = new Date();
+                const clockEl = document.getElementById('clock');
+                if(clockEl) clockEl.innerText = now.toLocaleTimeString('pt-BR');
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
 
-        <div id="card-STX" class="c-asset" onclick="toggle('STX')">
-            <div class="side-pill pos-bg" id="pill-STX"></div>
-            <div class="asset-row">
-                <div class="a-left">
-                    <img class="coin-icon" src="https://cryptologos.cc/logos/stacks-stx-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=STX&background=111&color=fff'">
-                    <div class="a-info">
-                        <span class="a-sym">STX</span>
-                        <div class="a-subinfo">
-                            <span class="a-pair" id="spread-STX">SPREAD: 0.46%</span>
-                            <span class="hft-tag flow-buy" id="flow-STX">DELTA: +1.2%</span>
-                            <span class="hft-tag rsi-tag" id="rsi-STX">RSI: 50.0</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="a-right">
-                    <div class="a-price" id="pr-STX">R$ 0,00</div>
-                    <div class="status-box">
-                        <span class="flow-tag" id="tag-STX">AGUARDA</span>
-                        <span class="a-pct pos-txt" id="pct-STX">+0.00%</span>
-                    </div>
-                </div>
-            </div>
-            <div class="chart-box" id="tv-STX"></div>
-        </div>
-
-        <div id="card-RENDER" class="c-asset" onclick="toggle('RENDER')">
-            <div class="side-pill pos-bg" id="pill-RENDER"></div>
-            <div class="asset-row">
-                <div class="a-left">
-                    <img class="coin-icon" src="https://cryptologos.cc/logos/render-token-rndr-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=RENDER&background=111&color=fff'">
-                    <div class="a-info">
-                        <span class="a-sym">RENDER</span>
-                        <div class="a-subinfo">
-                            <span class="a-pair" id="spread-RENDER">SPREAD: 0.50%</span>
-                            <span class="hft-tag flow-buy" id="flow-RENDER">DELTA: +1.2%</span>
-                            <span class="hft-tag rsi-tag" id="rsi-RENDER">RSI: 50.0</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="a-right">
-                    <div class="a-price" id="pr-RENDER">R$ 0,00</div>
-                    <div class="status-box">
-                        <span class="flow-tag" id="tag-RENDER">AGUARDA</span>
-                        <span class="a-pct pos-txt" id="pct-RENDER">+0.00%</span>
-                    </div>
-                </div>
-            </div>
-            <div class="chart-box" id="tv-RENDER"></div>
-        </div>
-
-        <div id="card-NEAR" class="c-asset" onclick="toggle('NEAR')">
-            <div class="side-pill pos-bg" id="pill-NEAR"></div>
-            <div class="asset-row">
-                <div class="a-left">
-                    <img class="coin-icon" src="https://cryptologos.cc/logos/near-protocol-near-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=NEAR&background=111&color=fff'">
-                    <div class="a-info">
-                        <span class="a-sym">NEAR</span>
-                        <div class="a-subinfo">
-                            <span class="a-pair" id="spread-NEAR">SPREAD: 0.54%</span>
-                            <span class="hft-tag flow-buy" id="flow-NEAR">DELTA: +1.2%</span>
-                            <span class="hft-tag rsi-tag" id="rsi-NEAR">RSI: 50.0</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="a-right">
-                    <div class="a-price" id="pr-NEAR">R$ 0,00</div>
-                    <div class="status-box">
-                        <span class="flow-tag" id="tag-NEAR">AGUARDA</span>
-                        <span class="a-pct pos-txt" id="pct-NEAR">+0.00%</span>
-                    </div>
-                </div>
-            </div>
-            <div class="chart-box" id="tv-NEAR"></div>
-        </div>
-
-        <div id="card-SEI" class="c-asset" onclick="toggle('SEI')">
-            <div class="side-pill pos-bg" id="pill-SEI"></div>
-            <div class="asset-row">
-                <div class="a-left">
-                    <img class="coin-icon" src="https://cryptologos.cc/logos/sei-sei-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=SEI&background=111&color=fff'">
-                    <div class="a-info">
-                        <span class="a-sym">SEI</span>
-                        <div class="a-subinfo">
-                            <span class="a-pair" id="spread-SEI">SPREAD:
