@@ -110,7 +110,7 @@
     <div class="st-metrics">
         <div class="stat-box"><span class="stat-label">Organismo</span><span class="stat-val pulse" id="mkt-status">SINCRONIZANDO</span></div>
         <div class="stat-box"><span class="stat-label">Domínio BTC</span><span class="stat-val" id="btc-dom">--%</span></div>
-        <div class="stat-box"><span class="stat-label">Status Bot</span><span class="stat-val" id="bot-status-label" style="color: var(--green-nitido);">AUTÔNOMO</span></div>
+        <div class="stat-box"><span class="stat-label">Status Bot</span><span class="stat-val" id="bot-status-label" style="color: #ff3e3e;">OFFLINE</span></div>
         <div class="stat-box"><span class="stat-label">Alvos Ativos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
@@ -145,8 +145,8 @@
 
     let usdRate = 5.50;
     let currentFilter = 'ALL';
-    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v5') || '[]');
-    let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v5') || '{}');
+    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v4') || '[]');
+    let virtualTrades = JSON.parse(localStorage.getItem('fenix_quantum_trades_v4') || '{}');
 
     function setFilter(filter) {
         currentFilter = filter;
@@ -166,8 +166,8 @@
     function clearAlerts() {
         alerts = [];
         virtualTrades = {};
-        localStorage.removeItem('fenix_quantum_alerts_v5');
-        localStorage.removeItem('fenix_quantum_trades_v5');
+        localStorage.removeItem('fenix_quantum_alerts_v4');
+        localStorage.removeItem('fenix_quantum_trades_v4');
         renderAlerts();
         document.getElementById('last-alert').innerText = "FÊNIX PRIME // QUANTUM LOCK";
         sync();
@@ -199,7 +199,7 @@
         const time = new Date().toLocaleTimeString();
         alerts.unshift(`[${time}] ${msg}`);
         if(alerts.length > 30) alerts.pop();
-        localStorage.setItem('fenix_quantum_alerts_v5', JSON.stringify(alerts));
+        localStorage.setItem('fenix_quantum_alerts_v4', JSON.stringify(alerts));
         renderAlerts();
         document.getElementById('dot').style.display = 'block';
         document.getElementById('last-alert').innerText = "ALERTA DE ALTA URGÊNCIA";
@@ -232,6 +232,7 @@
         let dadosBot = {};
         let botOnline = false;
 
+        // Keep-alive e checagem isolada do Render
         try {
             const resBot = await fetch('https://diplomata-gold-bot.onrender.com/api/dados', { method: 'GET', mode: 'cors' });
             if (resBot.ok) {
@@ -245,8 +246,8 @@
             botStatusEl.innerText = "ONLINE";
             botStatusEl.style.color = "var(--green-nitido)";
         } else {
-            botStatusEl.innerText = "AUTÔNOMO";
-            botStatusEl.style.color = "var(--green-nitido)";
+            botStatusEl.innerText = "OFFLINE";
+            botStatusEl.style.color = "var(--red-nitido)";
         }
 
         try {
@@ -374,7 +375,7 @@
 
                     if(!virtualTrades[asset.s]) {
                         virtualTrades[asset.s] = { price: asset.p, time: new Date().toLocaleTimeString() };
-                        localStorage.setItem('fenix_quantum_trades_v5', JSON.stringify(virtualTrades));
+                        localStorage.setItem('fenix_quantum_trades_v4', JSON.stringify(virtualTrades));
                         addAlert(`Oportunidade confirmada em ${asset.s} a R$ ${asset.p.toFixed(2)}`);
                     }
                 } else {
@@ -393,5 +394,4 @@
         c.classList.toggle('open');
         const containerId = `tv-${id}`;
         if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
-            new TradingView.widget({
-                "au
+            new Tradi
