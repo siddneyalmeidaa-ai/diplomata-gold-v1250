@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -95,6 +94,9 @@
         .neg-bg { background: var(--red-nitido) !important; }
         .pos-txt { color: var(--green-nitido) !important; }
         .neg-txt { color: var(--red-nitido) !important; }
+        
+        /* Nova blindagem visual para spread negativo */
+        .spread-negativo { color: #ff3e3e !important; background: rgba(255, 62, 62, 0.15); padding: 2px 6px; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -307,13 +309,19 @@
             }
         }
 
-        if (currentFilter === 'TOP') {
-            assetData.sort((a, b) => b.pct - a.pct);
-        } else if (currentFilter === 'SPREAD') {
-            assetData.sort((a, b) => b.spread - a.spread);
-        } else {
-            assetData.sort((a, b) => b.p - a.p);
-        }
+        // Filtro Automático Avançado: Se o status for PULA / AGUARDA com RSI fraco, desloca para o final da lista (priorizando ENTRA no topo)
+        assetData.sort((a, b) => {
+            if (a.isTarget && !b.isTarget) return -1;
+            if (!a.isTarget && b.isTarget) return 1;
+
+            if (currentFilter === 'TOP') {
+                return b.pct - a.pct;
+            } else if (currentFilter === 'SPREAD') {
+                return b.spread - a.spread;
+            } else {
+                return b.p - a.p;
+            }
+        });
 
         let activeTargetsCount = assetData.filter(a => a.isTarget).length;
         document.getElementById('target-count').innerText = activeTargetsCount;
@@ -336,7 +344,14 @@
                 priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: asset.p < 1 ? 4 : 2, maximumFractionDigits: asset.p < 1 ? 4 : 2});
                 priceEl.setAttribute('onclick', `copyPrice(${asset.p}, '${asset.s}')`);
 
-                document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
+                // Blindagem de cores para o Spread (destacando negativos com tom avermelhado forte)
+                const spreadEl = document.getElementById(`spread-${asset.s}`);
+                spreadEl.innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
+                if (asset.spread < 0) {
+                    spreadEl.className = "a-pair spread-negativo";
+                } else {
+                    spreadEl.className = "a-pair";
+                }
                 
                 const rsiEl = document.getElementById(`rsi-${asset.s}`);
                 rsiEl.innerText = `RSI: ${asset.rsi}`;
@@ -370,20 +385,4 @@
         const containerId = `tv-${id}`;
         if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
             new TradingView.widget({
-                "autosize": true, "symbol": "BINANCE:" + id + "USDT",
-                "interval": "1", "theme": "dark", "container_id": containerId,
-                "hide_side_toolbar": true, "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
-            });
-        }
-    }
-
-    // Inicializa imediatamente os elementos visuais na tela
-    renderInitialCards();
-    
-    // Tenta sincronizar em segundo plano com timeout rápido
-    sync();
-    setInterval(sync, 5000);
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-</script>
-</body>
-</html>
+                "autosize": true, "sy
