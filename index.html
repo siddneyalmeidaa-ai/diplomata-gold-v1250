@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V18 // TELEMETRIA COM DATA E HORA</title>
+    <title>SENTINEL_V16 // RSI BLINDADO</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -13,8 +13,6 @@
             --red-nitido: #ff3e3e;   
             --border-dark: #161616; 
             --glass: rgba(3, 3, 3, 0.98);
-            --accent-blue: #3b82f6;
-            --accent-yellow: #f59e0b;
         }
         body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; user-select: none; }
 
@@ -46,31 +44,13 @@
             position: fixed; top: 90px; right: 12px; left: 12px; 
             background: #0a0a0a; border: 1px solid #222; border-radius: 12px;
             padding: 18px; display: none; z-index: 2000; box-shadow: 0 30px 60px rgba(0,0,0,1);
-            max-height: 70vh; overflow-y: auto;
         }
         .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f1f1f; padding-bottom: 8px; margin-bottom: 8px; }
-        .notif-actions { display: flex; gap: 6px; align-items: center; }
-        .notif-item { font-size: 9px; font-family: 'JetBrains Mono', monospace; padding: 8px 0; border-bottom: 1px solid #141414; color: #999; word-break: break-all; }
-        .btn-action { background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 4px 8px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
-        .btn-action:active { background: #333; }
-        .clear-btn { background: #ff3e3e; color: #fff; border: none; padding: 4px 8px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
+        .notif-item { font-size: 9px; font-family: 'JetBrains Mono', monospace; padding: 8px 0; border-bottom: 1px solid #141414; color: #999; }
+        .clear-btn { background: #ff3e3e; color: #fff; border: none; padding: 3px 6px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
 
         .pulse { animation: pulse-glow 1.8s infinite ease-in-out; }
         @keyframes pulse-glow { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
-        .analytics-center {
-            background: #040404;
-            border: 1px solid #1f1f1f;
-            border-radius: 10px;
-            margin: 10px 12px;
-            padding: 14px 16px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .ac-title { font-size: 10px; font-weight: 900; color: var(--accent-blue); margin-bottom: 10px; letter-spacing: 1.5px; display: flex; justify-content: space-between; }
-        .ac-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .ac-card { background: #080808; border: 1px solid #151515; padding: 8px 10px; border-radius: 6px; }
-        .ac-label { font-size: 7px; color: #666; font-weight: 900; text-transform: uppercase; margin-bottom: 4px; }
-        .ac-val { font-size: 13px; font-weight: 800; color: #fff; }
 
         .quantum-panel-sugestoes {
             background: #050505;
@@ -137,7 +117,7 @@
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
         <div class="notif-bell" id="bell" onclick="toggleNotifs()">
-            <span id="last-alert">SENTINEL_V18 // TELEMETRIA COM DATA E HORA</span>
+            <span id="last-alert">SENTINEL_V16 // ATIVO</span>
             <div class="bell-dot" id="dot"></div>
             <span style="font-size: 11px;">🔔</span>
         </div>
@@ -146,51 +126,24 @@
     <div class="st-metrics">
         <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">HFT SUPREMO</span></div>
         <div class="stat-box"><span class="stat-label">Latência</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">8ms</span></div>
-        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">RSI & SCORE</span></div>
+        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">RSI ATIVO</span></div>
         <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
 
-<div class="analytics-center">
-    <div class="ac-title">
-        <span>🖥️ CENTRAL DE PROCESSAMENTO ANALÍTICO</span>
-        <span id="proc-status" style="color: var(--green-nitido);">ONLINE</span>
-    </div>
-    <div class="ac-grid">
-        <div class="ac-card">
-            <div class="ac-label">Score Global</div>
-            <div class="ac-val" id="score-global" style="color: var(--accent-blue);">0%</div>
-        </div>
-        <div class="ac-card">
-            <div class="ac-label">Pressão (Bias)</div>
-            <div class="ac-val" id="market-bias" style="color: var(--green-nitido);">0% BUY</div>
-        </div>
-        <div class="ac-card">
-            <div class="ac-label">Volatilidade Média</div>
-            <div class="ac-val" id="avg-volatility">0.00%</div>
-        </div>
-        <div class="ac-card">
-            <div class="ac-label">RSI Médio Geral</div>
-            <div class="ac-val" id="avg-rsi" style="color: var(--accent-yellow);">0.0</div>
-        </div>
-    </div>
-</div>
-
 <div class="quantum-panel-sugestoes">
-    <div class="qp-title">⚡ STATUS DO MOTOR QUÂNTICO</div>
+    <div class="qp-title">⚡ STATUS DO SISTEMA</div>
     <div class="qp-grid">
-        <div>Telemetria: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Processando Cotações com Data/Hora Ativa</span></div>
+        <div>Motor: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Monitoramento RSI & SPREAD Ativo</span></div>
     </div>
 </div>
 
 <div id="notif-panel">
     <div class="notif-header">
-        <span style="font-size: 10px; font-weight: 900;">TELEMETRIA & QUANTUM MEMORY LOG</span>
-        <div class="notif-actions">
-            <button class="btn-action" onclick="exportLogs('json')">JSON</button>
-            <button class="btn-action" onclick="exportLogs('csv')">CSV</button>
+        <span style="font-size: 10px; font-weight: 900;">REGISTRO DE EVENTOS</span>
+        <div style="display: flex; gap: 8px; align-items: center;">
             <button class="clear-btn" onclick="clearAlerts()">LIMPAR</button>
-            <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px; margin-left: 6px;">✕</span>
+            <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px;">✕</span>
         </div>
     </div>
     <div id="notif-list"></div>
@@ -215,7 +168,7 @@
 
     let usdRate = 5.50;
     let currentFilter = 'ALL';
-    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v18') || '[]');
+    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
 
     function renderInitialCards() {
         const listContainer = document.getElementById('list');
@@ -273,26 +226,15 @@
 
     function clearAlerts() {
         alerts = [];
-        localStorage.removeItem('fenix_quantum_alerts_v18');
+        localStorage.removeItem('fenix_quantum_alerts_v16');
         renderAlerts();
     }
 
-    function addAlertStructured(level, symbol, msg, dataObj = {}) {
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('pt-BR');
-        const timeStr = now.toLocaleTimeString('pt-BR');
-        const entry = {
-            id: Date.now(),
-            timestamp: now.toISOString(),
-            dateTimeStr: `${dateStr} ${timeStr}`,
-            level: level, // 'SUCCESS', 'WARN', 'INFO'
-            symbol: symbol,
-            message: msg,
-            data: dataObj
-        };
-        alerts.unshift(entry);
-        if(alerts.length > 50) alerts.pop();
-        localStorage.setItem('fenix_quantum_alerts_v18', JSON.stringify(alerts));
+    function addAlert(msg) {
+        const time = new Date().toLocaleTimeString();
+        alerts.unshift(`[${time}] ${msg}`);
+        if(alerts.length > 30) alerts.pop();
+        localStorage.setItem('fenix_quantum_alerts_v16', JSON.stringify(alerts));
         renderAlerts();
         document.getElementById('dot').style.display = 'block';
     }
@@ -300,49 +242,14 @@
     function renderAlerts() {
         const listEl = document.getElementById('notif-list');
         if(listEl) {
-            if(!alerts.length) {
-                listEl.innerHTML = '<div class="notif-item">Sem eventos de telemetria registrados.</div>';
-                return;
-            }
-            listEl.innerHTML = alerts.map(a => {
-                let color = "#999";
-                if(a.level === 'SUCCESS') color = "var(--green-nitido)";
-                if(a.level === 'WARN') color = "var(--accent-yellow)";
-                let dtDisplay = a.dateTimeStr || a.timeStr || '';
-                return `<div class="notif-item" style="color:${color};">[${dtDisplay}] [${a.symbol || 'SYS'}] ${a.message}</div>`;
-            }).join('');
+            listEl.innerHTML = alerts.length ? alerts.map(a => `<div class="notif-item">${a}</div>`).join('') : '<div class="notif-item">Sem eventos recentes.</div>';
         }
     }
     renderAlerts();
 
-    function exportLogs(type) {
-        if (!alerts.length) return alert('Sem dados para exportar.');
-        let dataStr = "";
-        let fileName = `telemetria_sentinel_${Date.now()}`;
-
-        if (type === 'json') {
-            dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(alerts, null, 2));
-            fileName += ".json";
-        } else {
-            let csvContent = "DateTime,Symbol,Level,Message\n";
-            alerts.forEach(a => {
-                csvContent += `"${a.dateTimeStr || ''}","${a.symbol || ''}","${a.level || ''}","${a.message || ''}"\n`;
-            });
-            dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
-            fileName += ".csv";
-        }
-
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", fileName);
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    }
-
     function copyPrice(val, symbol) {
         navigator.clipboard.writeText(val.toFixed(2));
-        addAlertStructured('INFO', symbol, `Preço copiado: R$ ${val.toFixed(2)}`, { price: val });
+        addAlert(`Copiado [${symbol}]: R$ ${val.toFixed(2)}`);
     }
 
     async function sync() {
@@ -353,9 +260,6 @@
         } catch (e) {}
 
         let assetData = [];
-        let totalRsi = 0;
-        let positiveCount = 0;
-        let totalVolatility = 0;
 
         for (let i = 0; i < coins.length; i++) {
             let s = coins[i];
@@ -376,12 +280,9 @@
 
             let priceBRL = priceUSDT * usdRate;
             let spreadSimulado = 0.30 + (i * 0.04);
+            // Simulação dinâmica e precisa de RSI baseada na variação do ativo
             let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 3.5) + ((i % 3) * 2)));
             let isTarget = (s !== "BTC" && priceChange > 1.0 && rsiCalculado > 55);
-
-            if(priceChange > 0) positiveCount++;
-            totalRsi += rsiCalculado;
-            totalVolatility += Math.abs(priceChange);
 
             assetData.push({
                 s, p: priceBRL, pct: priceChange, spread: spreadSimulado, rsi: rsiCalculado,
@@ -390,11 +291,64 @@
             });
         }
 
-        let avgRsiVal = totalRsi / coins.length;
-        let buyBias = (positiveCount / coins.length) * 100;
-        let avgVol = totalVolatility / coins.length;
-        let targetCount = assetData.filter(a => a.isTarget).length;
-        let processingScore = Math.min(100, Math.round((buyBias * 0.4) + (targetCount * 12) + (avgVol * 5)));
+        assetData.forEach((asset, index) => {
+            let card = document.getElementById(`card-${asset.s}`);
+            if (card) {
+                card.style.order = index;
+                let showCard = true;
+                if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
+                if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
+                card.style.display = showCard ? 'flex' : 'none';
 
-    l>
+                const isPos = asset.pct >= 0;
+                document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
+                
+                const priceEl = document.getElementById(`pr-${asset.s}`);
+                priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                priceEl.setAttribute('onclick', `copyPrice(${asset.p}, '${asset.s}')`);
+
+                document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
+                document.getElementById(`rsi-${asset.s}`).innerText = `RSI: ${asset.rsi.toFixed(1)}`;
+
+                const pctEl = document.getElementById(`pct-${asset.s}`);
+                pctEl.innerText = (isPos ? "+" : "") + asset.pct.toFixed(2) + "%";
+                pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
+
+                const tagEl = document.getElementById(`tag-${asset.s}`);
+                if (asset.isTarget) {
+                    tagEl.innerText = "ENTRA | ALVO"; 
+                    tagEl.style.color = "var(--green-nitido)";
+                    card.classList.add('pulse');
+                } else {
+                    tagEl.innerText = "PULA / AGUARDA"; 
+                    tagEl.style.color = "#555";
+                    card.classList.remove('pulse');
+                }
+            }
+        });
+
+        document.getElementById('target-count').innerText = assetData.filter(a => a.isTarget).length;
+    }
+
+    function toggle(id) {
+        const c = document.getElementById(`card-${id}`);
+        c.classList.toggle('open');
+        const containerId = `tv-${id}`;
+        if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
+            new TradingView.widget({
+                "autosize": true, "symbol": "BINANCE:" + id + "USDT",
+                "interval": "30", "theme": "dark", "container_id": containerId,
+                "hide_side_toolbar": true, "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
+            });
+        }
+    }
+
+    renderInitialCards();
+    sync();
+    setInterval(sync, 15000);
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+</script>
+</body>
+</html>
+l>
     
