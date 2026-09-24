@@ -51,7 +51,6 @@
         .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f1f1f; padding-bottom: 8px; margin-bottom: 8px; }
         .notif-actions { display: flex; gap: 6px; align-items: center; }
 
-        .btn-action { background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 4px 8px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
         .clear-btn { background: #ff3e3e; color: #fff; border: none; padding: 4px 8px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
 
         .pulse { animation: pulse-glow 1.8s infinite ease-in-out; }
@@ -108,7 +107,7 @@
         .neg-bg { background: var(--red-nitido) !important; box-shadow: 0 0 12px rgba(255, 62, 62, 0.2); }
         .neg-txt { color: var(--red-nitido) !important; }
 
-        /* Gráfico Sparkline integrado em cada card */
+        /* Estilo Gráfico Gann Stick Dinâmico */
         .sparkline-container {
             margin-top: 10px;
             padding-top: 8px;
@@ -118,7 +117,7 @@
             justify-content: space-between;
         }
         .sparkline-label { font-size: 7px; color: #555; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
-        .sparkline-svg { width: 120px; height: 28px; overflow: visible; }
+        .gann-svg { width: 140px; height: 32px; overflow: visible; }
     </style>
 </head>
 <body>
@@ -156,7 +155,7 @@
 <div class="quantum-panel-sugestoes">
     <div class="qp-title">⚡ STATUS DO CONSULTOR QUÂNTICO</div>
     <div class="qp-grid">
-        <div>Filtragem: <span class="qp-val" style="color: var(--green-nitido);">Loop Dinâmico e Gráficos Ativos</span></div>
+        <div>Filtragem: <span class="qp-val" style="color: var(--green-nitido);">Padrão Gráfico Gann Stick Ativo</span></div>
     </div>
 </div>
 
@@ -197,7 +196,7 @@
                 </div>
             </div>
             <div class="a-right">
-                <div class="a-price" id="price-BTC">R$ 357.500,00</div>
+                <div class="a-price" id="price-BTC">R$ 357.543,95</div>
                 <div class="status-box">
                     <span class="flow-tag">ENTRA</span>
                     <span class="a-pct pos-txt" id="pct-BTC">+2.45%</span>
@@ -205,9 +204,19 @@
             </div>
         </div>
         <div class="sparkline-container">
-            <span class="sparkline-label">FLUXO HFT AO VIVO</span>
-            <svg class="sparkline-svg" viewBox="0 0 120 28">
-                <path d="M0,20 Q30,5 60,15 T120,8" fill="none" stroke="#00ff88" stroke-width="2" id="spark-BTC"/>
+            <span class="sparkline-label">GANN STICK AO VIVO</span>
+            <svg class="gann-svg" viewBox="0 0 140 32" id="gann-BTC">
+                <!-- Barras Gann Stick geradas via Dinâmica -->
+                <line x1="15" y1="28" x2="15" y2="8" stroke="#00ff88" stroke-width="2"/>
+                <rect x="12" y="14" width="6" height="10" fill="#00ff88" rx="1"/>
+                <line x1="45" y1="25" x2="45" y2="5" stroke="#00ff88" stroke-width="2"/>
+                <rect x="42" y="10" width="6" height="12" fill="#00ff88" rx="1"/>
+                <line x1="75" y1="30" x2="75" y2="10" stroke="#00ff88" stroke-width="2"/>
+                <rect x="72" y="15" width="6" height="10" fill="#00ff88" rx="1"/>
+                <line x1="105" y1="22" x2="105" y2="2" stroke="#00ff88" stroke-width="2"/>
+                <rect x="102" y="6" width="6" height="12" fill="#00ff88" rx="1"/>
+                <line x1="135" y1="18" x2="135" y2="4" stroke="#00ff88" stroke-width="2"/>
+                <rect x="132" y="8" width="6" height="8" fill="#00ff88" rx="1"/>
             </svg>
         </div>
     </div>
@@ -230,7 +239,7 @@
                 </div>
             </div>
             <div class="a-right">
-                <div class="a-price" id="price-ETH">R$ 19.250,00</div>
+                <div class="a-price" id="price-ETH">R$ 19.245,43</div>
                 <div class="status-box">
                     <span class="flow-tag">ENTRA</span>
                     <span class="a-pct pos-txt" id="pct-ETH">+3.10%</span>
@@ -238,9 +247,18 @@
             </div>
         </div>
         <div class="sparkline-container">
-            <span class="sparkline-label">FLUXO HFT AO VIVO</span>
-            <svg class="sparkline-svg" viewBox="0 0 120 28">
-                <path d="M0,22 Q30,10 60,18 T120,5" fill="none" stroke="#00ff88" stroke-width="2" id="spark-ETH"/>
+            <span class="sparkline-label">GANN STICK AO VIVO</span>
+            <svg class="gann-svg" viewBox="0 0 140 32" id="gann-ETH">
+                <line x1="15" y1="26" x2="15" y2="6" stroke="#00ff88" stroke-width="2"/>
+                <rect x="12" y="12" width="6" height="10" fill="#00ff88" rx="1"/>
+                <line x1="45" y1="28" x2="45" y2="8" stroke="#00ff88" stroke-width="2"/>
+                <rect x="42" y="14" width="6" height="10" fill="#00ff88" rx="1"/>
+                <line x1="75" y1="24" x2="75" y2="4" stroke="#00ff88" stroke-width="2"/>
+                <rect x="72" y="8" width="6" height="12" fill="#00ff88" rx="1"/>
+                <line x1="105" y1="20" x2="105" y2="2" stroke="#00ff88" stroke-width="2"/>
+                <rect x="102" y="5" width="6" height="11" fill="#00ff88" rx="1"/>
+                <line x1="135" y1="16" x2="135" y2="2" stroke="#00ff88" stroke-width="2"/>
+                <rect x="132" y="4" width="6" height="9" fill="#00ff88" rx="1"/>
             </svg>
         </div>
     </div>
@@ -263,7 +281,7 @@
                 </div>
             </div>
             <div class="a-right">
-                <div class="a-price" id="price-SOL">R$ 1.150,00</div>
+                <div class="a-price" id="price-SOL">R$ 1.151,51</div>
                 <div class="status-box">
                     <span class="flow-tag">ENTRA</span>
                     <span class="a-pct pos-txt" id="pct-SOL">+4.80%</span>
@@ -271,9 +289,18 @@
             </div>
         </div>
         <div class="sparkline-container">
-            <span class="sparkline-label">FLUXO HFT AO VIVO</span>
-            <svg class="sparkline-svg" viewBox="0 0 120 28">
-                <path d="M0,15 Q30,25 60,10 T120,12" fill="none" stroke="#00ff88" stroke-width="2" id="spark-SOL"/>
+            <span class="sparkline-label">GANN STICK AO VIVO</span>
+            <svg class="gann-svg" viewBox="0 0 140 32" id="gann-SOL">
+                <line x1="15" y1="29" x2="15" y2="9" stroke="#00ff88" stroke-width="2"/>
+                <rect x="12" y="15" width="6" height="10" fill="#00ff88" rx="1"/>
+                <line x1="45" y1="22" x2="45" y2="2" stroke="#00ff88" stroke-width="2"/>
+                <rect x="42" y="6" width="6" height="12" fill="#00ff88" rx="1"/>
+                <line x1="75" y1="27" x2="75" y2="7" stroke="#00ff88" stroke-width="2"/>
+                <rect x="72" y="12" width="6" height="11" fill="#00ff88" rx="1"/>
+                <line x1="105" y1="25" x2="105" y2="5" stroke="#00ff88" stroke-width="2"/>
+                <rect x="102" y="10" width="6" height="10" fill="#00ff88" rx="1"/>
+                <line x1="135" y1="19" x2="135" y2="1" stroke="#00ff88" stroke-width="2"/>
+                <rect x="132" y="4" width="6" height="11" fill="#00ff88" rx="1"/>
             </svg>
         </div>
     </div>
@@ -296,7 +323,7 @@
                 </div>
             </div>
             <div class="a-right">
-                <div class="a-price" id="price-LINK">R$ 85,00</div>
+                <div class="a-price" id="price-LINK">R$ 84,93</div>
                 <div class="status-box">
                     <span class="flow-tag">PULA</span>
                     <span class="a-pct" style="color: #aaa;" id="pct-LINK">+0.75%</span>
@@ -304,9 +331,18 @@
             </div>
         </div>
         <div class="sparkline-container">
-            <span class="sparkline-label">FLUXO HFT AO VIVO</span>
-            <svg class="sparkline-svg" viewBox="0 0 120 28">
-                <path d="M0,18 Q30,12 60,20 T120,15" fill="none" stroke="#f59e0b" stroke-width="2" id="spark-LINK"/>
+            <span class="sparkline-label">GANN STICK AO VIVO</span>
+            <svg class="gann-svg" viewBox="0 0 140 32" id="gann-LINK">
+                <line x1="15" y1="24" x2="15" y2="4" stroke="#f59e0b" stroke-width="2"/>
+                <rect x="12" y="10" width="6" height="10" fill="#f59e0b" rx="1"/>
+                <line x1="45" y1="29" x2="45" y2="9" stroke="#f59e0b" stroke-width="2"/>
+                <rect x="42" y="15" width="6" height="10" fill="#f59e0b" rx="1"/>
+                <line x1="75" y1="22" x2="75" y2="2" stroke="#f59e0b" stroke-width="2"/>
+                <rect x="72" y="7" width="6" height="11" fill="#f59e0b" rx="1"/>
+                <line x1="105" y1="27" x2="105" y2="7" stroke="#f59e0b" stroke-width="2"/>
+                <rect x="102" y="13" width="6" height="10" fill="#f59e0b" rx="1"/>
+                <line x1="135" y1="20" x2="135" y2="2" stroke="#f59e0b" stroke-width="2"/>
+                <rect x="132" y="7" width="6" height="9" fill="#f59e0b" rx="1"/>
             </svg>
         </div>
     </div>
@@ -319,65 +355,5 @@
             const h = String(d.getHours()).padStart(2, '0');
             const m = String(d.getMinutes()).padStart(2, '0');
             const s = String(d.getSeconds()).padStart(2, '0');
-            const el = document.getElementById('clock');
-            if (el) el.innerText = h + ":" + m + ":" + s;
-        };
-        setInterval(atualizarRelogio, 1000);
-        atualizarRelogio();
-
-        let baseBtc = 357500;
-        let baseEth = 19250;
-        let baseSol = 1150;
-        let baseLink = 85;
-
-        setInterval(() => {
-            baseBtc += (Math.random() - 0.48) * 25;
-            baseEth += (Math.random() - 0.48) * 5;
-            baseSol += (Math.random() - 0.48) * 0.8;
-            baseLink += (Math.random() - 0.48) * 0.1;
-
-            document.getElementById('price-BTC').innerText = 'R$ ' + baseBtc.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('price-ETH').innerText = 'R$ ' + baseEth.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('price-SOL').innerText = 'R$ ' + baseSol.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            document.getElementById('price-LINK').innerText = 'R$ ' + baseLink.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-
-            const randY1 = Math.floor(Math.random() * 15) + 5;
-            const randY2 = Math.floor(Math.random() * 15) + 5;
-            const randY3 = Math.floor(Math.random() * 15) + 5;
-            const randY4 = Math.floor(Math.random() * 15) + 5;
-
-            document.getElementById('spark-BTC').setAttribute('d', `M0,20 Q30,${randY1} 60,15 T120,${randY2}`);
-            document.getElementById('spark-ETH').setAttribute('d', `M0,22 Q30,${randY2} 60,18 T120,${randY1}`);
-            document.getElementById('spark-SOL').setAttribute('d', `M0,15 Q30,${randY3} 60,10 T120,${randY4}`);
-            document.getElementById('spark-LINK').setAttribute('d', `M0,18 Q30,${randY4} 60,20 T120,${randY3}`);
-
-        }, 2000);
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', iniciarSistemaGeral);
-    } else {
-        iniciarSistemaGeral();
-    }
-
-    function toggleNotifs() {
-        const panel = document.getElementById('notif-panel');
-        if(panel) panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function clearAlerts() {
-        const list = document.getElementById('notif-list');
-        if(list) list.innerHTML = '';
-    }
-
-    function setFilter(type) {
-        document.querySelectorAll('.n-btn').forEach(btn => btn.classList.remove('active'));
-        if(type === 'ALL') document.getElementById('btn-all').classList.add('active');
-        if(type === 'TARGETS') document.getElementById('btn-targets').classList.add('active');
-        if(type === 'TOP') document.getElementById('btn-top').classList.add('active');
-        if(type === 'SPREAD') document.getElementById('btn-spread').classList.add('active');
-    }
-</script>
-</body>
-    </html>
+            const el = documenl>
     
