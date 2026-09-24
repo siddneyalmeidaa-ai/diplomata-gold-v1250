@@ -221,7 +221,7 @@
         { symbol: "SOL", name: "Solana", pair: "SOLUSDT", spread: 0.38, baseBRL: 600, logo: "https://cryptologos.cc/logos/solana-sol-logo.png" },
         { symbol: "LINK", name: "Chainlink", pair: "LINKUSDT", spread: 0.42, baseBRL: 65, logo: "https://cryptologos.cc/logos/chainlink-link-logo.png" },
         { symbol: "STX", name: "Stacks", pair: "STXUSDT", spread: 0.46, baseBRL: 1.60, logo: "https://cryptologos.cc/logos/stacks-stx-logo.png" },
-        { symbol: "RENDER", name: "Render", pair: "RENDERUSDT", spread: 0.50, baseBRL: 9.50, logo: "https://upload.wikimedia.org/wikipedia/commons/2/27/Render_token_logo.png" },
+        { symbol: "RENDER", name: "Render", pair: "RENDERUSDT", spread: 0.50, baseBRL: 9.50, logo: "https://cryptologos.cc/logos/render-token-rndr-logo.png" },
         { symbol: "ADA", name: "Cardano", pair: "ADAUSDT", spread: 0.32, baseBRL: 3.50, logo: "https://cryptologos.cc/logos/cardano-ada-logo.png" },
         { symbol: "XRP", name: "XRP", pair: "XRPUSDT", spread: 0.28, baseBRL: 3.10, logo: "https://cryptologos.cc/logos/xrp-xrp-logo.png" },
         { symbol: "AVAX", name: "Avalanche", pair: "AVAXUSDT", spread: 0.45, baseBRL: 140, logo: "https://cryptologos.cc/logos/avalanche-avax-logo.png" },
@@ -246,7 +246,7 @@
             let html = '';
             coinsData.forEach(c => {
                 html += `
-                <div class="c-asset" id="card-${c.symbol}" onclick="toggle('${c.symbol}', '${c.pair}')">
+                <div class="c-asset" id="card-${c.symbol}" onclick="toggleCardStatus('${c.symbol}')">
                     <div class="side-pill pos-bg" id="pill-${c.symbol}"></div>
                     <div class="asset-row">
                         <div class="a-left">
@@ -268,7 +268,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="chart-box" id="tv-${c.symbol}"></div>
+                    <div class="chart-box" id="tv-${c.symbol}" onclick="event.stopPropagation()"></div>
                 </div>`;
             });
             listContainer.innerHTML = html;
@@ -306,17 +306,34 @@
         } catch(e) {}
     }
 
-    function toggle(symbol, pair) {
+    // Função isolada para alternar o gráfico sem alterar o status de ENTRADA/SAÍDA do card
+    document.addEventListener('click', (e) => {
+        const card = e.target.closest('.c-asset');
+        if (!card) return;
+        
+        // Se o clique foi dentro da caixa de gráfico, apenas gerencia a abertura/fechamento limpa do TradingView
+        if (e.target.closest('.chart-box')) {
+            return;
+        }
+
+        // Se clicou na linha superior/principal do card (fora do gráfico), aí sim alterna o gráfico e o estado visual de inspeção
+        let symbol = card.id.replace('card-', '');
+        let pairObj = coinsData.find(x => x.symbol === symbol);
+        if(!pairObj) return;
+
+        toggleChart(symbol, pairObj.pair);
+    });
+
+    function toggleChart(symbol, pair) {
         try {
             const card = document.getElementById(`card-${symbol}`);
             const chartBox = document.getElementById(`tv-${symbol}`);
-            const tag = document.getElementById(`tag-${symbol}`);
-            const pill = document.getElementById(`pill-${symbol}`);
             
             if(!card || !chartBox) return;
 
             let isOpen = card.classList.contains('open');
             
+            // Fecha todos os outros gráficos abertos
             document.querySelectorAll('.c-asset').forEach(el => {
                 if(el.id !== `card-${symbol}`) {
                     el.classList.remove('open');
@@ -329,12 +346,7 @@
             if(!isOpen) {
                 card.classList.add('open');
                 activeStates[symbol] = true; 
-                if(tag) { tag.innerText = "ENTRA"; tag.style.color = "#00ff88"; tag.style.borderColor = "#00ff88"; }
-                if(pill) pill.className = "side-pill pos-bg";
                 
-                addAlert(`[ENTRADA] Ativar posição no ativo ${symbol}`);
-                playBeep('entry');
-
                 chartBox.innerHTML = '';
                 new TradingView.widget({
                     "width": "100%",
@@ -354,16 +366,16 @@
             } else {
                 card.classList.remove('open');
                 activeStates[symbol] = false; 
-                if(tag) { tag.innerText = "SAÍDA / PULA"; tag.style.color = "#ff3e3e"; tag.style.borderColor = "#ff3e3e"; }
-                if(pill) pill.className = "side-pill neg-bg";
-                
                 chartBox.innerHTML = '';
-                addAlert(`[SAÍDA / POLAR] Ativo ${symbol} saiu para polar.`);
-                playBeep('exit');
             }
         } catch(e) {
-            logErrorCustom("Erro ao abrir gráfico/toggle do ativo " + symbol + ": " + e.message);
+            logErrorCustom("Erro ao abrir gráfico do ativo " + symbol + ": " + e.message);
         }
+    }
+
+    // Função separada estritamente para alteração manual ou lógica de status do card se necessário
+    function toggleCardStatus(symbol) {
+        // Reservado para controle de estado se houver interação específica futura
     }
 
     function setFilter(filter) {
@@ -480,4 +492,5 @@
         if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0];
     }, 1000);
 </script>
-</html>
+    </html>
+    
