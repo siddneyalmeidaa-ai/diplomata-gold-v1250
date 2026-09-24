@@ -105,6 +105,8 @@
         .flow-tag { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 3px; background: #000; border: 1px solid #1a1a1a; color: #444; }
         .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 12px rgba(0, 255, 136, 0.2); }
         .pos-txt { color: var(--green-nitido) !important; }
+        .neg-bg { background: var(--red-nitido) !important; box-shadow: 0 0 12px rgba(255, 62, 62, 0.2); }
+        .neg-txt { color: var(--red-nitido) !important; }
     </style>
 </head>
 <body>
@@ -165,6 +167,7 @@
 </div>
 
 <div class="container" id="list">
+    <!-- BTC -->
     <div id="card-BTC" class="c-asset">
         <div class="side-pill pos-bg"></div>
         <div class="asset-row">
@@ -190,10 +193,90 @@
             </div>
         </div>
     </div>
+
+    <!-- ETH -->
+    <div id="card-ETH" class="c-asset">
+        <div class="side-pill pos-bg"></div>
+        <div class="asset-row">
+            <div class="a-left">
+                <div class="coin-icon-wrapper">
+                    <div class="coin-icon" style="color: #3b82f6;">ETH</div>
+                    <span class="a-sym">ETH</span>
+                </div>
+                <div class="a-info" style="margin-left: 6px;">
+                    <div class="a-subinfo">
+                        <span class="a-pair">SPREAD: 0.28%</span>
+                        <span class="hft-tag flow-buy">DELTA: +1.5%</span>
+                        <span class="hft-tag rsi-tag">RSI: 61.2</span>
+                    </div>
+                </div>
+            </div>
+            <div class="a-right">
+                <div class="a-price">R$ 19.250,00</div>
+                <div class="status-box">
+                    <span class="flow-tag">ENTRA</span>
+                    <span class="a-pct pos-txt">+3.10%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SOL -->
+    <div id="card-SOL" class="c-asset">
+        <div class="side-pill pos-bg"></div>
+        <div class="asset-row">
+            <div class="a-left">
+                <div class="coin-icon-wrapper">
+                    <div class="coin-icon" style="color: #a855f7;">SOL</div>
+                    <span class="a-sym">SOL</span>
+                </div>
+                <div class="a-info" style="margin-left: 6px;">
+                    <div class="a-subinfo">
+                        <span class="a-pair">SPREAD: 0.42%</span>
+                        <span class="hft-tag flow-buy">DELTA: +2.1%</span>
+                        <span class="hft-tag rsi-tag">RSI: 64.8</span>
+                    </div>
+                </div>
+            </div>
+            <div class="a-right">
+                <div class="a-price">R$ 1.150,00</div>
+                <div class="status-box">
+                    <span class="flow-tag">ENTRA</span>
+                    <span class="a-pct pos-txt">+4.80%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LINK -->
+    <div id="card-LINK" class="c-asset">
+        <div class="side-pill" style="background: #444;"></div>
+        <div class="asset-row">
+            <div class="a-left">
+                <div class="coin-icon-wrapper">
+                    <div class="coin-icon" style="color: #60a5fa;">LIN</div>
+                    <span class="a-sym">LINK</span>
+                </div>
+                <div class="a-info" style="margin-left: 6px;">
+                    <div class="a-subinfo">
+                        <span class="a-pair">SPREAD: 0.31%</span>
+                        <span class="hft-tag flow-buy">DELTA: +0.9%</span>
+                        <span class="hft-tag rsi-tag">RSI: 55.1</span>
+                    </div>
+                </div>
+            </div>
+            <div class="a-right">
+                <div class="a-price">R$ 85,00</div>
+                <div class="status-box">
+                    <span class="flow-tag">PULA</span>
+                    <span class="a-pct" style="color: #aaa;">+0.75%</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // FORÇAR ATUALIZAÇÃO DO RELÓGIO IMEDIATAMENTE DE FORMA INDEPENDENTE
     function iniciarRelogioGeral() {
         const atualizar = () => {
             const d = new Date();
@@ -235,4 +318,3 @@
 </script>
 </body>
 </html>
-
