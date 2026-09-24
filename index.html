@@ -194,7 +194,7 @@
 <div class="quantum-panel-sugestoes">
     <div class="qp-title">⚡ STATUS DO CONSULTOR QUÂNTICO</div>
     <div class="qp-grid">
-        <div>Filtragem: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Motor HFT Forçado via DOM Ready</span></div>
+        <div>Filtragem: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Relógio Isolado e Motor Sincronizado</span></div>
     </div>
 </div>
 
@@ -334,6 +334,22 @@
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
+    // RELÓGIO ISOLADO DE EXECUÇÃO IMEDIATA
+    (function() {
+        function atualizarRelogioDireto() {
+            const clockEl = document.getElementById('clock');
+            if(clockEl) {
+                const d = new Date();
+                const h = String(d.getHours()).padStart(2, '0');
+                const m = String(d.getMinutes()).padStart(2, '0');
+                const s = String(d.getSeconds()).padStart(2, '0');
+                clockEl.innerText = `${h}:${m}:${s}`;
+            }
+        }
+        atualizarRelogioDireto();
+        setInterval(atualizarRelogioDireto, 1000);
+    })();
+
     document.addEventListener("DOMContentLoaded", function() {
         const coins = ["BTC", "ETH", "SOL", "LINK"];
         let alerts = [];
@@ -350,15 +366,6 @@
         window['price_ETH'] = 19250.00;
         window['price_SOL'] = 1150.00;
         window['price_LINK'] = 85.00;
-
-        function atualizarRelogio() {
-            const clockEl = document.getElementById('clock');
-            if(clockEl) {
-                clockEl.innerText = new Date().toLocaleTimeString('pt-BR');
-            }
-        }
-        atualizarRelogio();
-        setInterval(atualizarRelogio, 1000);
 
         window.toggle = function(s) {
             const card = document.getElementById(`card-${s}`);
@@ -382,11 +389,4 @@
                                 "style": "1",
                                 "locale": "br",
                                 "toolbar_bg": "#f1f3f6",
-                                "enable_publishing": false,
-                                "hide_top_toolbar": true,
-                                "save_image": false,
-                                "container_id": `tv-${s}`
-                            });
-                        }
-                    } catch(err) {
-             
+                         
