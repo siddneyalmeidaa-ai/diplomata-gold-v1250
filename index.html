@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -218,7 +218,6 @@
     <button class="n-btn" id="btn-spread" onclick="setFilter('SPREAD')">🚀 SPREAD</button>
 </div>
 
-<!-- LISTA ESTRUTURADA DIRETAMENTE NO HTML PARA ZERO ATRASOS NO MÓVEL -->
 <div class="container" id="list">
     <!-- BTC -->
     <div id="card-BTC" class="c-asset" data-top="true" data-spread="true" onclick="toggle('BTC')">
@@ -346,10 +345,10 @@
         alerts = [];
     }
 
-    window['price_BTC'] = 357500;
-    window['price_ETH'] = 19250;
-    window['price_SOL'] = 1150;
-    window['price_LINK'] = 85;
+    window['price_BTC'] = 357500.00;
+    window['price_ETH'] = 19250.00;
+    window['price_SOL'] = 1150.00;
+    window['price_LINK'] = 85.00;
 
     function toggle(s) {
         const card = document.getElementById(`card-${s}`);
@@ -390,4 +389,5 @@
         document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
         document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
         document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
-        document.getElementById('btn-spr    
+        document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
+        
