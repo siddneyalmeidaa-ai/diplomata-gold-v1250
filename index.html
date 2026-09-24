@@ -250,7 +250,7 @@
                 if(!e.target.classList.contains('a-price')) toggle(s);
             };
 
-            let mockPriceBRL = (150 + index * 1250.50) * usdRate;
+            let mockPriceBRL = (150 + (index + 1) * 1250.50) * usdRate;
             window[`price_${s}`] = mockPriceBRL;
 
             card.innerHTML = `
@@ -397,4 +397,4 @@
                             <span>[${a.dateTimeStr}] // ${a.symbol || 'SYS'}</span>
                             <span>${a.level}</span>
                         </div>
-                        <div class="advisor-body
+                        <div class="adviso
