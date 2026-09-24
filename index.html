@@ -408,7 +408,6 @@
     }
     renderAlerts();
 
-    // Função de formatação monetária correta com separadores de milhar e decimais (toLocaleString)
     function formatCurrencyBRL(val) {
         return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
@@ -447,16 +446,34 @@
             if(priceEl) priceEl.innerText = `R$ ${formatCurrencyBRL(priceBRL)}`;
 
             let pctEl = document.getElementById(`pct-${item.symbol}`);
+            let tagEl = document.getElementById(`tag-${item.symbol}`);
+            let pillEl = document.getElementById(`pill-${item.symbol}`);
+
             if(pctEl) {
                 let sign = priceChangePercent >= 0 ? "+" : "";
                 pctEl.innerText = `${sign}${priceChangePercent.toFixed(2)}%`;
                 pctEl.className = `a-pct ${priceChangePercent >= 0 ? 'pos-txt' : 'neg-txt'}`;
             }
+
+            // Sincronização automática do status baseada estritamente na tendência (Alta = ENTRA / Baixa = SAÍDA / PULA)
+            if(tagEl && pillEl) {
+                if(priceChangePercent >= 0) {
+                    tagEl.innerText = "ENTRA";
+                    tagEl.style.color = "#00ff88";
+                    tagEl.style.borderColor = "rgba(0,255,136,0.3)";
+                    pillEl.className = "side-pill pos-bg";
+                } else {
+                    tagEl.innerText = "SAÍDA / PULA";
+                    tagEl.style.color = "#ff3e3e";
+                    tagEl.style.borderColor = "rgba(255,62,62,0.3)";
+                    pillEl.className = "side-pill neg-bg";
+                }
+            }
         });
     }
 
     setInterval(sync, 5000);
-    sync(); // Executa imediatamente na carga
+    sync();
 
     setInterval(() => {
         const now = new Date();
