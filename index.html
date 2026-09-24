@@ -62,9 +62,17 @@
             padding: 12px 15px;
             font-family: 'JetBrains Mono', monospace;
         }
-        .qp-title { font-size: 9px; font-weight: 900; color: var(--green-nitido); margin-bottom: 6px; letter-spacing: 1px; }
+        .qp-title { font-size: 9px; font-weight: 900; color: var(--green-nitido); margin-bottom: 6px; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center; }
         .qp-grid { display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 9px; color: #aaa; }
         .qp-val { color: #fff; font-weight: 800; display: inline-block; }
+        
+        /* NOVO PAINEL DE GESTÃO DE RISCO DINÂMICO */
+        .risk-manager-box {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #141414;
+        }
+        .risk-field { display: flex; flex-direction: column; gap: 2px; }
+        .risk-label { font-size: 7px; color: #555; text-transform: uppercase; font-weight: 900; }
+        .risk-input { background: #0c0c0c; border: 1px solid #222; color: var(--green-nitido); font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 4px; border-radius: 4px; outline: none; width: 100%; box-sizing: border-box; }
 
         .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #030303; flex-wrap: wrap; }
         .n-btn { flex: 1; min-width: 25%; padding: 12px; text-align: center; font-size: 8px; font-weight: 900; color: #444; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
@@ -72,7 +80,6 @@
 
         .container { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
         
-        /* ESTILIZAÇÃO AVANÇADA DOS CARDS */
         .c-asset { 
             background: linear-gradient(135deg, var(--card) 0%, #030303 100%);
             border: 1px solid var(--border-dark);
@@ -164,9 +171,26 @@
 </div>
 
 <div class="quantum-panel-sugestoes">
-    <div class="qp-title">⚡ STATUS DO SISTEMA</div>
+    <div class="qp-title">
+        <span>⚡ STATUS & GESTÃO DE RISCO DINÂMICO</span>
+        <span id="risk-suggestion" style="font-size: 8px; color: #f59e0b;">STAKE SUGERIDA: R$ 1,00</span>
+    </div>
     <div class="qp-grid">
-        <div>Motor: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Monitoramento RSI & SPREAD Ativo</span></div>
+        <div>Motor: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Monitoramento RSI, SPREAD & Alerta Sonoro Ativo</span></div>
+    </div>
+    <div class="risk-manager-box">
+        <div class="risk-field">
+            <span class="risk-label">Banca Base (R$)</span>
+            <input type="number" id="input-banca" class="risk-input" value="100" oninput="calcularRisco()">
+        </div>
+        <div class="risk-field">
+            <span class="risk-label">Risco/Round (%)</span>
+            <input type="number" id="input-risco" class="risk-input" value="1" step="0.1" oninput="calcularRisco()">
+        </div>
+        <div class="risk-field">
+            <span class="risk-label">Stake Calculada</span>
+            <input type="text" id="output-stake" class="risk-input" value="R$ 1,00" readonly style="color: #00ff88; font-weight: 900;">
+        </div>
     </div>
 </div>
 
@@ -199,8 +223,39 @@
     };
 
     let usdRate = 5.50;
-    let currentFilter = 'ALL';
+    // Persistência de Filtro via localStorage
+    let currentFilter = localStorage.getItem('sentinel_filter_v16') || 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
+    let audioCtx = null;
+
+    // Inicializa o filtro salvo visualmente ao carregar
+    window.addEventListener('DOMContentLoaded', () => {
+        setFilter(currentFilter, false);
+    });
+
+    function playBeep() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Tom agudo para alerta
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+        } catch(e) {}
+    }
+
+    function calcularRisco() {
+        let banca = parseFloat(document.getElementById('input-banca').value) || 0;
+        let percent = parseFloat(document.getElementById('input-risco').value) || 0;
+        let stake = banca * (percent / 100);
+        document.getElementById('output-stake').value = "R$ " + stake.toFixed(2);
+        document.getElementById('risk-suggestion').innerText = `STAKE SUGERIDA: R$ ${stake.toFixed(2)}`;
+    }
 
     function renderInitialCards() {
         const listContainer = document.getElementById('list');
@@ -241,8 +296,11 @@
         });
     }
 
-    function setFilter(filter) {
+    function setFilter(filter, save = true) {
         currentFilter = filter;
+        if (save) {
+            localStorage.setItem('sentinel_filter_v16', filter);
+        }
         document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
         document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
         document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
@@ -269,6 +327,7 @@
         localStorage.setItem('fenix_quantum_alerts_v16', JSON.stringify(alerts));
         renderAlerts();
         document.getElementById('dot').style.display = 'block';
+        playBeep(); // Dispara o alerta sonoro e visual
     }
 
     function renderAlerts() {
@@ -292,6 +351,7 @@
         } catch (e) {}
 
         let assetData = [];
+        let novosAlvosDetectados = 0;
 
         for (let i = 0; i < coins.length; i++) {
             let s = coins[i];
@@ -315,6 +375,8 @@
             let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 3.5) + ((i % 3) * 2)));
             let isTarget = (s !== "BTC" && priceChange > 1.0 && rsiCalculado > 55);
 
+            if (isTarget) novosAlvosDetectados++;
+
             assetData.push({
                 s, p: priceBRL, pct: priceChange, spread: spreadSimulado, rsi: rsiCalculado,
                 delta: priceChange >= 0 ? `+${priceChange.toFixed(1)}%` : `${priceChange.toFixed(1)}%`,
@@ -332,53 +394,4 @@
                 card.style.display = showCard ? 'flex' : 'none';
 
                 const isPos = asset.pct >= 0;
-                document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
-                
-                const priceEl = document.getElementById(`pr-${asset.s}`);
-                priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                priceEl.setAttribute('onclick', `copyPrice(${asset.p}, '${asset.s}')`);
-
-                document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
-                document.getElementById(`rsi-${asset.s}`).innerText = `RSI: ${asset.rsi.toFixed(1)}`;
-
-                const pctEl = document.getElementById(`pct-${asset.s}`);
-                pctEl.innerText = (isPos ? "+" : "") + asset.pct.toFixed(2) + "%";
-                pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
-
-                const tagEl = document.getElementById(`tag-${asset.s}`);
-                if (asset.isTarget) {
-                    tagEl.innerText = "ENTRA | ALVO"; 
-                    tagEl.style.color = "var(--green-nitido)";
-                    card.classList.add('pulse');
-                } else {
-                    tagEl.innerText = "PULA / AGUARDA"; 
-                    tagEl.style.color = "#555";
-                    card.classList.remove('pulse');
-                }
-            }
-        });
-
-        document.getElementById('target-count').innerText = assetData.filter(a => a.isTarget).length;
-    }
-
-    function toggle(id) {
-        const c = document.getElementById(`card-${id}`);
-        c.classList.toggle('open');
-        const containerId = `tv-${id}`;
-        if (c.classList.contains('open') && document.getElementById(containerId).innerHTML === "") {
-            new TradingView.widget({
-                "autosize": true, "symbol": "BINANCE:" + id + "USDT",
-                "interval": "30", "theme": "dark", "container_id": containerId,
-                "hide_side_toolbar": true, "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
-            });
-        }
-    }
-
-    renderInitialCards();
-    sync();
-    setInterval(sync, 15000);
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-</script>
-</body>
-    </html>
-            
+                document
