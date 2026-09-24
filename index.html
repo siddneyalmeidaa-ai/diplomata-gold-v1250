@@ -66,7 +66,6 @@
         .qp-grid { display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 9px; color: #aaa; }
         .qp-val { color: #fff; font-weight: 800; display: inline-block; }
         
-        /* NOVO PAINEL DE GESTÃO DE RISCO DINÂMICO */
         .risk-manager-box {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #141414;
         }
@@ -94,13 +93,6 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
-        .c-asset:hover {
-            background: linear-gradient(135deg, var(--card-hover) 0%, #050505 100%);
-            border-color: var(--border-glow);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
-        }
-
         .side-pill {
             position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
             background: #161616; transition: all 0.3s ease;
@@ -123,13 +115,11 @@
         
         .hft-tag { font-size: 8px; font-weight: 900; font-family: 'JetBrains Mono', monospace; padding: 2px 6px; border-radius: 4px; border: 1px solid transparent; }
         .flow-buy { color: #00ff88; background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.2); }
-        .flow-sell { color: #ff3e3e; background: rgba(255,62,62,0.08); border-color: rgba(255,62,62,0.2); }
         .rsi-tag { color: #f59e0b; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); }
 
         .a-right { text-align: right; }
         .a-price { font-size: 18px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: color 0.2s; }
         .a-price:hover { color: var(--green-nitido); }
-        .a-price:active { opacity: 0.4; }
         
         .status-box { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 5px; }
         .a-pct { font-size: 11px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
@@ -148,7 +138,6 @@
         .neg-bg { background: var(--red-nitido) !important; box-shadow: 0 0 12px rgba(255, 62, 62, 0.3); }
         .pos-txt { color: var(--green-nitido) !important; }
         .neg-txt { color: var(--red-nitido) !important; }
-        .spread-negativo { color: #ff3e3e !important; background: rgba(255, 62, 62, 0.12); }
     </style>
 </head>
 <body>
@@ -223,14 +212,14 @@
     };
 
     let usdRate = 5.50;
-    // Persistência de Filtro via localStorage
     let currentFilter = localStorage.getItem('sentinel_filter_v16') || 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
     let audioCtx = null;
 
-    // Inicializa o filtro salvo visualmente ao carregar
     window.addEventListener('DOMContentLoaded', () => {
+        renderInitialCards();
         setFilter(currentFilter, false);
+        sync();
     });
 
     function playBeep() {
@@ -239,7 +228,7 @@
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Tom agudo para alerta
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
             gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
             osc.connect(gain);
@@ -327,7 +316,7 @@
         localStorage.setItem('fenix_quantum_alerts_v16', JSON.stringify(alerts));
         renderAlerts();
         document.getElementById('dot').style.display = 'block';
-        playBeep(); // Dispara o alerta sonoro e visual
+        playBeep();
     }
 
     function renderAlerts() {
@@ -379,7 +368,6 @@
 
             assetData.push({
                 s, p: priceBRL, pct: priceChange, spread: spreadSimulado, rsi: rsiCalculado,
-                delta: priceChange >= 0 ? `+${priceChange.toFixed(1)}%` : `${priceChange.toFixed(1)}%`,
                 isTarget
             });
         }
@@ -394,4 +382,15 @@
                 card.style.display = showCard ? 'flex' : 'none';
 
                 const isPos = asset.pct >= 0;
-                document
+                document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
+                
+                const priceEl = document.getElementById(`pr-${asset.s}`);
+                priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                priceEl.setAttribute('onclick', `copyPrice(${asset.p}, '${asset.s}')`);
+
+                document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
+                document.getElementById(`rsi-${asset.s}`).innerText = `RSI: ${asset.rsi.toFixed(1)}`;
+
+                const pctEl = document.getElementById(`pct-${asset.s}`);
+                pctEl.innerText = (isPos ? "+" : "") + asset.pct.toFixed(2) + "%";
+          
