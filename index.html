@@ -334,8 +334,8 @@
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    // RELÓGIO GLOBAL EM LOOP DIRETO DE ALTA PRIORIDADE
-    setInterval(function() {
+    // FUNÇÃO DIRETA PARA ATUALIZAR O RELÓGIO IMEDIATAMENTE E EM LOOP
+    function atualizarRelogio() {
         const d = new Date();
         const h = String(d.getHours()).padStart(2, '0');
         const m = String(d.getMinutes()).padStart(2, '0');
@@ -344,7 +344,9 @@
         if (el) {
             el.innerText = h + ":" + m + ":" + s;
         }
-    }, 1000);
+    }
+    setInterval(atualizarRelogio, 1000);
+    atualizarRelogio();
 
     document.addEventListener("DOMContentLoaded", function() {
         const coins = ["BTC", "ETH", "SOL", "LINK"];
@@ -387,5 +389,4 @@
                                 "toolbar_bg": "#f1f3f6",
                                 "enable_publishing": false,
                                 "hide_top_toolbar": true,
-                                "save_image": false,
-                            
+        
