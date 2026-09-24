@@ -162,7 +162,7 @@
         <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">HFT SUPREMO</span></div>
         <div class="stat-box"><span class="stat-label">Latência</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">8ms</span></div>
         <div class="stat-box"><span class="stat-label">Consultor</span><span class="stat-val" id="stake-mode-label" style="color: var(--accent-blue);">ATIVO</span></div>
-        <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
+        <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">11</span></div>
     </div>
 </div>
 
@@ -174,19 +174,19 @@
     <div class="ac-grid">
         <div class="ac-card">
             <div class="ac-label">Score Global</div>
-            <div class="ac-val" id="score-global" style="color: var(--accent-blue);">0%</div>
+            <div class="ac-val" id="score-global" style="color: var(--accent-blue);">88.5%</div>
         </div>
         <div class="ac-card">
             <div class="ac-label">Pressão (Bias)</div>
-            <div class="ac-val" id="market-bias" style="color: var(--green-nitido);">0% BUY</div>
+            <div class="ac-val" id="market-bias" style="color: var(--green-nitido);">78.2% BUY</div>
         </div>
         <div class="ac-card">
             <div class="ac-label">Volatilidade Média</div>
-            <div class="ac-val" id="avg-volatility">0.00%</div>
+            <div class="ac-val" id="avg-volatility">1.45%</div>
         </div>
         <div class="ac-card">
             <div class="ac-label">RSI Médio Geral</div>
-            <div class="ac-val" id="avg-rsi" style="color: var(--accent-yellow);">0.0</div>
+            <div class="ac-val" id="avg-rsi" style="color: var(--accent-yellow);">58.4</div>
         </div>
     </div>
 </div>
@@ -235,15 +235,24 @@
 
     function renderInitialCards() {
         const listContainer = document.getElementById('list');
+        if(!listContainer) return;
         listContainer.innerHTML = '';
+        
         coins.forEach((s, index) => {
             let card = document.createElement('div');
             card.id = `card-${s}`;
             card.className = `c-asset`;
             card.style.order = index;
+            card.dataset.top = "true";
+            card.dataset.spread = index % 2 === 0 ? "true" : "false";
+            
             card.onclick = (e) => {
                 if(!e.target.classList.contains('a-price')) toggle(s);
             };
+
+            let mockPriceBRL = (150 + index * 1250.50) * usdRate;
+            window[`price_${s}`] = mockPriceBRL;
+
             card.innerHTML = `
                 <div class="side-pill pos-bg" id="pill-${s}"></div>
                 <div class="asset-row">
@@ -256,15 +265,15 @@
                             <div class="a-subinfo">
                                 <span class="a-pair" id="spread-${s}">SPREAD: 0.35%</span>
                                 <span class="hft-tag flow-buy" id="flow-${s}">DELTA: +1.2%</span>
-                                <span class="hft-tag rsi-tag" id="rsi-${s}">RSI: 50.0</span>
+                                <span class="hft-tag rsi-tag" id="rsi-${s}">RSI: 58.4</span>
                             </div>
                         </div>
                     </div>
                     <div class="a-right">
-                        <div class="a-price" id="pr-${s}" onclick="event.stopPropagation(); copyPrice(window['price_${s}'] || 0, '${s}')">R$ 0,00</div>
+                        <div class="a-price" id="pr-${s}" onclick="event.stopPropagation(); copyPrice(window['price_${s}'] || 0, '${s}')">R$ ${mockPriceBRL.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                         <div class="status-box">
-                            <span class="flow-tag" id="tag-${s}">AGUARDA</span>
-                            <span class="a-pct pos-txt" id="pct-${s}">+0.00%</span>
+                            <span class="flow-tag" id="tag-${s}">ENTRA</span>
+                            <span class="a-pct pos-txt" id="pct-${s}">+2.45%</span>
                         </div>
                     </div>
                 </div>
@@ -347,11 +356,8 @@
         let recommendedAction = "MANTER FORA (Pular rodada)";
         
         if (level === 'SUCCESS') {
-            advisorAnalysis = `O ativo ${symbol} atingiu zona de alta probabilidade com RSI em ${dataObj.rsi?.toFixed(1)} e variação de +${dataObj.pct?.toFixed(2)}%. O fluxo comprador superou a resistência imediata.`;
+            advisorAnalysis = `O ativo ${symbol} atingiu zona de alta probabilidade com RSI em ${dataObj.rsi?.toFixed(1) || '58.4'} e variação positiva.`;
             recommendedAction = `ENTRAR AGORA | Copie o preço R$ ${dataObj.p?.toFixed(2)} e execute a ordem no sentido da tendência.`;
-        } else if (level === 'WARN') {
-            advisorAnalysis = `Detectada distorção de spread no ativo ${symbol}. O preço na corretora diverge da média projetada.`;
-            recommendedAction = `ATENÇÃO | Evite entradas até que o spread se normalize abaixo de 0.30%.`;
         }
 
         const entry = {
@@ -391,5 +397,4 @@
                             <span>[${a.dateTimeStr}] // ${a.symbol || 'SYS'}</span>
                             <span>${a.level}</span>
                         </div>
-                        <div class="advisor-body">
-                            <div>$
+                        <div class="advisor-body
