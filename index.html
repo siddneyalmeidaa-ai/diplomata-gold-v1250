@@ -8,10 +8,12 @@
     <style>
         :root { 
             --bg: #010101; 
-            --card: #080808; 
+            --card: #060606; 
+            --card-hover: #0b0b0b;
             --green-nitido: #00ff88; 
             --red-nitido: #ff3e3e;   
-            --border-dark: #161616; 
+            --border-dark: #1a1a1a; 
+            --border-glow: #2a2a2a;
             --glass: rgba(3, 3, 3, 0.98);
         }
         body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; user-select: none; }
@@ -68,45 +70,75 @@
         .n-btn { flex: 1; min-width: 25%; padding: 12px; text-align: center; font-size: 8px; font-weight: 900; color: #444; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
         .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); background: rgba(0,255,136,0.02); }
 
-        .container { padding: 10px 12px; display: flex; flex-direction: column; }
+        .container { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+        
+        /* ESTILIZAÇÃO AVANÇADA DOS CARDS */
         .c-asset { 
-            background: var(--card); border: 1px solid var(--border-dark);
-            border-radius: 10px; margin-bottom: 8px; padding: 16px 12px; 
-            display: flex; flex-direction: column; position: relative; overflow: hidden;
-            transition: all 0.25s ease;
+            background: linear-gradient(135deg, var(--card) 0%, #030303 100%);
+            border: 1px solid var(--border-dark);
+            border-radius: 12px; 
+            margin-bottom: 8px; 
+            padding: 14px 16px; 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .c-asset:hover {
+            background: linear-gradient(135deg, var(--card-hover) 0%, #050505 100%);
+            border-color: var(--border-glow);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
         }
 
         .side-pill {
-            position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
             background: #161616; transition: all 0.3s ease;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.5);
         }
 
         .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-        .a-left { display: flex; align-items: center; gap: 10px; }
-        .coin-icon { width: 28px; height: 28px; border-radius: 50%; background: #111; border: 1px solid #222; }
-        .a-info { display: flex; flex-direction: column; }
-        .a-sym { font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: -1px; line-height: 1; }
-        .a-subinfo { display: flex; gap: 6px; margin-top: 5px; align-items: center; flex-wrap: wrap; }
-        .a-pair { font-size: 9px; color: #777; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+        .a-left { display: flex; align-items: center; gap: 12px; }
         
-        .hft-tag { font-size: 8px; font-weight: 900; font-family: 'JetBrains Mono', monospace; padding: 2px 5px; border-radius: 3px; }
-        .flow-buy { color: #00ff88; background: rgba(0,255,136,0.12); }
-        .flow-sell { color: #ff3e3e; background: rgba(255,62,62,0.12); }
-        .rsi-tag { color: #f59e0b; background: rgba(245,158,11,0.12); }
+        .coin-icon { 
+            width: 32px; height: 32px; border-radius: 50%; 
+            background: #0d0d0d; border: 1px solid #222; 
+            padding: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .a-info { display: flex; flex-direction: column; }
+        .a-sym { font-size: 18px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; line-height: 1; }
+        .a-subinfo { display: flex; gap: 6px; margin-top: 6px; align-items: center; flex-wrap: wrap; }
+        .a-pair { font-size: 8px; color: #666; font-weight: 900; font-family: 'JetBrains Mono', monospace; background: #0c0c0c; padding: 2px 5px; border-radius: 4px; border: 1px solid #171717; }
+        
+        .hft-tag { font-size: 8px; font-weight: 900; font-family: 'JetBrains Mono', monospace; padding: 2px 6px; border-radius: 4px; border: 1px solid transparent; }
+        .flow-buy { color: #00ff88; background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.2); }
+        .flow-sell { color: #ff3e3e; background: rgba(255,62,62,0.08); border-color: rgba(255,62,62,0.2); }
+        .rsi-tag { color: #f59e0b; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); }
 
         .a-right { text-align: right; }
-        .a-price { font-size: 19px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; }
+        .a-price { font-size: 18px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: color 0.2s; }
+        .a-price:hover { color: var(--green-nitido); }
         .a-price:active { opacity: 0.4; }
         
-        .status-box { display: flex; align-items: center; gap: 5px; justify-content: flex-end; margin-top: 4px; }
-        .a-pct { font-size: 12px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
-        .flow-tag { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 3px; background: #000; border: 1px solid #1a1a1a; color: #444; }
+        .status-box { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 5px; }
+        .a-pct { font-size: 11px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+        
+        .flow-tag { 
+            font-size: 8px; font-weight: 900; padding: 2px 6px; 
+            border-radius: 4px; background: #090909; 
+            border: 1px solid #1f1f1f; color: #666; 
+            letter-spacing: 0.5px;
+        }
 
-        .chart-box { display: none; width: 100%; height: 420px; margin-top: 12px; border-top: 1px solid var(--border-dark); }
+        .chart-box { display: none; width: 100%; height: 420px; margin-top: 14px; border-top: 1px solid var(--border-dark); padding-top: 4px; }
         .c-asset.open .chart-box { display: block; }
 
-        .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 12px rgba(0, 255, 136, 0.2); }
-        .neg-bg { background: var(--red-nitido) !important; }
+        .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 12px rgba(0, 255, 136, 0.3); }
+        .neg-bg { background: var(--red-nitido) !important; box-shadow: 0 0 12px rgba(255, 62, 62, 0.3); }
         .pos-txt { color: var(--green-nitido) !important; }
         .neg-txt { color: var(--red-nitido) !important; }
         .spread-negativo { color: #ff3e3e !important; background: rgba(255, 62, 62, 0.12); }
@@ -280,7 +312,6 @@
 
             let priceBRL = priceUSDT * usdRate;
             let spreadSimulado = 0.30 + (i * 0.04);
-            // Simulação dinâmica e precisa de RSI baseada na variação do ativo
             let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 3.5) + ((i % 3) * 2)));
             let isTarget = (s !== "BTC" && priceChange > 1.0 && rsiCalculado > 55);
 
@@ -349,6 +380,5 @@
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
 </script>
 </body>
-</html>
-l>
-    
+    </html>
+            
