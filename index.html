@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+     <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -194,7 +194,7 @@
 <div class="quantum-panel-sugestoes">
     <div class="qp-title">⚡ STATUS DO CONSULTOR QUÂNTICO</div>
     <div class="qp-grid">
-        <div>Filtragem: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Relógio Isolado e Motor Sincronizado</span></div>
+        <div>Filtragem: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Relógio Forçado via Global Loop</span></div>
     </div>
 </div>
 
@@ -334,21 +334,17 @@
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    // RELÓGIO ISOLADO DE EXECUÇÃO IMEDIATA
-    (function() {
-        function atualizarRelogioDireto() {
-            const clockEl = document.getElementById('clock');
-            if(clockEl) {
-                const d = new Date();
-                const h = String(d.getHours()).padStart(2, '0');
-                const m = String(d.getMinutes()).padStart(2, '0');
-                const s = String(d.getSeconds()).padStart(2, '0');
-                clockEl.innerText = `${h}:${m}:${s}`;
-            }
+    // RELÓGIO GLOBAL EM LOOP DIRETO DE ALTA PRIORIDADE
+    setInterval(function() {
+        const d = new Date();
+        const h = String(d.getHours()).padStart(2, '0');
+        const m = String(d.getMinutes()).padStart(2, '0');
+        const s = String(d.getSeconds()).padStart(2, '0');
+        const el = document.getElementById('clock');
+        if (el) {
+            el.innerText = h + ":" + m + ":" + s;
         }
-        atualizarRelogioDireto();
-        setInterval(atualizarRelogioDireto, 1000);
-    })();
+    }, 1000);
 
     document.addEventListener("DOMContentLoaded", function() {
         const coins = ["BTC", "ETH", "SOL", "LINK"];
@@ -389,4 +385,7 @@
                                 "style": "1",
                                 "locale": "br",
                                 "toolbar_bg": "#f1f3f6",
-                         
+                                "enable_publishing": false,
+                                "hide_top_toolbar": true,
+                                "save_image": false,
+                       
