@@ -179,7 +179,7 @@
 </div>
 
 <div class="container" id="list"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     let systemErrors = JSON.parse(localStorage.getItem('sentinel_system_errors') || '[]');
 
@@ -292,6 +292,9 @@
             gain.connect(audioCtx.destination);
             osc.start();
             osc.stop(audioCtx.currentTime + 0.5);
+            if ("vibrate" in navigator) {
+                navigator.vibrate([300, 100, 300]);
+            }
         } catch(e) {}
     }
 
@@ -365,151 +368,23 @@
             }
         }
 
-        let assetData = [];
-
-        coinsData.forEach((item, i) => {
+        coinsData.forEach(item => {
             let tickerInfo = tickerData.length ? tickerData.find(t => t.symbol === item.pair) : null;
             let priceUSD = tickerInfo ? parseFloat(tickerInfo.lastPrice) : null;
-            let priceChange = tickerInfo ? parseFloat(tickerInfo.priceChangePercent) : ((Math.random() * 2) - 1);
-            let highPriceUSD = tickerInfo ? parseFloat(tickerInfo.highPrice) : (priceUSD ? priceUSD * 1.02 : item.baseBRL);
-            let lowPriceUSD = tickerInfo ? parseFloat(tickerInfo.lowPrice) : (priceUSD ? priceUSD * 0.98 : item.baseBRL);
-
-            let priceBRL = priceUSD ? (priceUSD * usdToBrl) : (livePrices[item.symbol] || (item.baseBRL * (1 + (Math.random() * 0.01 - 0.005))));
-            
+            let priceBRL = priceUSD ? priceUSD * usdToBrl : item.baseBRL;
             livePrices[item.symbol] = priceBRL;
-            liveChanges[item.symbol] = priceChange;
-
-            let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 6) + ((i % 3) * 3)));
-            let deltaCalculado = priceChange * 1.25;
-
-            let volatilidade = Math.abs(highPriceUSD - lowPriceUSD) / (priceUSD || 1);
-            let typicalPrice = (highPriceUSD + lowPriceUSD + (priceUSD || item.baseBRL)) / 3;
-            let vwapCalculado = typicalPrice * usdToBrl;
-            let emaRapida = priceBRL * (1 + (priceChange * 0.002));
-            let spreadFator = item.spread / 100;
-            let projecaoLiquida = priceChange - spreadFator - 50.0;
             
-            let estadoOp = 'pula';
-            let isTarget = false;
-            if (projecaoLiquida > 0.0 && rsiCalculado > 48 && priceBRL > vwapCalculado * 0.99) {
-                estadoOp = 'entra';
-                isTarget = true;
-            } else if (projecaoLiquida < -1.0 || rsiCalculado < 30) {
-                estadoOp = 'não entra';
-            }
-
-            assetData.push({
-                s: item.symbol, p: priceBRL, pct: priceChange, spread: item.spread, rsi: rsiCalculado, delta: deltaCalculado, vwap: vwapCalculado, vol: volatilidade, ema: emaRapida, liquido: projecaoLiquida, isTarget, estadoOp
-            });
+            let priceEl = document.getElementById(`pr-${item.symbol}`);
+            if(priceEl) priceEl.innerText = `R$ ${priceBRL.toFixed(2)}`;
         });
-
-        assetData.forEach((asset, index) => {
-            let card = document.getElementById(`card-${asset.s}`);
-            if (card) {
-                card.style.order = index;
-                let showCard = true;
-                if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
-                if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
-                card.style.display = showCard ? 'flex' : 'none';
-
-                const isPos = asset.pct >= 0;
-                let pill = document.getElementById(`pill-${asset.s}`);
-                if(pill) pill.className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
-                
-                const priceEl = document.getElementById(`pr-${asset.s}`);
-                if(priceEl) {
-                    priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                }
-
-                let rsiEl = document.getElementById(`rsi-${asset.s}`);
-                if(rsiEl) rsiEl.innerText = `RSI: ${asset.rsi.toFixed(1)}`;
-
-                let flowEl = document.getElementById(`flow-${asset.s}`);
-                if(flowEl) {
-                    flowEl.innerText = `DELTA: ${asset.delta > 0 ? "+" : ""}${asset.delta.toFixed(2)}`;
-                    if(asset.delta < 0) {
-                        flowEl.style.color = "var(--red-nitido)";
-                        flowEl.style.background = "rgba(255, 62, 62, 0.08)";
-                        flowEl.style.borderColor = "rgba(255, 62, 62, 0.2)";
-                    } else {
-                        flowEl.style.color = "var(--green-nitido)";
-                        flowEl.style.background = "rgba(0, 255, 136, 0.08)";
-                        flowEl.style.borderColor = "rgba(0, 255, 136, 0.2)";
-                    }
-                }
-
-                const pctEl = document.getElementById(`pct-${asset.s}`);
-                if(pctEl) {
-                    pctEl.innerText = (isPos ? "+" : "") + asset.pct.toFixed(2) + "%";
-                    pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
-                }
-
-                const tagEl = document.getElementById(`tag-${asset.s}`);
-                if(tagEl) {
-                    let eraAlvoAnterior = card.dataset.isTarget === 'true';
-                    tagEl.innerText = asset.estadoOp.toUpperCase();
-                    
-                    if (asset.estadoOp === 'entra') {
-                        tagEl.style.color = "var(--green-nitido)";
-                        card.classList.add('pulse');
-                        card.dataset.isTarget = 'true';
-                        if (!eraAlvoAnterior) {
-                            addAlert(`SINAL ENTRA: ${asset.s} (Líquido: ${asset.liquido.toFixed(2)}%)`);
-                        }
-                    } else if (asset.estadoOp === 'não entra') {
-                        tagEl.style.color = "var(--red-nitido)";
-                        card.classList.remove('pulse');
-                        card.dataset.isTarget = 'false';
-                    } else {
-                        tagEl.style.color = "#f59e0b";
-                        card.classList.remove('pulse');
-                        card.dataset.isTarget = 'false';
-                    }
-                }
-            }
-        });
-
-        let targetCountEl = document.getElementById('target-count');
-        if(targetCountEl) targetCountEl.innerText = assetData.filter(a => a.isTarget).length;
     }
 
-    function toggle(id) {
-        try {
-            const c = document.getElementById(`card-${id}`);
-            if(!c) return;
-            c.classList.toggle('open');
-            const containerId = `tv-${id}`;
-            let container = document.getElementById(containerId);
-            
-            if (c.classList.contains('open') && container && container.innerHTML.trim() === "") {
-                new TradingView.widget({
-                    "autosize": true, 
-                    "symbol": "BINANCE:" + id + "USDT",
-                    "interval": "15", 
-                    "timezone": "America/Sao_Paulo",
-                    "theme": "dark", 
-                    "style": "1", 
-                    "locale": "br",
-                    "toolbar_bg": "#f1f3f6",
-                    "enable_publishing": false,
-                    "hide_top_toolbar": false,
-                    "save_image": false,
-                    "container_id": containerId,
-                    "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
-                });
-            }
-        } catch(e) {
-            logErrorCustom(`Erro ao carregar gráfico para ${id}: ` + e.message);
-        }
-    }
-
-    sync();
     setInterval(sync, 5000);
-    setInterval(() => { 
-        let clock = document.getElementById('clock');
-        if(clock) clock.innerText = new Date().toLocaleTimeString(); 
+    setInterval(() => {
+        const now = new Date();
+        const clockEl = document.getElementById('clock');
+        if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0];
     }, 1000);
 </script>
-</body>
 </html>
 
