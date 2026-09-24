@@ -81,6 +81,7 @@
             position: relative; 
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
         }
 
         .side-pill {
@@ -108,7 +109,7 @@
         .rsi-tag { color: #f59e0b; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); }
 
         .a-right { text-align: right; }
-        .a-price { font-size: 18px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; }
+        .a-price { font-size: 18px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; }
         
         .status-box { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 5px; }
         .a-pct { font-size: 11px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
@@ -162,7 +163,7 @@
 
 <div id="notif-panel">
     <div class="notif-header">
-        <span style="font-size: 10px; font-weight: 900;">REGISTRO DE EVENTOS</span>
+        <span style="font-size: 10px; font-weight: 900;">REGISTRO DE EVENTOS (ENTRADA / SAÍDA)</span>
         <div style="display: flex; gap: 8px; align-items: center;">
             <button class="clear-btn" onclick="clearAlerts()">LIMPAR</button>
             <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px;">✕</span>
@@ -181,10 +182,11 @@
 <div class="container" id="list"></div>
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
+    // Gerenciamento isolado apenas para Erros do Sistema (Falhas técnicas e de abertura)
     let systemErrors = JSON.parse(localStorage.getItem('sentinel_system_errors') || '[]');
 
     window.onerror = function(msg, url, lineNo, columnNo, error) {
-        let errorMsg = `[${new Date().toLocaleTimeString()}] Erro: ${msg} (Linha: ${lineNo})`;
+        let errorMsg = `[${new Date().toLocaleTimeString()}] Erro do Sistema: ${msg} (Linha: ${lineNo})`;
         systemErrors.unshift(errorMsg);
         if(systemErrors.length > 20) systemErrors.pop();
         localStorage.setItem('sentinel_system_errors', JSON.stringify(systemErrors));
@@ -193,7 +195,7 @@
     };
 
     function logErrorCustom(msg) {
-        let errorMsg = `[${new Date().toLocaleTimeString()}] Alerta/Erro: ${msg}`;
+        let errorMsg = `[${new Date().toLocaleTimeString()}] Falha de Sistema: ${msg}`;
         systemErrors.unshift(errorMsg);
         if(systemErrors.length > 20) systemErrors.pop();
         localStorage.setItem('sentinel_system_errors', JSON.stringify(systemErrors));
@@ -233,8 +235,9 @@
     ];
 
     let livePrices = {};
-    let liveChanges = {};
+    let activeStates = {}; 
     let currentFilter = 'ALL';
+    // Gerenciamento isolado exclusivo para o Sininho (Entrada / Saída / Polar)
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
     let audioCtx = null;
 
@@ -245,7 +248,7 @@
             let html = '';
             coinsData.forEach(c => {
                 html += `
-                <div class="c-asset" id="card-${c.symbol}" onclick="toggle('${c.symbol}')" style="display: flex;">
+                <div class="c-asset" id="card-${c.symbol}" onclick="toggle('${c.symbol}', '${c.pair}')">
                     <div class="side-pill pos-bg" id="pill-${c.symbol}"></div>
                     <div class="asset-row">
                         <div class="a-left">
@@ -260,7 +263,7 @@
                             </div>
                         </div>
                         <div class="a-right">
-                            <div class="a-price" id="pr-${c.symbol}" onclick="event.stopPropagation(); copyPrice(livePrices['${c.symbol}'] || ${c.baseBRL}, '${c.symbol}')">R$ ...</div>
+                            <div class="a-price" id="pr-${c.symbol}">R$ ...</div>
                             <div class="status-box">
                                 <span class="flow-tag" id="tag-${c.symbol}">AGUARDA</span>
                                 <span class="a-pct pos-txt" id="pct-${c.symbol}">+0.00%</span>
@@ -272,30 +275,98 @@
             });
             listContainer.innerHTML = html;
         } catch(e) {
-            logErrorCustom("Erro ao construir lista: " + e.message);
+            logErrorCustom("Erro ao construir lista de ativos: " + e.message);
         }
     }
     
     buildAssetList();
-    setFilter('ALL', false);
 
-    function playBeep() {
+    function playBeep(type = 'entry') {
         try {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+            
+            if (type === 'entry') {
+                osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); 
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15); 
+            } else {
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime); 
+                osc.frequency.setValueAtTime(329.63, audioCtx.currentTime + 0.15); 
+            }
+
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.5);
+            osc.stop(audioCtx.currentTime + 0.4);
             if ("vibrate" in navigator) {
-                navigator.vibrate([300, 100, 300]);
+                navigator.vibrate(type === 'entry' ? [200, 100, 200] : [400, 100, 100]);
             }
         } catch(e) {}
+    }
+
+    // Função de Toggle que comanda a Entrada, Saída/Polar e Alarme Sonoro no Sininho
+    function toggle(symbol, pair) {
+        try {
+            const card = document.getElementById(`card-${symbol}`);
+            const chartBox = document.getElementById(`tv-${symbol}`);
+            const tag = document.getElementById(`tag-${symbol}`);
+            const pill = document.getElementById(`pill-${symbol}`);
+            
+            if(!card || !chartBox) return;
+
+            let isOpen = card.classList.contains('open');
+            
+            document.querySelectorAll('.c-asset').forEach(el => {
+                if(el.id !== `card-${symbol}`) {
+                    el.classList.remove('open');
+                    let sSym = el.id.replace('card-', '');
+                    let box = document.getElementById(`tv-${sSym}`);
+                    if(box) box.innerHTML = '';
+                }
+            });
+
+            if(!isOpen) {
+                card.classList.add('open');
+                activeStates[symbol] = true; 
+                if(tag) { tag.innerText = "ENTRA"; tag.style.color = "#00ff88"; tag.style.borderColor = "#00ff88"; }
+                if(pill) pill.className = "side-pill pos-bg";
+                
+                addAlert(`[ENTRADA] Ativar posição no ativo ${symbol}`);
+                playBeep('entry');
+
+                chartBox.innerHTML = '';
+                new TradingView.widget({
+                    "width": "100%",
+                    "height": 330,
+                    "symbol": "BINANCE:" + pair,
+                    "interval": "1",
+                    "timezone": "Etc/UTC",
+                    "theme": "dark",
+                    "style": "1",
+                    "locale": "br",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "hide_top_toolbar": false,
+                    "save_image": false,
+                    "container_id": `tv-${symbol}`
+                });
+            } else {
+                card.classList.remove('open');
+                activeStates[symbol] = false; 
+                if(tag) { tag.innerText = "SAÍDA / PULA"; tag.style.color = "#ff3e3e"; tag.style.borderColor = "#ff3e3e"; }
+                if(pill) pill.className = "side-pill neg-bg";
+                
+                chartBox.innerHTML = '';
+                addAlert(`[SAÍDA / POLAR] Ativo ${symbol} saiu para polar.`);
+                playBeep('exit');
+            }
+        } catch(e) {
+            logErrorCustom("Erro ao abrir gráfico/toggle do ativo " + symbol + ": " + e.message);
+        }
     }
 
     function setFilter(filter) {
@@ -330,21 +401,15 @@
         renderAlerts();
         let dot = document.getElementById('dot');
         if(dot) dot.style.display = 'block';
-        playBeep();
     }
 
     function renderAlerts() {
         const listEl = document.getElementById('notif-list');
         if(listEl) {
-            listEl.innerHTML = alerts.length ? alerts.map(a => `<div class="notif-item">${a}</div>`).join('') : '<div class="notif-item">Sem eventos recentes.</div>';
+            listEl.innerHTML = alerts.length ? alerts.map(a => `<div class="notif-item">${a}</div>`).join('') : '<div class="notif-item">Sem eventos recentes de operação.</div>';
         }
     }
     renderAlerts();
-
-    function copyPrice(val, symbol) {
-        navigator.clipboard.writeText(val.toFixed(2));
-        addAlert(`Copiado [${symbol}]: R$ ${val.toFixed(2)}`);
-    }
 
     async function sync() {
         let usdToBrl = 5.50;
@@ -363,7 +428,7 @@
             tickerData = await resTicker.json();
         } catch(e) {
             if(!window._apiErrorLogged) {
-                logErrorCustom("Falha temporária de rede/API. Sistema ativo com autónomo interno.");
+                logErrorCustom("Falha temporária de conexão com a API de mercado.");
                 window._apiErrorLogged = true;
             }
         }
