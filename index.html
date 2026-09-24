@@ -51,7 +51,6 @@
         .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f1f1f; padding-bottom: 8px; margin-bottom: 8px; }
         .notif-actions { display: flex; gap: 6px; align-items: center; }
         
-        /* CARD DO CONSULTOR FINANCEIRO NO ALERTA */
         .advisor-card {
             background: #0d0d0d;
             border: 1px solid #222;
@@ -107,7 +106,7 @@
             background: var(--card); border: 1px solid var(--border-dark);
             border-radius: 10px; margin-bottom: 8px; padding: 16px 12px; 
             display: flex; flex-direction: column; position: relative; overflow: hidden;
-            transition: all 0.25s ease;
+            transition: all 0.25s ease; cursor: pointer;
         }
 
         .side-pill {
@@ -117,9 +116,12 @@
 
         .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
         .a-left { display: flex; align-items: center; gap: 10px; }
-        .coin-icon { width: 28px; height: 28px; border-radius: 50%; background: #111; border: 1px solid #222; }
+        
+        .coin-icon-wrapper { display: flex; align-items: center; gap: 10px; }
+        .coin-icon { width: 28px; height: 28px; border-radius: 50%; background: #111; border: 1px solid #222; flex-shrink: 0; }
+        
         .a-info { display: flex; flex-direction: column; }
-        .a-sym { font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: -1px; line-height: 1; }
+        .a-sym { font-size: 18px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; line-height: 1; }
         .a-subinfo { display: flex; gap: 6px; margin-top: 5px; align-items: center; flex-wrap: wrap; }
         .a-pair { font-size: 9px; color: #777; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
         
@@ -229,6 +231,7 @@
     let usdRate = 5.50;
     let currentFilter = 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v19') || '[]');
+    let activeCharts = {};
 
     function renderInitialCards() {
         const listContainer = document.getElementById('list');
@@ -245,9 +248,11 @@
                 <div class="side-pill pos-bg" id="pill-${s}"></div>
                 <div class="asset-row">
                     <div class="a-left">
-                        <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[s]}-${s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${s}&background=111&color=fff'">
-                        <div class="a-info">
+                        <div class="coin-icon-wrapper">
+                            <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[s]}-${s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${s}&background=111&color=fff'">
                             <span class="a-sym">${s}</span>
+                        </div>
+                        <div class="a-info" style="margin-left: 6px;">
                             <div class="a-subinfo">
                                 <span class="a-pair" id="spread-${s}">SPREAD: 0.35%</span>
                                 <span class="hft-tag flow-buy" id="flow-${s}">DELTA: +1.2%</span>
@@ -256,7 +261,7 @@
                         </div>
                     </div>
                     <div class="a-right">
-                        <div class="a-price" id="pr-${s}" onclick="copyPrice(0, '${s}')">R$ 0,00</div>
+                        <div class="a-price" id="pr-${s}" onclick="event.stopPropagation(); copyPrice(window['price_${s}'] || 0, '${s}')">R$ 0,00</div>
                         <div class="status-box">
                             <span class="flow-tag" id="tag-${s}">AGUARDA</span>
                             <span class="a-pct pos-txt" id="pct-${s}">+0.00%</span>
@@ -269,13 +274,56 @@
         });
     }
 
+    function toggle(s) {
+        const card = document.getElementById(`card-${s}`);
+        if(!card) return;
+        const isOpen = card.classList.contains('open');
+        
+        document.querySelectorAll('.c-asset').forEach(c => c.classList.remove('open'));
+        
+        if(!isOpen) {
+            card.classList.add('open');
+            if(!activeCharts[s]) {
+                try {
+                    activeCharts[s] = new TradingView.widget({
+                        "width": "100%",
+                        "height": "420",
+                        "symbol": `BINANCE:${s}USDT`,
+                        "interval": "1",
+                        "timezone": "Etc/UTC",
+                        "theme": "dark",
+                        "style": "1",
+                        "locale": "br",
+                        "toolbar_bg": "#f1f3f6",
+                        "enable_publishing": false,
+                        "hide_top_toolbar": true,
+                        "save_image": false,
+                        "container_id": `tv-${s}`
+                    });
+                } catch(err) {}
+            }
+        }
+    }
+
     function setFilter(filter) {
         currentFilter = filter;
         document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
         document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
         document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
         document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
-        sync();
+        
+        coins.forEach(s => {
+            const card = document.getElementById(`card-${s}`);
+            if(!card) return;
+            let show = true;
+            const isTop = card.dataset.top === "true";
+            const isSpread = card.dataset.spread === "true";
+
+            if(filter === 'TOP' && !isTop) show = false;
+            if(filter === 'SPREAD' && !isSpread) show = false;
+
+            card.style.display = show ? 'flex' : 'none';
+        });
     }
 
     function toggleNotifs() {
@@ -295,7 +343,6 @@
         const dateStr = now.toLocaleDateString('pt-BR');
         const timeStr = now.toLocaleTimeString('pt-BR');
         
-        // MOTOR DO CONSULTOR FINANCEIRO (Análise automatizada gerada na hora)
         let advisorAnalysis = "Cenário estável. Aguarde novas confirmações de fluxo para posicionamento.";
         let recommendedAction = "MANTER FORA (Pular rodada)";
         
@@ -330,7 +377,7 @@
         const listEl = document.getElementById('notif-list');
         if(listEl) {
             if(!alerts.length) {
-                listEl.innerHTML = '<div class="notif-item">Sem eventos de consultoria registrados.</div>';
+                listEl.innerHTML = '<div class="advisor-card">Sem eventos de consultoria registrados.</div>';
                 return;
             }
             listEl.innerHTML = alerts.map(a => {
@@ -342,49 +389,7 @@
                     <div class="advisor-card" style="border-left-color: ${color};">
                         <div class="advisor-header">
                             <span>[${a.dateTimeStr}] // ${a.symbol || 'SYS'}</span>
-                            <span style="color: ${color};">${a.level}</span>
+                            <span>${a.level}</span>
                         </div>
                         <div class="advisor-body">
-                            <strong>Análise do Consultor:</strong> ${a.analysis}
-                        </div>
-                        <div class="advisor-action">
-                            👉 O QUE FAZER: ${a.action}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-    }
-    renderAlerts();
-
-    function exportLogs(type) {
-        if (!alerts.length) return alert('Sem dados para exportar.');
-        let dataStr = "", fileName = `consultor_sentinel_${Date.now()}`;
-        if (type === 'json') {
-            dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(alerts, null, 2));
-            fileName += ".json";
-        } else {
-            let csvContent = "DateTime,Symbol,Level,Message,Action\n";
-            alerts.forEach(a => {
-                csvContent += `"${a.dateTimeStr}","${a.symbol || ''}","${a.level}","${a.message}","${a.action}"\n`;
-            });
-            dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
-            fileName += ".csv";
-        }
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", fileName);
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    }
-
-    function copyPrice(val, symbol) {
-        navigator.clipboard.writeText(val.toFixed(2));
-        addAlertStructured('INFO', symbol, `Preço copiado manualmente para a área de transferência.`, { price: val, p: val });
-    }
-
-    async function sync() {
-        try {
-            const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL', {cache: 'no-store'});
-    
+                            <div>$
