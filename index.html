@@ -222,8 +222,7 @@
 </div>
 
 <div class="container" id="list"></div>
-
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     let systemErrors = JSON.parse(localStorage.getItem('sentinel_system_errors') || '[]');
 
@@ -258,7 +257,6 @@
         renderErrors();
     }
 
-    // Valores reais ajustados e coerentes com o mercado de criptomoedas (Linha órfã removida)
     const coinsData = [
         { symbol: "BTC", name: "Bitcoin", base: 350000.0, spread: 0.30 },
         { symbol: "ETH", name: "Ethereum", base: 18000.0, spread: 0.34 },
@@ -382,4 +380,146 @@
         if(alerts.length > 30) alerts.pop();
         localStorage.setItem('fenix_quantum_alerts_v16', JSON.stringify(alerts));
         renderAlerts();
-        let dot = document.g
+        let dot = document.getElementById('dot');
+        if(dot) dot.style.display = 'block';
+        playBeep();
+    }
+
+    function renderAlerts() {
+        const listEl = document.getElementById('notif-list');
+        if(listEl) {
+            listEl.innerHTML = alerts.length ? alerts.map(a => `<div class="notif-item">${a}</div>`).join('') : '<div class="notif-item">Sem eventos recentes.</div>';
+        }
+    }
+    renderAlerts();
+
+    function copyPrice(val, symbol) {
+        navigator.clipboard.writeText(val.toFixed(2));
+        addAlert(`Copiado [${symbol}]: R$ ${val.toFixed(2)}`);
+    }
+
+    function sync() {
+        try {
+            let assetData = [];
+
+            coinsData.forEach((item, i) => {
+                let s = item.symbol;
+                let variacaoAleatoria = (Math.random() * 2.4) - 1.1; 
+                basePrices[s] = basePrices[s] * (1 + (variacaoAleatoria / 100));
+                
+                let priceBRL = basePrices[s];
+                let priceChange = parseFloat(variacaoAleatoria.toFixed(2));
+                let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 12) + ((i % 3) * 3)));
+                
+                let estadoOp = 'pula';
+                let isTarget = false;
+                if (priceChange > 0.2 && rsiCalculado > 50) {
+                    estadoOp = 'entra';
+                    isTarget = true;
+                } else if (priceChange < -0.5 || rsiCalculado < 30) {
+                    estadoOp = 'não entra';
+                }
+
+                assetData.push({
+                    s, p: priceBRL, pct: priceChange, spread: item.spread, rsi: rsiCalculado, isTarget, estadoOp
+                });
+            });
+
+            assetData.forEach((asset, index) => {
+                let card = document.getElementById(`card-${asset.s}`);
+                if (card) {
+                    card.style.order = index;
+                    let showCard = true;
+                    if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
+                    if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
+                    card.style.display = showCard ? 'flex' : 'none';
+
+                    const isPos = asset.pct >= 0;
+                    let pill = document.getElementById(`pill-${asset.s}`);
+                    if(pill) pill.className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
+                    
+                    const priceEl = document.getElementById(`pr-${asset.s}`);
+                    if(priceEl) {
+                        priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    }
+
+                    let rsiEl = document.getElementById(`rsi-${asset.s}`);
+                    if(rsiEl) rsiEl.innerText = `RSI: ${asset.rsi.toFixed(1)}`;
+
+                    const pctEl = document.getElementById(`pct-${asset.s}`);
+                    if(pctEl) {
+                        pctEl.innerText = (isPos ? "+" : "") + asset.pct.toFixed(2) + "%";
+                        pctEl.className = `a-pct ${isPos ? 'pos-txt' : 'neg-txt'}`;
+                    }
+
+                    const tagEl = document.getElementById(`tag-${asset.s}`);
+                    if(tagEl) {
+                        let eraAlvoAnterior = card.dataset.isTarget === 'true';
+                        tagEl.innerText = asset.estadoOp.toUpperCase();
+                        
+                        if (asset.estadoOp === 'entra') {
+                            tagEl.style.color = "var(--green-nitido)";
+                            card.classList.add('pulse');
+                            card.dataset.isTarget = 'true';
+                            if (!eraAlvoAnterior) {
+                                addAlert(`SINAL ENTRA: ${asset.s} (RSI: ${asset.rsi.toFixed(1)})`);
+                            }
+                        } else if (asset.estadoOp === 'não entra') {
+                            tagEl.style.color = "var(--red-nitido)";
+                            card.classList.remove('pulse');
+                            card.dataset.isTarget = 'false';
+                        } else {
+                            tagEl.style.color = "#f59e0b";
+                            card.classList.remove('pulse');
+                            card.dataset.isTarget = 'false';
+                        }
+                    }
+                }
+            });
+
+            let targetCountEl = document.getElementById('target-count');
+            if(targetCountEl) targetCountEl.innerText = assetData.filter(a => a.isTarget).length;
+        } catch(e) {
+            logErrorCustom("Erro no ciclo de sincronização: " + e.message);
+        }
+    }
+
+    function toggle(id) {
+        try {
+            const c = document.getElementById(`card-${id}`);
+            if(!c) return;
+            c.classList.toggle('open');
+            const containerId = `tv-${id}`;
+            let container = document.getElementById(containerId);
+            
+            if (c.classList.contains('open') && container && container.innerHTML.trim() === "") {
+                new TradingView.widget({
+                    "autosize": true, 
+                    "symbol": "BINANCE:" + id + "USDT",
+                    "interval": "15", 
+                    "timezone": "America/Sao_Paulo",
+                    "theme": "dark", 
+                    "style": "1", 
+                    "locale": "br",
+                    "toolbar_bg": "#f1f3f6",
+                    "enable_publishing": false,
+                    "hide_top_toolbar": false,
+                    "save_image": false,
+                    "container_id": containerId,
+                    "studies": ["RSI@tv-business-studies", "Volume@tv-basicstudies"]
+                });
+            }
+        } catch(e) {
+            logErrorCustom(`Erro ao carregar gráfico para ${id}: ` + e.message);
+        }
+    }
+
+    setInterval(sync, 3000);
+    setInterval(() => { 
+        let clock = document.getElementById('clock');
+        if(clock) clock.innerText = new Date().toLocaleTimeString(); 
+    }, 1000);
+</script>
+</body>
+</html>
+
