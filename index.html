@@ -205,167 +205,55 @@
 </div>
 
 <div class="container" id="list">
-    <!-- BTC -->
+    <!-- Lista de Ativos -->
     <div class="c-asset" id="card-BTC" onclick="if(!event.target.classList.contains('a-price')) toggle('BTC')">
         <div class="side-pill pos-bg" id="pill-BTC"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <img class="coin-icon" src="https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=BTC&background=111&color=fff'">
-                <div class="a-info">
-                    <span class="a-sym">BTC</span>
-                    <div class="a-subinfo">
-                        <span class="a-pair" id="spread-BTC">SPREAD: 0.30%</span>
-                        <span class="hft-tag flow-buy" id="flow-BTC">DELTA: +1.2%</span>
-                        <span class="hft-tag rsi-tag" id="rsi-BTC">RSI: 50.0</span>
-                    </div>
-                </div>
-            </div>
-            <div class="a-right">
-                <div class="a-price" id="pr-BTC">R$ 0,00</div>
-                <div class="status-box">
-                    <span class="flow-tag" id="tag-BTC">AGUARDA</span>
-                    <span class="a-pct pos-txt" id="pct-BTC">+0.00%</span>
-                </div>
-            </div>
-        </div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=BTC&background=111&color=fff'"><div class="a-info"><span class="a-sym">BTC</span><div class="a-subinfo"><span class="a-pair" id="spread-BTC">SPREAD: 0.30%</span><span class="hft-tag flow-buy" id="flow-BTC">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-BTC">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-BTC">R$ 0,00</div><div class="status-box"><span class="flow-tag" id="tag-BTC">AGUARDA</span><span class="a-pct pos-txt" id="pct-BTC">+0.00%</span></div></div></div>
         <div class="chart-box" id="tv-BTC"></div>
     </div>
 
-    <!-- ETH -->
     <div class="c-asset" id="card-ETH" onclick="if(!event.target.classList.contains('a-price')) toggle('ETH')">
         <div class="side-pill pos-bg" id="pill-ETH"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <img class="coin-icon" src="https://cryptologos.cc/logos/ethereum-eth-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=ETH&background=111&color=fff'">
-                <div class="a-info">
-                    <span class="a-sym">ETH</span>
-                    <div class="a-subinfo">
-                        <span class="a-pair" id="spread-ETH">SPREAD: 0.34%</span>
-                        <span class="hft-tag flow-buy" id="flow-ETH">DELTA: +1.2%</span>
-                        <span class="hft-tag rsi-tag" id="rsi-ETH">RSI: 50.0</span>
-                    </div>
-                </div>
-            </div>
-            <div class="a-right">
-                <div class="a-price" id="pr-ETH">R$ 0,00</div>
-                <div class="status-box">
-                    <span class="flow-tag" id="tag-ETH">AGUARDA</span>
-                    <span class="a-pct pos-txt" id="pct-ETH">+0.00%</span>
-                </div>
-            </div>
-        </div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/ethereum-eth-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=ETH&background=111&color=fff'"><div class="a-info"><span class="a-sym">ETH</span><div class="a-subinfo"><span class="a-pair" id="spread-ETH">SPREAD: 0.34%</span><span class="hft-tag flow-buy" id="flow-ETH">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-ETH">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-ETH">R$ 0,00</div><div class="status-box"><span class="flow-tag" id="tag-ETH">AGUARDA</span><span class="a-pct pos-txt" id="pct-ETH">+0.00%</span></div></div></div>
         <div class="chart-box" id="tv-ETH"></div>
     </div>
 
-    <!-- SOL -->
     <div class="c-asset" id="card-SOL" onclick="if(!event.target.classList.contains('a-price')) toggle('SOL')">
         <div class="side-pill pos-bg" id="pill-SOL"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <img class="coin-icon" src="https://cryptologos.cc/logos/solana-sol-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=SOL&background=111&color=fff'">
-                <div class="a-info">
-                    <span class="a-sym">SOL</span>
-                    <div class="a-subinfo">
-                        <span class="a-pair" id="spread-SOL">SPREAD: 0.38%</span>
-                        <span class="hft-tag flow-buy" id="flow-SOL">DELTA: +1.2%</span>
-                        <span class="hft-tag rsi-tag" id="rsi-SOL">RSI: 50.0</span>
-                    </div>
-                </div>
-            </div>
-            <div class="a-right">
-                <div class="a-price" id="pr-SOL">R$ 0,00</div>
-                <div class="status-box">
-                    <span class="flow-tag" id="tag-SOL">AGUARDA</span>
-                    <span class="a-pct pos-txt" id="pct-SOL">+0.00%</span>
-                </div>
-            </div>
-        </div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/solana-sol-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=SOL&background=111&color=fff'"><div class="a-info"><span class="a-sym">SOL</span><div class="a-subinfo"><span class="a-pair" id="spread-SOL">SPREAD: 0.38%</span><span class="hft-tag flow-buy" id="flow-SOL">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-SOL">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-SOL">R$ 0,00</div><div class="status-box"><span class="flow-tag" id="tag-SOL">AGUARDA</span><span class="a-pct pos-txt" id="pct-SOL">+0.00%</span></div></div></div>
         <div class="chart-box" id="tv-SOL"></div>
     </div>
 
-    <!-- LINK -->
     <div class="c-asset" id="card-LINK" onclick="if(!event.target.classList.contains('a-price')) toggle('LINK')">
         <div class="side-pill pos-bg" id="pill-LINK"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <img class="coin-icon" src="https://cryptologos.cc/logos/chainlink-link-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=LINK&background=111&color=fff'">
-                <div class="a-info">
-                    <span class="a-sym">LINK</span>
-                    <div class="a-subinfo">
-                        <span class="a-pair" id="spread-LINK">SPREAD: 0.42%</span>
-                        <span class="hft-tag flow-buy" id="flow-LINK">DELTA: +1.2%</span>
-                        <span class="hft-tag rsi-tag" id="rsi-LINK">RSI: 50.0</span>
-                    </div>
-                </div>
-            </div>
-            <div class="a-right">
-                <div class="a-price" id="pr-LINK">R$ 0,00</div>
-                <div class="status-box">
-                    <span class="flow-tag" id="tag-LINK">AGUARDA</span>
-                    <span class="a-pct pos-txt" id="pct-LINK">+0.00%</span>
-                </div>
-            </div>
-        </div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/chainlink-link-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=LINK&background=111&color=fff'"><div class="a-info"><span class="a-sym">LINK</span><div class="a-subinfo"><span class="a-pair" id="spread-LINK">SPREAD: 0.42%</span><span class="hft-tag flow-buy" id="flow-LINK">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-LINK">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-LINK">R$ 0,00</div><div class="status-box"><span class="flow-tag" id="tag-LINK">AGUARDA</span><span class="a-pct pos-txt" id="pct-LINK">+0.00%</span></div></div></div>
         <div class="chart-box" id="tv-LINK"></div>
     </div>
 
-    <!-- STX -->
     <div class="c-asset" id="card-STX" onclick="if(!event.target.classList.contains('a-price')) toggle('STX')">
         <div class="side-pill pos-bg" id="pill-STX"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <img class="coin-icon" src="https://cryptologos.cc/logos/stacks-stx-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=STX&background=111&color=fff'">
-                <div class="a-info">
-                    <span class="a-sym">STX</span>
-                    <div class="a-subinfo">
-                        <span class="a-pair" id="spread-STX">SPREAD: 0.46%</span>
-                        <span class="hft-tag flow-buy" id="flow-STX">DELTA: +1.2%</span>
-                        <span class="hft-tag rsi-tag" id="rsi-STX">RSI: 50.0</span>
-                    </div>
-                </div>
-            </div>
-            <div class="a-right">
-                <div class="a-price" id="pr-STX">R$ 0,00</div>
-                <div class="status-box">
-                    <span class="flow-tag" id="tag-STX">AGUARDA</span>
-                    <span class="a-pct pos-txt" id="pct-STX">+0.00%</span>
-                </div>
-            </div>
-        </div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/stacks-stx-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=STX&background=111&color=fff'"><div class="a-info"><span class="a-sym">STX</span><div class="a-subinfo"><span class="a-pair" id="spread-STX">SPREAD: 0.46%</span><span class="hft-tag flow-buy" id="flow-STX">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-STX">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-STX">R$ 0,00</div><div class="status-box"><span class="flow-tag" id="tag-STX">AGUARDA</span><span class="a-pct pos-txt" id="pct-STX">+0.00%</span></div></div></div>
         <div class="chart-box" id="tv-STX"></div>
     </div>
 
-    <!-- RENDER -->
     <div class="c-asset" id="card-RENDER" onclick="if(!event.target.classList.contains('a-price')) toggle('RENDER')">
         <div class="side-pill pos-bg" id="pill-RENDER"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <img class="coin-icon" src="https://cryptologos.cc/logos/render-token-rndr-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=RENDER&background=111&color=fff'">
-                <div class="a-info">
-                    <span class="a-sym">RENDER</span>
-                    <div class="a-subinfo">
-                        <span class="a-pair" id="spread-RENDER">SPREAD: 0.50%</span>
-                        <span class="hft-tag flow-buy" id="flow-RENDER">DELTA: +1.2%</span>
-                        <span class="hft-tag rsi-tag" id="rsi-RENDER">RSI: 50.0</span>
-                    </div>
-                </div>
-            </div>
-            <div class="a-right">
-                <div class="a-price" id="pr-RENDER">R$ 0,00</div>
-                <div class="status-box">
-                    <span class="flow-tag" id="tag-RENDER">AGUARDA</span>
-                    <span class="a-pct pos-txt" id="pct-RENDER">+0.00%</span>
-                </div>
-            </div>
-        </div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/render-token-rndr-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=RENDER&background=111&color=fff'"><div class="a-info"><span class="a-sym">RENDER</span><div class="a-subinfo"><span class="a-pair" id="spread-RENDER">SPREAD: 0.50%</span><span class="hft-tag flow-buy" id="flow-RENDER">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-RENDER">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-RENDER">R$ 0,00</div><div class="status-box"><span class="flow-tag" id="tag-RENDER">AGUARDA</span><span class="a-pct pos-txt" id="pct-RENDER">+0.00%</span></div></div></div>
         <div class="chart-box" id="tv-RENDER"></div>
     </div>
 
-    <!-- NEAR -->
     <div class="c-asset" id="card-NEAR" onclick="if(!event.target.classList.contains('a-price')) toggle('NEAR')">
         <div class="side-pill pos-bg" id="pill-NEAR"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <img class="coin-icon" src="https://cryptologos.cc/logos/near-protocol-near-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=NEAR&background=111&color=fff'">
-                <div class="a-info">
-   
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/near-protocol-near-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=NEAR&background=111&color=fff'"><div class="a-info"><span class="a-sym">NEAR</span><div class="a-subinfo"><span class="a-pair" id="spread-NEAR">SPREAD: 0.54%</span><span class="hft-tag flow-buy" id="flow-NEAR">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-NEAR">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-NEAR">R$ 0,00</div><div class="status-box"><span class="flow-tag" id="tag-NEAR">AGUARDA</span><span class="a-pct pos-txt" id="pct-NEAR">+0.00%</span></div></div></div>
+        <div class="chart-box" id="tv-NEAR"></div>
+    </div>
+
+    <div class="c-asset" id="card-SEI" onclick="if(!event.target.classList.contains('a-price')) toggle('SEI')">
+        <div class="side-pill pos-bg" id="pill-SEI"></div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/sei-sei-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=SEI&background=111&color=fff'"><div class="a-info"><span class="a-sym">SEI</span><div class="a-subinfo"><span class="a-pair" id="spread-SEI">SPREAD: 0.58%</span><span class="hft-tag flow-buy" id="flow-SEI">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-SEI">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-SEI">R$ 0,00</div><div class="status-box"><span class="flow-tag" id="tag-SEI">AGUARDA</span><span class="a-pct pos-txt" id="pct-SEI">+0.00%</span></div></div></div>
+        <div class="chart-box" id="tv-SEI"></div>
+    </div>
+
+    <div class="c-asset" id="card-ADA" onclick="if(!event.target.classList.contains('a-price')) toggle('ADA')">
+        <div class="side-pill pos-bg" id="pill-ADA"></div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/cardano-ada-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=ADA&background=111&color=fff'"><div class="a-info"><span class="a-sym">ADA</span><div class="a-subinfo"><span class="a-pair" id="spread-ADA">SPREAD: 0.62%</span><span class="hft-tag flow-buy" id="flow-ADA">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-ADA">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-ADA">R$ 0,00</div><div cla
