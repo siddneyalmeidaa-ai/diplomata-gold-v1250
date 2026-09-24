@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V19 // CONSULTOR FINANCEIRO QUÂNTICO</title>
+    <title>SENTINEL_V18 // TELEMETRIA COM DATA E HORA</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -46,19 +46,25 @@
             position: fixed; top: 90px; right: 12px; left: 12px; 
             background: #0a0a0a; border: 1px solid #222; border-radius: 12px;
             padding: 18px; display: none; z-index: 2000; box-shadow: 0 30px 60px rgba(0,0,0,1);
-            max-height: 75vh; overflow-y: auto;
+            max-height: 70vh; overflow-y: auto;
         }
         .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f1f1f; padding-bottom: 8px; margin-bottom: 8px; }
         .notif-actions { display: flex; gap: 6px; align-items: center; }
-
+        .notif-item { font-size: 9px; font-family: 'JetBrains Mono', monospace; padding: 8px 0; border-bottom: 1px solid #141414; color: #999; word-break: break-all; }
+        .btn-action { background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 4px 8px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
+        .btn-action:active { background: #333; }
         .clear-btn { background: #ff3e3e; color: #fff; border: none; padding: 4px 8px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
 
         .pulse { animation: pulse-glow 1.8s infinite ease-in-out; }
         @keyframes pulse-glow { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
         .analytics-center {
-            background: #040404; border: 1px solid #1f1f1f; border-radius: 10px;
-            margin: 10px 12px; padding: 14px 16px; font-family: 'JetBrains Mono', monospace;
+            background: #040404;
+            border: 1px solid #1f1f1f;
+            border-radius: 10px;
+            margin: 10px 12px;
+            padding: 14px 16px;
+            font-family: 'JetBrains Mono', monospace;
         }
         .ac-title { font-size: 10px; font-weight: 900; color: var(--accent-blue); margin-bottom: 10px; letter-spacing: 1.5px; display: flex; justify-content: space-between; }
         .ac-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -67,8 +73,12 @@
         .ac-val { font-size: 13px; font-weight: 800; color: #fff; }
 
         .quantum-panel-sugestoes {
-            background: #050505; border: 1px solid #1a1a1a; border-radius: 10px;
-            margin: 10px 12px; padding: 12px 15px; font-family: 'JetBrains Mono', monospace;
+            background: #050505;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            margin: 10px 12px;
+            padding: 12px 15px;
+            font-family: 'JetBrains Mono', monospace;
         }
         .qp-title { font-size: 9px; font-weight: 900; color: var(--green-nitido); margin-bottom: 6px; letter-spacing: 1px; }
         .qp-grid { display: grid; grid-template-columns: 1fr; gap: 6px; font-size: 9px; color: #aaa; }
@@ -78,46 +88,48 @@
         .n-btn { flex: 1; min-width: 25%; padding: 12px; text-align: center; font-size: 8px; font-weight: 900; color: #444; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
         .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); background: rgba(0,255,136,0.02); }
 
-        .container { padding: 10px 12px; display: flex; flex-direction: column; min-height: 300px; }
+        .container { padding: 10px 12px; display: flex; flex-direction: column; }
         .c-asset { 
             background: var(--card); border: 1px solid var(--border-dark);
-            border-radius: 10px; margin-bottom: 8px; padding: 14px 12px; 
+            border-radius: 10px; margin-bottom: 8px; padding: 16px 12px; 
             display: flex; flex-direction: column; position: relative; overflow: hidden;
-            transition: all 0.25s ease; cursor: pointer;
+            transition: all 0.25s ease;
         }
 
-        .side-pill { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #161616; }
+        .side-pill {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            background: #161616; transition: all 0.3s ease;
+        }
+
         .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
         .a-left { display: flex; align-items: center; gap: 10px; }
-        .coin-icon-wrapper { display: flex; align-items: center; gap: 10px; }
-        .coin-icon { width: 28px; height: 28px; border-radius: 50%; background: #111; border: 1px solid #222; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 900; color: #00ff88; }
-        .a-sym { font-size: 18px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; line-height: 1; }
+        .coin-icon { width: 28px; height: 28px; border-radius: 50%; background: #111; border: 1px solid #222; }
+        .a-info { display: flex; flex-direction: column; }
+        .a-sym { font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: -1px; line-height: 1; }
         .a-subinfo { display: flex; gap: 6px; margin-top: 5px; align-items: center; flex-wrap: wrap; }
         .a-pair { font-size: 9px; color: #777; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+        
         .hft-tag { font-size: 8px; font-weight: 900; font-family: 'JetBrains Mono', monospace; padding: 2px 5px; border-radius: 3px; }
         .flow-buy { color: #00ff88; background: rgba(0,255,136,0.12); }
+        .flow-sell { color: #ff3e3e; background: rgba(255,62,62,0.12); }
         .rsi-tag { color: #f59e0b; background: rgba(245,158,11,0.12); }
+
         .a-right { text-align: right; }
-        .a-price { font-size: 19px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; }
+        .a-price { font-size: 19px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; }
+        .a-price:active { opacity: 0.4; }
+        
         .status-box { display: flex; align-items: center; gap: 5px; justify-content: flex-end; margin-top: 4px; }
         .a-pct { font-size: 12px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
         .flow-tag { font-size: 8px; font-weight: 900; padding: 2px 5px; border-radius: 3px; background: #000; border: 1px solid #1a1a1a; color: #444; }
-        .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 12px rgba(0, 255, 136, 0.2); }
-        .pos-txt { color: var(--green-nitido) !important; }
-        .neg-bg { background: var(--red-nitido) !important; box-shadow: 0 0 12px rgba(255, 62, 62, 0.2); }
-        .neg-txt { color: var(--red-nitido) !important; }
 
-        /* Estilo Gráfico Gann Stick Dinâmico */
-        .sparkline-container {
-            margin-top: 10px;
-            padding-top: 8px;
-            border-top: 1px solid #121212;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .sparkline-label { font-size: 7px; color: #555; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
-        .gann-svg { width: 140px; height: 32px; overflow: visible; }
+        .chart-box { display: none; width: 100%; height: 420px; margin-top: 12px; border-top: 1px solid var(--border-dark); }
+        .c-asset.open .chart-box { display: block; }
+
+        .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 12px rgba(0, 255, 136, 0.2); }
+        .neg-bg { background: var(--red-nitido) !important; }
+        .pos-txt { color: var(--green-nitido) !important; }
+        .neg-txt { color: var(--red-nitido) !important; }
+        .spread-negativo { color: #ff3e3e !important; background: rgba(255, 62, 62, 0.12); }
     </style>
 </head>
 <body>
@@ -125,44 +137,58 @@
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
         <div class="notif-bell" id="bell" onclick="toggleNotifs()">
-            <span id="last-alert">SENTINEL_V19 // SISTEMA ONLINE</span>
+            <span id="last-alert">SENTINEL_V18 // TELEMETRIA COM DATA E HORA</span>
             <div class="bell-dot" id="dot"></div>
             <span style="font-size: 11px;">🔔</span>
         </div>
         <div class="clock-modern" id="clock">00:00:00</div>
     </div>
     <div class="st-metrics">
-        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse">HFT SUPREMO</span></div>
-        <div class="stat-box"><span class="stat-label">Latência</span><span class="stat-val" style="color: var(--green-nitido);">8ms</span></div>
-        <div class="stat-box"><span class="stat-label">Consultor</span><span class="stat-val" style="color: var(--accent-blue);">ATIVO</span></div>
-        <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" style="color: var(--green-nitido);">11</span></div>
+        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">HFT SUPREMO</span></div>
+        <div class="stat-box"><span class="stat-label">Latência</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">8ms</span></div>
+        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">RSI & SCORE</span></div>
+        <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
 
 <div class="analytics-center">
     <div class="ac-title">
         <span>🖥️ CENTRAL DE PROCESSAMENTO ANALÍTICO</span>
-        <span style="color: var(--green-nitido);">ONLINE</span>
+        <span id="proc-status" style="color: var(--green-nitido);">ONLINE</span>
     </div>
     <div class="ac-grid">
-        <div class="ac-card"><div class="ac-label">Score Global</div><div class="ac-val" style="color: var(--accent-blue);" id="val-score">88.5%</div></div>
-        <div class="ac-card"><div class="ac-label">Pressão (Bias)</div><div class="ac-val" style="color: var(--green-nitido);" id="val-bias">78.2% BUY</div></div>
-        <div class="ac-card"><div class="ac-label">Volatilidade Média</div><div class="ac-val" id="val-vol">1.45%</div></div>
-        <div class="ac-card"><div class="ac-label">RSI Médio Geral</div><div class="ac-val" style="color: var(--accent-yellow);" id="val-rsi">58.4</div></div>
+        <div class="ac-card">
+            <div class="ac-label">Score Global</div>
+            <div class="ac-val" id="score-global" style="color: var(--accent-blue);">0%</div>
+        </div>
+        <div class="ac-card">
+            <div class="ac-label">Pressão (Bias)</div>
+            <div class="ac-val" id="market-bias" style="color: var(--green-nitido);">0% BUY</div>
+        </div>
+        <div class="ac-card">
+            <div class="ac-label">Volatilidade Média</div>
+            <div class="ac-val" id="avg-volatility">0.00%</div>
+        </div>
+        <div class="ac-card">
+            <div class="ac-label">RSI Médio Geral</div>
+            <div class="ac-val" id="avg-rsi" style="color: var(--accent-yellow);">0.0</div>
+        </div>
     </div>
 </div>
 
 <div class="quantum-panel-sugestoes">
-    <div class="qp-title">⚡ STATUS DO CONSULTOR QUÂNTICO</div>
+    <div class="qp-title">⚡ STATUS DO MOTOR QUÂNTICO</div>
     <div class="qp-grid">
-        <div>Filtragem: <span class="qp-val" style="color: var(--green-nitido);">Padrão Gráfico Gann Stick Ativo</span></div>
+        <div>Telemetria: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Processando Cotações com Data/Hora Ativa</span></div>
     </div>
 </div>
 
 <div id="notif-panel">
     <div class="notif-header">
-        <span style="font-size: 10px; font-weight: 900;">CONSULTOR FINANCEIRO & QUANTUM MEMORY LOG</span>
+        <span style="font-size: 10px; font-weight: 900;">TELEMETRIA & QUANTUM MEMORY LOG</span>
         <div class="notif-actions">
+            <button class="btn-action" onclick="exportLogs('json')">JSON</button>
+            <button class="btn-action" onclick="exportLogs('csv')">CSV</button>
             <button class="clear-btn" onclick="clearAlerts()">LIMPAR</button>
             <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px; margin-left: 6px;">✕</span>
         </div>
@@ -177,183 +203,198 @@
     <button class="n-btn" id="btn-spread" onclick="setFilter('SPREAD')">🚀 SPREAD</button>
 </div>
 
-<div class="container" id="list">
-    <!-- BTC -->
-    <div id="card-BTC" class="c-asset">
-        <div class="side-pill pos-bg"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <div class="coin-icon-wrapper">
-                    <div class="coin-icon">BTC</div>
-                    <span class="a-sym">BTC</span>
-                </div>
-                <div class="a-info" style="margin-left: 6px;">
-                    <div class="a-subinfo">
-                        <span class="a-pair">SPREAD: 0.35%</span>
-                        <span class="hft-tag flow-buy">DELTA: +1.2%</span>
-                        <span class="hft-tag rsi-tag">RSI: 58.4</span>
-                    </div>
-                </div>
-            </div>
-            <div class="a-right">
-                <div class="a-price" id="price-BTC">R$ 357.543,95</div>
-                <div class="status-box">
-                    <span class="flow-tag">ENTRA</span>
-                    <span class="a-pct pos-txt" id="pct-BTC">+2.45%</span>
-                </div>
-            </div>
-        </div>
-        <div class="sparkline-container">
-            <span class="sparkline-label">GANN STICK AO VIVO</span>
-            <svg class="gann-svg" viewBox="0 0 140 32" id="gann-BTC">
-                <!-- Barras Gann Stick geradas via Dinâmica -->
-                <line x1="15" y1="28" x2="15" y2="8" stroke="#00ff88" stroke-width="2"/>
-                <rect x="12" y="14" width="6" height="10" fill="#00ff88" rx="1"/>
-                <line x1="45" y1="25" x2="45" y2="5" stroke="#00ff88" stroke-width="2"/>
-                <rect x="42" y="10" width="6" height="12" fill="#00ff88" rx="1"/>
-                <line x1="75" y1="30" x2="75" y2="10" stroke="#00ff88" stroke-width="2"/>
-                <rect x="72" y="15" width="6" height="10" fill="#00ff88" rx="1"/>
-                <line x1="105" y1="22" x2="105" y2="2" stroke="#00ff88" stroke-width="2"/>
-                <rect x="102" y="6" width="6" height="12" fill="#00ff88" rx="1"/>
-                <line x1="135" y1="18" x2="135" y2="4" stroke="#00ff88" stroke-width="2"/>
-                <rect x="132" y="8" width="6" height="8" fill="#00ff88" rx="1"/>
-            </svg>
-        </div>
-    </div>
+<div class="container" id="list"></div>
 
-    <!-- ETH -->
-    <div id="card-ETH" class="c-asset">
-        <div class="side-pill pos-bg"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <div class="coin-icon-wrapper">
-                    <div class="coin-icon" style="color: #3b82f6;">ETH</div>
-                    <span class="a-sym">ETH</span>
-                </div>
-                <div class="a-info" style="margin-left: 6px;">
-                    <div class="a-subinfo">
-                        <span class="a-pair">SPREAD: 0.28%</span>
-                        <span class="hft-tag flow-buy">DELTA: +1.5%</span>
-                        <span class="hft-tag rsi-tag">RSI: 61.2</span>
-                    </div>
-                </div>
-            </div>
-            <div class="a-right">
-                <div class="a-price" id="price-ETH">R$ 19.245,43</div>
-                <div class="status-box">
-                    <span class="flow-tag">ENTRA</span>
-                    <span class="a-pct pos-txt" id="pct-ETH">+3.10%</span>
-                </div>
-            </div>
-        </div>
-        <div class="sparkline-container">
-            <span class="sparkline-label">GANN STICK AO VIVO</span>
-            <svg class="gann-svg" viewBox="0 0 140 32" id="gann-ETH">
-                <line x1="15" y1="26" x2="15" y2="6" stroke="#00ff88" stroke-width="2"/>
-                <rect x="12" y="12" width="6" height="10" fill="#00ff88" rx="1"/>
-                <line x1="45" y1="28" x2="45" y2="8" stroke="#00ff88" stroke-width="2"/>
-                <rect x="42" y="14" width="6" height="10" fill="#00ff88" rx="1"/>
-                <line x1="75" y1="24" x2="75" y2="4" stroke="#00ff88" stroke-width="2"/>
-                <rect x="72" y="8" width="6" height="12" fill="#00ff88" rx="1"/>
-                <line x1="105" y1="20" x2="105" y2="2" stroke="#00ff88" stroke-width="2"/>
-                <rect x="102" y="5" width="6" height="11" fill="#00ff88" rx="1"/>
-                <line x1="135" y1="16" x2="135" y2="2" stroke="#00ff88" stroke-width="2"/>
-                <rect x="132" y="4" width="6" height="9" fill="#00ff88" rx="1"/>
-            </svg>
-        </div>
-    </div>
-
-    <!-- SOL -->
-    <div id="card-SOL" class="c-asset">
-        <div class="side-pill pos-bg"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <div class="coin-icon-wrapper">
-                    <div class="coin-icon" style="color: #a855f7;">SOL</div>
-                    <span class="a-sym">SOL</span>
-                </div>
-                <div class="a-info" style="margin-left: 6px;">
-                    <div class="a-subinfo">
-                        <span class="a-pair">SPREAD: 0.42%</span>
-                        <span class="hft-tag flow-buy">DELTA: +2.1%</span>
-                        <span class="hft-tag rsi-tag">RSI: 64.8</span>
-                    </div>
-                </div>
-            </div>
-            <div class="a-right">
-                <div class="a-price" id="price-SOL">R$ 1.151,51</div>
-                <div class="status-box">
-                    <span class="flow-tag">ENTRA</span>
-                    <span class="a-pct pos-txt" id="pct-SOL">+4.80%</span>
-                </div>
-            </div>
-        </div>
-        <div class="sparkline-container">
-            <span class="sparkline-label">GANN STICK AO VIVO</span>
-            <svg class="gann-svg" viewBox="0 0 140 32" id="gann-SOL">
-                <line x1="15" y1="29" x2="15" y2="9" stroke="#00ff88" stroke-width="2"/>
-                <rect x="12" y="15" width="6" height="10" fill="#00ff88" rx="1"/>
-                <line x1="45" y1="22" x2="45" y2="2" stroke="#00ff88" stroke-width="2"/>
-                <rect x="42" y="6" width="6" height="12" fill="#00ff88" rx="1"/>
-                <line x1="75" y1="27" x2="75" y2="7" stroke="#00ff88" stroke-width="2"/>
-                <rect x="72" y="12" width="6" height="11" fill="#00ff88" rx="1"/>
-                <line x1="105" y1="25" x2="105" y2="5" stroke="#00ff88" stroke-width="2"/>
-                <rect x="102" y="10" width="6" height="10" fill="#00ff88" rx="1"/>
-                <line x1="135" y1="19" x2="135" y2="1" stroke="#00ff88" stroke-width="2"/>
-                <rect x="132" y="4" width="6" height="11" fill="#00ff88" rx="1"/>
-            </svg>
-        </div>
-    </div>
-
-    <!-- LINK -->
-    <div id="card-LINK" class="c-asset">
-        <div class="side-pill" style="background: #444;"></div>
-        <div class="asset-row">
-            <div class="a-left">
-                <div class="coin-icon-wrapper">
-                    <div class="coin-icon" style="color: #60a5fa;">LIN</div>
-                    <span class="a-sym">LINK</span>
-                </div>
-                <div class="a-info" style="margin-left: 6px;">
-                    <div class="a-subinfo">
-                        <span class="a-pair">SPREAD: 0.31%</span>
-                        <span class="hft-tag flow-buy">DELTA: +0.9%</span>
-                        <span class="hft-tag rsi-tag">RSI: 55.1</span>
-                    </div>
-                </div>
-            </div>
-            <div class="a-right">
-                <div class="a-price" id="price-LINK">R$ 84,93</div>
-                <div class="status-box">
-                    <span class="flow-tag">PULA</span>
-                    <span class="a-pct" style="color: #aaa;" id="pct-LINK">+0.75%</span>
-                </div>
-            </div>
-        </div>
-        <div class="sparkline-container">
-            <span class="sparkline-label">GANN STICK AO VIVO</span>
-            <svg class="gann-svg" viewBox="0 0 140 32" id="gann-LINK">
-                <line x1="15" y1="24" x2="15" y2="4" stroke="#f59e0b" stroke-width="2"/>
-                <rect x="12" y="10" width="6" height="10" fill="#f59e0b" rx="1"/>
-                <line x1="45" y1="29" x2="45" y2="9" stroke="#f59e0b" stroke-width="2"/>
-                <rect x="42" y="15" width="6" height="10" fill="#f59e0b" rx="1"/>
-                <line x1="75" y1="22" x2="75" y2="2" stroke="#f59e0b" stroke-width="2"/>
-                <rect x="72" y="7" width="6" height="11" fill="#f59e0b" rx="1"/>
-                <line x1="105" y1="27" x2="105" y2="7" stroke="#f59e0b" stroke-width="2"/>
-                <rect x="102" y="13" width="6" height="10" fill="#f59e0b" rx="1"/>
-                <line x1="135" y1="20" x2="135" y2="2" stroke="#f59e0b" stroke-width="2"/>
-                <rect x="132" y="7" width="6" height="9" fill="#f59e0b" rx="1"/>
-            </svg>
-        </div>
-    </div>
-</div>
-
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    function iniciarSistemaGeral() {
-        const atualizarRelogio = () => {
-            const d = new Date();
-            const h = String(d.getHours()).padStart(2, '0');
-            const m = String(d.getMinutes()).padStart(2, '0');
-            const s = String(d.getSeconds()).padStart(2, '0');
-            const el = documenl>
+    const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER", "NEAR", "SEI", "ADA", "DOT", "FET"];
+    const logoMap = {
+        "BTC": "btc", "ETH": "eth", "SOL": "sol", "LINK": "link", "STX": "stx",
+        "RENDER": "rndr", "NEAR": "near", "SEI": "sei", "ADA": "ada", "DOT": "dot", "FET": "fet"
+    };
+
+    let usdRate = 5.50;
+    let currentFilter = 'ALL';
+    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v18') || '[]');
+
+    function renderInitialCards() {
+        const listContainer = document.getElementById('list');
+        listContainer.innerHTML = '';
+        coins.forEach((s, index) => {
+            let card = document.createElement('div');
+            card.id = `card-${s}`;
+            card.className = `c-asset`;
+            card.style.order = index;
+            card.onclick = (e) => {
+                if(!e.target.classList.contains('a-price')) toggle(s);
+            };
+            card.innerHTML = `
+                <div class="side-pill pos-bg" id="pill-${s}"></div>
+                <div class="asset-row">
+                    <div class="a-left">
+                        <img class="coin-icon" src="https://cryptologos.cc/logos/${logoMap[s]}-${s.toLowerCase()}-logo.png?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${s}&background=111&color=fff'">
+                        <div class="a-info">
+                            <span class="a-sym">${s}</span>
+                            <div class="a-subinfo">
+                                <span class="a-pair" id="spread-${s}">SPREAD: 0.35%</span>
+                                <span class="hft-tag flow-buy" id="flow-${s}">DELTA: +1.2%</span>
+                                <span class="hft-tag rsi-tag" id="rsi-${s}">RSI: 50.0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="a-right">
+                        <div class="a-price" id="pr-${s}" onclick="copyPrice(0, '${s}')">R$ 0,00</div>
+                        <div class="status-box">
+                            <span class="flow-tag" id="tag-${s}">AGUARDA</span>
+                            <span class="a-pct pos-txt" id="pct-${s}">+0.00%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-box" id="tv-${s}"></div>
+            `;
+            listContainer.appendChild(card);
+        });
+    }
+
+    function setFilter(filter) {
+        currentFilter = filter;
+        document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
+        document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
+        document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
+        document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
+        sync();
+    }
+
+    function toggleNotifs() {
+        const panel = document.getElementById('notif-panel');
+        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        document.getElementById('dot').style.display = 'none';
+    }
+
+    function clearAlerts() {
+        alerts = [];
+        localStorage.removeItem('fenix_quantum_alerts_v18');
+        renderAlerts();
+    }
+
+    function addAlertStructured(level, symbol, msg, dataObj = {}) {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('pt-BR');
+        const timeStr = now.toLocaleTimeString('pt-BR');
+        const entry = {
+            id: Date.now(),
+            timestamp: now.toISOString(),
+            dateTimeStr: `${dateStr} ${timeStr}`,
+            level: level, // 'SUCCESS', 'WARN', 'INFO'
+            symbol: symbol,
+            message: msg,
+            data: dataObj
+        };
+        alerts.unshift(entry);
+        if(alerts.length > 50) alerts.pop();
+        localStorage.setItem('fenix_quantum_alerts_v18', JSON.stringify(alerts));
+        renderAlerts();
+        document.getElementById('dot').style.display = 'block';
+    }
+
+    function renderAlerts() {
+        const listEl = document.getElementById('notif-list');
+        if(listEl) {
+            if(!alerts.length) {
+                listEl.innerHTML = '<div class="notif-item">Sem eventos de telemetria registrados.</div>';
+                return;
+            }
+            listEl.innerHTML = alerts.map(a => {
+                let color = "#999";
+                if(a.level === 'SUCCESS') color = "var(--green-nitido)";
+                if(a.level === 'WARN') color = "var(--accent-yellow)";
+                let dtDisplay = a.dateTimeStr || a.timeStr || '';
+                return `<div class="notif-item" style="color:${color};">[${dtDisplay}] [${a.symbol || 'SYS'}] ${a.message}</div>`;
+            }).join('');
+        }
+    }
+    renderAlerts();
+
+    function exportLogs(type) {
+        if (!alerts.length) return alert('Sem dados para exportar.');
+        let dataStr = "";
+        let fileName = `telemetria_sentinel_${Date.now()}`;
+
+        if (type === 'json') {
+            dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(alerts, null, 2));
+            fileName += ".json";
+        } else {
+            let csvContent = "DateTime,Symbol,Level,Message\n";
+            alerts.forEach(a => {
+                csvContent += `"${a.dateTimeStr || ''}","${a.symbol || ''}","${a.level || ''}","${a.message || ''}"\n`;
+            });
+            dataStr = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
+            fileName += ".csv";
+        }
+
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", fileName);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function copyPrice(val, symbol) {
+        navigator.clipboard.writeText(val.toFixed(2));
+        addAlertStructured('INFO', symbol, `Preço copiado: R$ ${val.toFixed(2)}`, { price: val });
+    }
+
+    async function sync() {
+        try {
+            const resRate = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBRL', {cache: 'no-store'});
+            const dRate = await resRate.json();
+            if(dRate && dRate.price) usdRate = parseFloat(dRate.price);
+        } catch (e) {}
+
+        let assetData = [];
+        let totalRsi = 0;
+        let positiveCount = 0;
+        let totalVolatility = 0;
+
+        for (let i = 0; i < coins.length; i++) {
+            let s = coins[i];
+            let priceUSDT = 100;
+            let priceChange = 1.5;
+
+            try {
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}USDT`, {cache: 'no-store'});
+                const data = await res.json();
+                if(data && data.lastPrice) {
+                    priceUSDT = parseFloat(data.lastPrice);
+                    priceChange = parseFloat(data.priceChangePercent);
+                }
+            } catch (err) {
+                let fallbackPrices = {"BTC": 65000, "ETH": 3300, "SOL": 150, "LINK": 14, "STX": 2.2, "RENDER": 8, "NEAR": 4.5, "SEI": 0.45, "ADA": 0.55, "DOT": 4, "FET": 1.5};
+                priceUSDT = fallbackPrices[s] || 10;
+            }
+
+            let priceBRL = priceUSDT * usdRate;
+            let spreadSimulado = 0.30 + (i * 0.04);
+            let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 3.5) + ((i % 3) * 2)));
+            let isTarget = (s !== "BTC" && priceChange > 1.0 && rsiCalculado > 55);
+
+            if(priceChange > 0) positiveCount++;
+            totalRsi += rsiCalculado;
+            totalVolatility += Math.abs(priceChange);
+
+            assetData.push({
+                s, p: priceBRL, pct: priceChange, spread: spreadSimulado, rsi: rsiCalculado,
+                delta: priceChange >= 0 ? `+${priceChange.toFixed(1)}%` : `${priceChange.toFixed(1)}%`,
+                isTarget
+            });
+        }
+
+        let avgRsiVal = totalRsi / coins.length;
+        let buyBias = (positiveCount / coins.length) * 100;
+        let avgVol = totalVolatility / coins.length;
+        let targetCount = assetData.filter(a => a.isTarget).length;
+        let processingScore = Math.min(100, Math.round((buyBias * 0.4) + (targetCount * 12) + (avgVol * 5)));
+
+    l>
     
