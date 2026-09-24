@@ -145,8 +145,6 @@
         .neg-bg { background: var(--red-nitido) !important; }
         .pos-txt { color: var(--green-nitido) !important; }
         .neg-txt { color: var(--red-nitido) !important; }
-        
-        .sys-error { color: var(--red-nitido); font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 20px; text-align: center; border: 1px dashed var(--red-nitido); margin: 20px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -220,83 +218,138 @@
     <button class="n-btn" id="btn-spread" onclick="setFilter('SPREAD')">🚀 SPREAD</button>
 </div>
 
+<!-- LISTA ESTRUTURADA DIRETAMENTE NO HTML PARA ZERO ATRASOS NO MÓVEL -->
 <div class="container" id="list">
-    <!-- fallback visual caso o JS demore -->
-    <div style="text-align: center; color: #444; padding: 20px; font-size: 10px; font-weight: 900; letter-spacing: 2px;">INICIALIZANDO REDE NEURAL...</div>
+    <!-- BTC -->
+    <div id="card-BTC" class="c-asset" data-top="true" data-spread="true" onclick="toggle('BTC')">
+        <div class="side-pill pos-bg" id="pill-BTC"></div>
+        <div class="asset-row">
+            <div class="a-left">
+                <div class="coin-icon-wrapper">
+                    <div class="coin-icon">BTC</div>
+                    <span class="a-sym">BTC</span>
+                </div>
+                <div class="a-info" style="margin-left: 6px;">
+                    <div class="a-subinfo">
+                        <span class="a-pair" id="spread-BTC">SPREAD: 0.35%</span>
+                        <span class="hft-tag flow-buy" id="flow-BTC">DELTA: +1.2%</span>
+                        <span class="hft-tag rsi-tag" id="rsi-BTC">RSI: 58.4</span>
+                    </div>
+                </div>
+            </div>
+            <div class="a-right">
+                <div class="a-price" id="pr-BTC" onclick="event.stopPropagation(); copyPrice(window['price_BTC'] || 357500, 'BTC')">R$ 357.500,00</div>
+                <div class="status-box">
+                    <span class="flow-tag" id="tag-BTC">ENTRA</span>
+                    <span class="a-pct pos-txt" id="pct-BTC">+2.45%</span>
+                </div>
+            </div>
+        </div>
+        <div class="chart-box" id="tv-BTC"></div>
+    </div>
+
+    <!-- ETH -->
+    <div id="card-ETH" class="c-asset" data-top="true" data-spread="false" onclick="toggle('ETH')">
+        <div class="side-pill pos-bg" id="pill-ETH"></div>
+        <div class="asset-row">
+            <div class="a-left">
+                <div class="coin-icon-wrapper">
+                    <div class="coin-icon">ETH</div>
+                    <span class="a-sym">ETH</span>
+                </div>
+                <div class="a-info" style="margin-left: 6px;">
+                    <div class="a-subinfo">
+                        <span class="a-pair" id="spread-ETH">SPREAD: 0.28%</span>
+                        <span class="hft-tag flow-buy" id="flow-ETH">DELTA: +1.5%</span>
+                        <span class="hft-tag rsi-tag" id="rsi-ETH">RSI: 61.2</span>
+                    </div>
+                </div>
+            </div>
+            <div class="a-right">
+                <div class="a-price" id="pr-ETH" onclick="event.stopPropagation(); copyPrice(window['price_ETH'] || 19250, 'ETH')">R$ 19.250,00</div>
+                <div class="status-box">
+                    <span class="flow-tag" id="tag-ETH">ENTRA</span>
+                    <span class="a-pct pos-txt" id="pct-ETH">+3.10%</span>
+                </div>
+            </div>
+        </div>
+        <div class="chart-box" id="tv-ETH"></div>
+    </div>
+
+    <!-- SOL -->
+    <div id="card-SOL" class="c-asset" data-top="true" data-spread="true" onclick="toggle('SOL')">
+        <div class="side-pill pos-bg" id="pill-SOL"></div>
+        <div class="asset-row">
+            <div class="a-left">
+                <div class="coin-icon-wrapper">
+                    <div class="coin-icon">SOL</div>
+                    <span class="a-sym">SOL</span>
+                </div>
+                <div class="a-info" style="margin-left: 6px;">
+                    <div class="a-subinfo">
+                        <span class="a-pair" id="spread-SOL">SPREAD: 0.42%</span>
+                        <span class="hft-tag flow-buy" id="flow-SOL">DELTA: +2.1%</span>
+                        <span class="hft-tag rsi-tag" id="rsi-SOL">RSI: 64.8</span>
+                    </div>
+                </div>
+            </div>
+            <div class="a-right">
+                <div class="a-price" id="pr-SOL" onclick="event.stopPropagation(); copyPrice(window['price_SOL'] || 1150, 'SOL')">R$ 1.150,00</div>
+                <div class="status-box">
+                    <span class="flow-tag" id="tag-SOL">ENTRA</span>
+                    <span class="a-pct pos-txt" id="pct-SOL">+4.80%</span>
+                </div>
+            </div>
+        </div>
+        <div class="chart-box" id="tv-SOL"></div>
+    </div>
+
+    <!-- LINK -->
+    <div id="card-LINK" class="c-asset" data-top="false" data-spread="false" onclick="toggle('LINK')">
+        <div class="side-pill pos-bg" id="pill-LINK"></div>
+        <div class="asset-row">
+            <div class="a-left">
+                <div class="coin-icon-wrapper">
+                    <div class="coin-icon">LIN</div>
+                    <span class="a-sym">LINK</span>
+                </div>
+                <div class="a-info" style="margin-left: 6px;">
+                    <div class="a-subinfo">
+                        <span class="a-pair" id="spread-LINK">SPREAD: 0.31%</span>
+                        <span class="hft-tag flow-buy" id="flow-LINK">DELTA: +0.9%</span>
+                        <span class="hft-tag rsi-tag" id="rsi-LINK">RSI: 55.1</span>
+                    </div>
+                </div>
+            </div>
+            <div class="a-right">
+                <div class="a-price" id="pr-LINK" onclick="event.stopPropagation(); copyPrice(window['price_LINK'] || 85, 'LINK')">R$ 85,00</div>
+                <div class="status-box">
+                    <span class="flow-tag" id="tag-LINK">PULA</span>
+                    <span class="a-pct pos-txt" id="pct-LINK">+0.75%</span>
+                </div>
+            </div>
+        </div>
+        <div class="chart-box" id="tv-LINK"></div>
+    </div>
 </div>
 
-<!-- Script do TradingView movido para o fim e deferido para não bloquear o parser -->
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js" defer></script>
 <script>
-    const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER", "NEAR", "SEI", "ADA", "DOT", "FET"];
-    let usdRate = 5.50;
-    let currentFilter = 'ALL';
+    const coins = ["BTC", "ETH", "SOL", "LINK"];
     let alerts = [];
     let activeCharts = {};
 
-    // BLINDAGEM QUÂNTICA 1: Recuperação de Memória Segura (Evita crash no acesso LocalStorage)
     try {
         let savedData = localStorage.getItem('fenix_quantum_alerts_v19');
-        if (savedData) {
-            alerts = JSON.parse(savedData);
-        }
+        if (savedData) alerts = JSON.parse(savedData);
     } catch (e) {
-        console.warn("Memória Quântica LocalStorage inacessível/corrompida no dispositivo.", e);
         alerts = [];
     }
 
-    function renderInitialCards() {
-        const listContainer = document.getElementById('list');
-        if(!listContainer) return;
-        listContainer.innerHTML = ''; // Limpa o fallback
-        
-        coins.forEach((s, index) => {
-            let card = document.createElement('div');
-            card.id = `card-${s}`;
-            card.className = `c-asset`;
-            card.style.order = index;
-            card.dataset.top = "true";
-            card.dataset.spread = index % 2 === 0 ? "true" : "false";
-            
-            card.onclick = (e) => {
-                if(!e.target.classList.contains('a-price')) toggle(s);
-            };
-
-            let mockPriceBRL = (150 + (index + 1) * 1250.50) * usdRate;
-            window[`price_${s}`] = mockPriceBRL;
-
-            // Tratamento BRL manual para evitar falhas do Intl em browsers muito antigos
-            let formattedPrice = mockPriceBRL.toFixed(2).replace('.', ',');
-
-            card.innerHTML = `
-                <div class="side-pill pos-bg" id="pill-${s}"></div>
-                <div class="asset-row">
-                    <div class="a-left">
-                        <div class="coin-icon-wrapper">
-                            <div class="coin-icon">${s.substring(0,3)}</div>
-                            <span class="a-sym">${s}</span>
-                        </div>
-                        <div class="a-info" style="margin-left: 6px;">
-                            <div class="a-subinfo">
-                                <span class="a-pair" id="spread-${s}">SPREAD: 0.35%</span>
-                                <span class="hft-tag flow-buy" id="flow-${s}">DELTA: +1.2%</span>
-                                <span class="hft-tag rsi-tag" id="rsi-${s}">RSI: 58.4</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="a-right">
-                        <div class="a-price" id="pr-${s}" onclick="event.stopPropagation(); copyPrice(window['price_${s}'] || 0, '${s}')">R$ ${formattedPrice}</div>
-                        <div class="status-box">
-                            <span class="flow-tag" id="tag-${s}">ENTRA</span>
-                            <span class="a-pct pos-txt" id="pct-${s}">+2.45%</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="chart-box" id="tv-${s}"></div>
-            `;
-            listContainer.appendChild(card);
-        });
-    }
+    window['price_BTC'] = 357500;
+    window['price_ETH'] = 19250;
+    window['price_SOL'] = 1150;
+    window['price_LINK'] = 85;
 
     function toggle(s) {
         const card = document.getElementById(`card-${s}`);
@@ -327,71 +380,14 @@
                         });
                     }
                 } catch(err) {
-                    console.error("Falha ao inicializar gráfico:", err);
+                    console.error("Erro TradingView:", err);
                 }
             }
         }
     }
 
     function setFilter(filter) {
-        currentFilter = filter;
         document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
         document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
         document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
-        document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
-        
-        coins.forEach(s => {
-            const card = document.getElementById(`card-${s}`);
-            if(!card) return;
-            let show = true;
-            const isTop = card.dataset.top === "true";
-            const isSpread = card.dataset.spread === "true";
-
-            if(filter === 'TOP' && !isTop) show = false;
-            if(filter === 'SPREAD' && !isSpread) show = false;
-
-            card.style.display = show ? 'flex' : 'none';
-        });
-    }
-
-    function toggleNotifs() {
-        const panel = document.getElementById('notif-panel');
-        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        document.getElementById('dot').style.display = 'none';
-    }
-
-    function clearAlerts() {
-        alerts = [];
-        try { localStorage.removeItem('fenix_quantum_alerts_v19'); } catch(e){}
-        renderAlerts();
-    }
-
-    function addAlertStructured(level, symbol, msg, dataObj = {}) {
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('pt-BR');
-        const timeStr = now.toLocaleTimeString('pt-BR');
-        
-        let advisorAnalysis = "Cenário estável. Aguarde novas confirmações de fluxo para posicionamento.";
-        let recommendedAction = "MANTER FORA (Pular rodada)";
-        
-        if (level === 'SUCCESS') {
-            advisorAnalysis = `O ativo ${symbol} atingiu zona de alta probabilidade com RSI em ${dataObj.rsi?.toFixed(1) || '58.4'} e variação positiva.`;
-            recommendedAction = `ENTRAR AGORA | Copie o preço R$ ${dataObj.p?.toFixed(2)} e execute a ordem no sentido da tendência.`;
-        }
-
-        const entry = {
-            id: Date.now(),
-            timestamp: now.toISOString(),
-            dateTimeStr: `${dateStr} ${timeStr}`,
-            level: level,
-            symbol: symbol,
-            message: msg,
-            analysis: advisorAnalysis,
-            action: recommendedAction,
-            data: dataObj
-        };
-
-        alerts.unshift(entry);
-        if(alerts.length > 50) alerts.pop();
-        try { localStorage.setItem('fenix_quantum_alerts_v19', JSON.stringify(alerts)); } catch(e){}
-    
+        document.getElementById('btn-spr    
