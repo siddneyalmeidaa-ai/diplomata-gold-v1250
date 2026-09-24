@@ -216,11 +216,10 @@
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
     let audioCtx = null;
 
-    window.addEventListener('DOMContentLoaded', () => {
-        renderInitialCards();
-        setFilter(currentFilter, false);
-        sync();
-    });
+    // Execução imediata na carga da página
+    renderInitialCards();
+    setFilter(currentFilter, false);
+    sync();
 
     function playBeep() {
         try {
@@ -393,4 +392,4 @@
 
                 const pctEl = document.getElementById(`pct-${asset.s}`);
                 pctEl.innerText = (isPos ? "+" : "") + asset.pct.toFixed(2) + "%";
-          
+                pctEl.className = `a-pct $
