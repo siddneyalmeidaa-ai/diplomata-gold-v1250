@@ -156,7 +156,7 @@
             <div class="bell-dot" id="dot"></div>
             <span style="font-size: 11px;">🔔</span>
         </div>
-        <div class="clock-modern" id="clock">--:--:--</div>
+        <div class="clock-modern" id="clock">00:00:00</div>
     </div>
     <div class="st-metrics">
         <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">HFT SUPREMO</span></div>
@@ -194,7 +194,7 @@
 <div class="quantum-panel-sugestoes">
     <div class="qp-title">⚡ STATUS DO CONSULTOR QUÂNTICO</div>
     <div class="qp-grid">
-        <div>Filtragem: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Motor HFT Ativo e Sincronizado</span></div>
+        <div>Filtragem: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Motor HFT Forçado via DOM Ready</span></div>
     </div>
 </div>
 
@@ -334,66 +334,59 @@
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    const coins = ["BTC", "ETH", "SOL", "LINK"];
-    let alerts = [];
-    let activeCharts = {};
+    document.addEventListener("DOMContentLoaded", function() {
+        const coins = ["BTC", "ETH", "SOL", "LINK"];
+        let alerts = [];
+        let activeCharts = {};
 
-    try {
-        let savedData = localStorage.getItem('fenix_quantum_alerts_v19');
-        if (savedData) alerts = JSON.parse(savedData);
-    } catch (e) {
-        alerts = [];
-    }
-
-    window['price_BTC'] = 357500.00;
-    window['price_ETH'] = 19250.00;
-    window['price_SOL'] = 1150.00;
-    window['price_LINK'] = 85.00;
-
-    function atualizarRelogio() {
-        const clockEl = document.getElementById('clock');
-        if(clockEl) {
-            clockEl.innerText = new Date().toLocaleTimeString('pt-BR');
+        try {
+            let savedData = localStorage.getItem('fenix_quantum_alerts_v19');
+            if (savedData) alerts = JSON.parse(savedData);
+        } catch (e) {
+            alerts = [];
         }
-    }
-    atualizarRelogio();
-    setInterval(atualizarRelogio, 1000);
 
-    function toggle(s) {
-        const card = document.getElementById(`card-${s}`);
-        if(!card) return;
-        const isOpen = card.classList.contains('open');
-        
-        document.querySelectorAll('.c-asset').forEach(c => c.classList.remove('open'));
-        
-        if(!isOpen) {
-            card.classList.add('open');
-            if(!activeCharts[s]) {
-                try {
-                    if (typeof TradingView !== 'undefined') {
-                        activeCharts[s] = new TradingView.widget({
-                            "width": "100%",
-                            "height": "420",
-                            "symbol": `BINANCE:${s}USDT`,
-                            "interval": "1",
-                            "timezone": "Etc/UTC",
-                            "theme": "dark",
-                            "style": "1",
-                            "locale": "br",
-                            "toolbar_bg": "#f1f3f6",
-                            "enable_publishing": false,
-                            "hide_top_toolbar": true,
-                            "save_image": false,
-                            "container_id": `tv-${s}`
-                        });
-                    }
-                } catch(err) {
-                    console.error("Erro TradingView:", err);
-                }
+        window['price_BTC'] = 357500.00;
+        window['price_ETH'] = 19250.00;
+        window['price_SOL'] = 1150.00;
+        window['price_LINK'] = 85.00;
+
+        function atualizarRelogio() {
+            const clockEl = document.getElementById('clock');
+            if(clockEl) {
+                clockEl.innerText = new Date().toLocaleTimeString('pt-BR');
             }
         }
-    }
+        atualizarRelogio();
+        setInterval(atualizarRelogio, 1000);
 
-    function setFilter(filter) {
-        document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
-        document.getElementById('btn-targets').cl     
+        window.toggle = function(s) {
+            const card = document.getElementById(`card-${s}`);
+            if(!card) return;
+            const isOpen = card.classList.contains('open');
+            
+            document.querySelectorAll('.c-asset').forEach(c => c.classList.remove('open'));
+            
+            if(!isOpen) {
+                card.classList.add('open');
+                if(!activeCharts[s]) {
+                    try {
+                        if (typeof TradingView !== 'undefined') {
+                            activeCharts[s] = new TradingView.widget({
+                                "width": "100%",
+                                "height": "420",
+                                "symbol": `BINANCE:${s}USDT`,
+                                "interval": "1",
+                                "timezone": "Etc/UTC",
+                                "theme": "dark",
+                                "style": "1",
+                                "locale": "br",
+                                "toolbar_bg": "#f1f3f6",
+                                "enable_publishing": false,
+                                "hide_top_toolbar": true,
+                                "save_image": false,
+                                "container_id": `tv-${s}`
+                            });
+                        }
+                    } catch(err) {
+             
