@@ -82,7 +82,7 @@
         .container { padding: 10px 12px; display: flex; flex-direction: column; min-height: 300px; }
         .c-asset { 
             background: var(--card); border: 1px solid var(--border-dark);
-            border-radius: 10px; margin-bottom: 8px; padding: 16px 12px; 
+            border-radius: 10px; margin-bottom: 8px; padding: 14px 12px; 
             display: flex; flex-direction: column; position: relative; overflow: hidden;
             transition: all 0.25s ease; cursor: pointer;
         }
@@ -107,6 +107,18 @@
         .pos-txt { color: var(--green-nitido) !important; }
         .neg-bg { background: var(--red-nitido) !important; box-shadow: 0 0 12px rgba(255, 62, 62, 0.2); }
         .neg-txt { color: var(--red-nitido) !important; }
+
+        /* Gráfico Sparkline integrado em cada card */
+        .sparkline-container {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #121212;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sparkline-label { font-size: 7px; color: #555; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+        .sparkline-svg { width: 120px; height: 28px; overflow: visible; }
     </style>
 </head>
 <body>
@@ -134,17 +146,17 @@
         <span style="color: var(--green-nitido);">ONLINE</span>
     </div>
     <div class="ac-grid">
-        <div class="ac-card"><div class="ac-label">Score Global</div><div class="ac-val" style="color: var(--accent-blue);">88.5%</div></div>
-        <div class="ac-card"><div class="ac-label">Pressão (Bias)</div><div class="ac-val" style="color: var(--green-nitido);">78.2% BUY</div></div>
-        <div class="ac-card"><div class="ac-label">Volatilidade Média</div><div class="ac-val">1.45%</div></div>
-        <div class="ac-card"><div class="ac-label">RSI Médio Geral</div><div class="ac-val" style="color: var(--accent-yellow);">58.4</div></div>
+        <div class="ac-card"><div class="ac-label">Score Global</div><div class="ac-val" style="color: var(--accent-blue);" id="val-score">88.5%</div></div>
+        <div class="ac-card"><div class="ac-label">Pressão (Bias)</div><div class="ac-val" style="color: var(--green-nitido);" id="val-bias">78.2% BUY</div></div>
+        <div class="ac-card"><div class="ac-label">Volatilidade Média</div><div class="ac-val" id="val-vol">1.45%</div></div>
+        <div class="ac-card"><div class="ac-label">RSI Médio Geral</div><div class="ac-val" style="color: var(--accent-yellow);" id="val-rsi">58.4</div></div>
     </div>
 </div>
 
 <div class="quantum-panel-sugestoes">
     <div class="qp-title">⚡ STATUS DO CONSULTOR QUÂNTICO</div>
     <div class="qp-grid">
-        <div>Filtragem: <span class="qp-val" style="color: var(--green-nitido);">Relógio Forçado via Global Loop</span></div>
+        <div>Filtragem: <span class="qp-val" style="color: var(--green-nitido);">Loop Dinâmico e Gráficos Ativos</span></div>
     </div>
 </div>
 
@@ -185,12 +197,18 @@
                 </div>
             </div>
             <div class="a-right">
-                <div class="a-price">R$ 357.500,00</div>
+                <div class="a-price" id="price-BTC">R$ 357.500,00</div>
                 <div class="status-box">
                     <span class="flow-tag">ENTRA</span>
-                    <span class="a-pct pos-txt">+2.45%</span>
+                    <span class="a-pct pos-txt" id="pct-BTC">+2.45%</span>
                 </div>
             </div>
+        </div>
+        <div class="sparkline-container">
+            <span class="sparkline-label">FLUXO HFT AO VIVO</span>
+            <svg class="sparkline-svg" viewBox="0 0 120 28">
+                <path d="M0,20 Q30,5 60,15 T120,8" fill="none" stroke="#00ff88" stroke-width="2" id="spark-BTC"/>
+            </svg>
         </div>
     </div>
 
@@ -212,12 +230,18 @@
                 </div>
             </div>
             <div class="a-right">
-                <div class="a-price">R$ 19.250,00</div>
+                <div class="a-price" id="price-ETH">R$ 19.250,00</div>
                 <div class="status-box">
                     <span class="flow-tag">ENTRA</span>
-                    <span class="a-pct pos-txt">+3.10%</span>
+                    <span class="a-pct pos-txt" id="pct-ETH">+3.10%</span>
                 </div>
             </div>
+        </div>
+        <div class="sparkline-container">
+            <span class="sparkline-label">FLUXO HFT AO VIVO</span>
+            <svg class="sparkline-svg" viewBox="0 0 120 28">
+                <path d="M0,22 Q30,10 60,18 T120,5" fill="none" stroke="#00ff88" stroke-width="2" id="spark-ETH"/>
+            </svg>
         </div>
     </div>
 
@@ -239,12 +263,18 @@
                 </div>
             </div>
             <div class="a-right">
-                <div class="a-price">R$ 1.150,00</div>
+                <div class="a-price" id="price-SOL">R$ 1.150,00</div>
                 <div class="status-box">
                     <span class="flow-tag">ENTRA</span>
-                    <span class="a-pct pos-txt">+4.80%</span>
+                    <span class="a-pct pos-txt" id="pct-SOL">+4.80%</span>
                 </div>
             </div>
+        </div>
+        <div class="sparkline-container">
+            <span class="sparkline-label">FLUXO HFT AO VIVO</span>
+            <svg class="sparkline-svg" viewBox="0 0 120 28">
+                <path d="M0,15 Q30,25 60,10 T120,12" fill="none" stroke="#00ff88" stroke-width="2" id="spark-SOL"/>
+            </svg>
         </div>
     </div>
 
@@ -266,36 +296,68 @@
                 </div>
             </div>
             <div class="a-right">
-                <div class="a-price">R$ 85,00</div>
+                <div class="a-price" id="price-LINK">R$ 85,00</div>
                 <div class="status-box">
                     <span class="flow-tag">PULA</span>
-                    <span class="a-pct" style="color: #aaa;">+0.75%</span>
+                    <span class="a-pct" style="color: #aaa;" id="pct-LINK">+0.75%</span>
                 </div>
             </div>
+        </div>
+        <div class="sparkline-container">
+            <span class="sparkline-label">FLUXO HFT AO VIVO</span>
+            <svg class="sparkline-svg" viewBox="0 0 120 28">
+                <path d="M0,18 Q30,12 60,20 T120,15" fill="none" stroke="#f59e0b" stroke-width="2" id="spark-LINK"/>
+            </svg>
         </div>
     </div>
 </div>
 
 <script>
-    function iniciarRelogioGeral() {
-        const atualizar = () => {
+    function iniciarSistemaGeral() {
+        const atualizarRelogio = () => {
             const d = new Date();
             const h = String(d.getHours()).padStart(2, '0');
             const m = String(d.getMinutes()).padStart(2, '0');
             const s = String(d.getSeconds()).padStart(2, '0');
             const el = document.getElementById('clock');
-            if (el) {
-                el.innerText = h + ":" + m + ":" + s;
-            }
+            if (el) el.innerText = h + ":" + m + ":" + s;
         };
-        setInterval(atualizar, 1000);
-        atualizar();
+        setInterval(atualizarRelogio, 1000);
+        atualizarRelogio();
+
+        let baseBtc = 357500;
+        let baseEth = 19250;
+        let baseSol = 1150;
+        let baseLink = 85;
+
+        setInterval(() => {
+            baseBtc += (Math.random() - 0.48) * 25;
+            baseEth += (Math.random() - 0.48) * 5;
+            baseSol += (Math.random() - 0.48) * 0.8;
+            baseLink += (Math.random() - 0.48) * 0.1;
+
+            document.getElementById('price-BTC').innerText = 'R$ ' + baseBtc.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('price-ETH').innerText = 'R$ ' + baseEth.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('price-SOL').innerText = 'R$ ' + baseSol.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('price-LINK').innerText = 'R$ ' + baseLink.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            const randY1 = Math.floor(Math.random() * 15) + 5;
+            const randY2 = Math.floor(Math.random() * 15) + 5;
+            const randY3 = Math.floor(Math.random() * 15) + 5;
+            const randY4 = Math.floor(Math.random() * 15) + 5;
+
+            document.getElementById('spark-BTC').setAttribute('d', `M0,20 Q30,${randY1} 60,15 T120,${randY2}`);
+            document.getElementById('spark-ETH').setAttribute('d', `M0,22 Q30,${randY2} 60,18 T120,${randY1}`);
+            document.getElementById('spark-SOL').setAttribute('d', `M0,15 Q30,${randY3} 60,10 T120,${randY4}`);
+            document.getElementById('spark-LINK').setAttribute('d', `M0,18 Q30,${randY4} 60,20 T120,${randY3}`);
+
+        }, 2000);
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', iniciarRelogioGeral);
+        document.addEventListener('DOMContentLoaded', iniciarSistemaGeral);
     } else {
-        iniciarRelogioGeral();
+        iniciarSistemaGeral();
     }
 
     function toggleNotifs() {
@@ -317,4 +379,5 @@
     }
 </script>
 </body>
-</html>
+    </html>
+    
