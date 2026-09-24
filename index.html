@@ -101,7 +101,7 @@
         .n-btn { flex: 1; min-width: 25%; padding: 12px; text-align: center; font-size: 8px; font-weight: 900; color: #444; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
         .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); background: rgba(0,255,136,0.02); }
 
-        .container { padding: 10px 12px; display: flex; flex-direction: column; min-height: 200px; }
+        .container { padding: 10px 12px; display: flex; flex-direction: column; min-height: 300px; }
         .c-asset { 
             background: var(--card); border: 1px solid var(--border-dark);
             border-radius: 10px; margin-bottom: 8px; padding: 16px 12px; 
@@ -223,11 +223,6 @@
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER", "NEAR", "SEI", "ADA", "DOT", "FET"];
-    const logoMap = {
-        "BTC": "btc", "ETH": "eth", "SOL": "sol", "LINK": "link", "STX": "stx",
-        "RENDER": "rndr", "NEAR": "near", "SEI": "sei", "ADA": "ada", "DOT": "dot", "FET": "fet"
-    };
-
     let usdRate = 5.50;
     let currentFilter = 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v19') || '[]');
@@ -398,4 +393,7 @@
                             <span>${a.level}</span>
                         </div>
                         <div class="advisor-body">
-   
+                            <div>${a.message}</div>
+                            <div style="margin-top: 4px; color: #fff;">${a.analysis}</div>
+                        </div>
+                        <div class="
