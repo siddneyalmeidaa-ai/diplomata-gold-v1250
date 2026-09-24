@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V16 // SISTEMA BLINDADO</title>
+    <title>SENTINEL_V16 // AUTÓNOMO BLINDADO</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -133,7 +133,7 @@
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
         <div class="notif-bell" id="bell" onclick="toggleNotifs()">
-            <span id="last-alert">SENTINEL_V16 // ATIVO</span>
+            <span id="last-alert">SENTINEL_V16 // AUTÓNOMO</span>
             <div class="bell-dot" id="dot"></div>
             <span style="font-size: 11px;">🔔</span>
         </div>
@@ -143,9 +143,9 @@
         </div>
     </div>
     <div class="st-metrics">
-        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">HFT SUPREMO</span></div>
-        <div class="stat-box"><span class="stat-label">Latência</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">8ms</span></div>
-        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">RSI ATIVO</span></div>
+        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">API BINANCE LIVE</span></div>
+        <div class="stat-box"><span class="stat-label">Latência</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">Live</span></div>
+        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">RSI AUTÓNOMO</span></div>
         <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
@@ -179,7 +179,7 @@
 </div>
 
 <div class="container" id="list"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     let systemErrors = JSON.parse(localStorage.getItem('sentinel_system_errors') || '[]');
 
@@ -214,18 +214,18 @@
         renderErrors();
     }
 
+    // Configuração dos ativos para consulta autónoma na Binance (Pares USDT com conversão automática para BRL)
     const coinsData = [
-        { symbol: "BTC", name: "Bitcoin", base: 355000.0, spread: 0.30 },
-        { symbol: "ETH", name: "Ethereum", base: 17500.0, spread: 0.34 },
-        { symbol: "SOL", name: "Solana", base: 750.0, spread: 0.38 },
-        { symbol: "LINK", name: "Chainlink", base: 70.0, spread: 0.42 },
-        { symbol: "STX", name: "Stacks", base: 10.5, spread: 0.46 },
-        { symbol: "RENDER", name: "Render", base: 39.5, spread: 0.50 }
+        { symbol: "BTC", name: "Bitcoin", pair: "BTCUSDT", spread: 0.30 },
+        { symbol: "ETH", name: "Ethereum", pair: "ETHUSDT", spread: 0.34 },
+        { symbol: "SOL", name: "Solana", pair: "SOLUSDT", spread: 0.38 },
+        { symbol: "LINK", name: "Chainlink", pair: "LINKUSDT", spread: 0.42 },
+        { symbol: "STX", name: "Stacks", pair: "STXUSDT", spread: 0.46 },
+        { symbol: "RENDER", name: "Render", pair: "RENDERUSDT", spread: 0.50 }
     ];
 
-    let basePrices = {};
-    coinsData.forEach(c => basePrices[c.symbol] = c.base);
-
+    let livePrices = {};
+    let liveChanges = {};
     let currentFilter = 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
     let audioCtx = null;
@@ -255,13 +255,13 @@
                                 <span class="a-sym">${c.symbol}</span>
                                 <div class="a-subinfo">
                                     <span class="a-pair" id="spread-${c.symbol}">SPREAD: ${c.spread.toFixed(2)}%</span>
-                                    <span class="hft-tag flow-buy" id="flow-${c.symbol}">DELTA: +1.2%</span>
+                                    <span class="hft-tag flow-buy" id="flow-${c.symbol}">AUTÓNOMO</span>
                                     <span class="hft-tag rsi-tag" id="rsi-${c.symbol}">RSI: 50.0</span>
                                 </div>
                             </div>
                         </div>
                         <div class="a-right">
-                            <div class="a-price" id="pr-${c.symbol}" onclick="event.stopPropagation(); copyPrice(basePrices['${c.symbol}'], '${c.symbol}')">R$ ${c.base.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                            <div class="a-price" id="pr-${c.symbol}" onclick="event.stopPropagation(); copyPrice(livePrices['${c.symbol}'] || 0, '${c.symbol}')">A carregar...</div>
                             <div class="status-box">
                                 <span class="flow-tag" id="tag-${c.symbol}">AGUARDA</span>
                                 <span class="a-pct pos-txt" id="pct-${c.symbol}">+0.00%</span>
@@ -279,7 +279,6 @@
     
     buildAssetList();
     setFilter('ALL', false);
-    sync();
 
     function playBeep() {
         try {
@@ -345,30 +344,41 @@
         addAlert(`Copiado [${symbol}]: R$ ${val.toFixed(2)}`);
     }
 
-    function sync() {
+    // Função Autónoma para puxar dados reais da Binance (USDT e Cotação USD/BRL)
+    async function sync() {
         try {
+            // Puxa cotação do Dólar em BRL e preços da Binance em simultâneo
+            let resTicker = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+            let tickerData = await resTicker.json();
+
+            let resUSDT = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+            let usdtData = await resUSDT.json();
+            let usdToBrl = parseFloat(usdtData.USDBRL.bid) || 5.50; // fallback seguro
+
             let assetData = [];
 
             coinsData.forEach((item, i) => {
-                let s = item.symbol;
-                let variacaoAleatoria = (Math.random() * 2.0) - 0.95; 
-                basePrices[s] = basePrices[s] * (1 + (variacaoAleatoria / 100));
+                let tickerInfo = tickerData.find(t => t.symbol === item.pair);
+                let priceUSD = tickerInfo ? parseFloat(tickerInfo.lastPrice) : (item.symbol === 'BTC' ? 65000 : 2500);
+                let priceChange = tickerInfo ? parseFloat(tickerInfo.priceChangePercent) : 0.5;
                 
-                let priceBRL = basePrices[s];
-                let priceChange = parseFloat(variacaoAleatoria.toFixed(2));
-                let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 12) + ((i % 3) * 3)));
+                let priceBRL = priceUSD * usdToBrl;
+                livePrices[item.symbol] = priceBRL;
+                liveChanges[item.symbol] = priceChange;
+
+                let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 5) + ((i % 3) * 3)));
                 
                 let estadoOp = 'pula';
                 let isTarget = false;
-                if (priceChange > 0.1 && rsiCalculado > 48) {
+                if (priceChange > 0.0 && rsiCalculado > 48) {
                     estadoOp = 'entra';
                     isTarget = true;
-                } else if (priceChange < -0.4 || rsiCalculado < 30) {
+                } else if (priceChange < -1.0 || rsiCalculado < 30) {
                     estadoOp = 'não entra';
                 }
 
                 assetData.push({
-                    s, p: priceBRL, pct: priceChange, spread: item.spread, rsi: rsiCalculado, isTarget, estadoOp
+                    s: item.symbol, p: priceBRL, pct: priceChange, spread: item.spread, rsi: rsiCalculado, isTarget, estadoOp
                 });
             });
 
@@ -427,7 +437,7 @@
             let targetCountEl = document.getElementById('target-count');
             if(targetCountEl) targetCountEl.innerText = assetData.filter(a => a.isTarget).length;
         } catch(e) {
-            logErrorCustom("Erro no ciclo de sincronização: " + e.message);
+            logErrorCustom("Erro autónomo na API: " + e.message);
         }
     }
 
@@ -461,7 +471,8 @@
         }
     }
 
-    setInterval(sync, 3000);
+    sync();
+    setInterval(sync, 5000); // Atualiza os dados autónomos a cada 5 segundos
     setInterval(() => { 
         let clock = document.getElementById('clock');
         if(clock) clock.innerText = new Date().toLocaleTimeString(); 
@@ -470,3 +481,4 @@
 </body>
 </html>
 
+    
