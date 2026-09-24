@@ -182,7 +182,6 @@
 <div class="container" id="list"></div>
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    // Gerenciamento isolado apenas para Erros do Sistema (Falhas técnicas e de abertura)
     let systemErrors = JSON.parse(localStorage.getItem('sentinel_system_errors') || '[]');
 
     window.onerror = function(msg, url, lineNo, columnNo, error) {
@@ -237,7 +236,6 @@
     let livePrices = {};
     let activeStates = {}; 
     let currentFilter = 'ALL';
-    // Gerenciamento isolado exclusivo para o Sininho (Entrada / Saída / Polar)
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
     let audioCtx = null;
 
@@ -308,7 +306,6 @@
         } catch(e) {}
     }
 
-    // Função de Toggle que comanda a Entrada, Saída/Polar e Alarme Sonoro no Sininho
     function toggle(symbol, pair) {
         try {
             const card = document.getElementById(`card-${symbol}`);
@@ -411,6 +408,11 @@
     }
     renderAlerts();
 
+    // Função de formatação monetária correta com separadores de milhar e decimais (toLocaleString)
+    function formatCurrencyBRL(val) {
+        return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     async function sync() {
         let usdToBrl = 5.50;
         let tickerData = [];
@@ -437,14 +439,25 @@
             let tickerInfo = tickerData.length ? tickerData.find(t => t.symbol === item.pair) : null;
             let priceUSD = tickerInfo ? parseFloat(tickerInfo.lastPrice) : null;
             let priceBRL = priceUSD ? priceUSD * usdToBrl : item.baseBRL;
+            let priceChangePercent = tickerInfo ? parseFloat(tickerInfo.priceChangePercent) : 0.00;
+            
             livePrices[item.symbol] = priceBRL;
             
             let priceEl = document.getElementById(`pr-${item.symbol}`);
-            if(priceEl) priceEl.innerText = `R$ ${priceBRL.toFixed(2)}`;
+            if(priceEl) priceEl.innerText = `R$ ${formatCurrencyBRL(priceBRL)}`;
+
+            let pctEl = document.getElementById(`pct-${item.symbol}`);
+            if(pctEl) {
+                let sign = priceChangePercent >= 0 ? "+" : "";
+                pctEl.innerText = `${sign}${priceChangePercent.toFixed(2)}%`;
+                pctEl.className = `a-pct ${priceChangePercent >= 0 ? 'pos-txt' : 'neg-txt'}`;
+            }
         });
     }
 
     setInterval(sync, 5000);
+    sync(); // Executa imediatamente na carga
+
     setInterval(() => {
         const now = new Date();
         const clockEl = document.getElementById('clock');
