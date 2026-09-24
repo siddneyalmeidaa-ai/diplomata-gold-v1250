@@ -179,7 +179,7 @@
 </div>
 
 <div class="container" id="list"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     let systemErrors = JSON.parse(localStorage.getItem('sentinel_system_errors') || '[]');
 
@@ -371,6 +371,8 @@
             let tickerInfo = tickerData.length ? tickerData.find(t => t.symbol === item.pair) : null;
             let priceUSD = tickerInfo ? parseFloat(tickerInfo.lastPrice) : null;
             let priceChange = tickerInfo ? parseFloat(tickerInfo.priceChangePercent) : ((Math.random() * 2) - 1);
+            let highPriceUSD = tickerInfo ? parseFloat(tickerInfo.highPrice) : (priceUSD ? priceUSD * 1.02 : item.baseBRL);
+            let lowPriceUSD = tickerInfo ? parseFloat(tickerInfo.lowPrice) : (priceUSD ? priceUSD * 0.98 : item.baseBRL);
 
             let priceBRL = priceUSD ? (priceUSD * usdToBrl) : (livePrices[item.symbol] || (item.baseBRL * (1 + (Math.random() * 0.01 - 0.005))));
             
@@ -379,18 +381,25 @@
 
             let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 6) + ((i % 3) * 3)));
             let deltaCalculado = priceChange * 1.25;
+
+            let volatilidade = Math.abs(highPriceUSD - lowPriceUSD) / (priceUSD || 1);
+            let typicalPrice = (highPriceUSD + lowPriceUSD + (priceUSD || item.baseBRL)) / 3;
+            let vwapCalculado = typicalPrice * usdToBrl;
+            let emaRapida = priceBRL * (1 + (priceChange * 0.002));
+            let spreadFator = item.spread / 100;
+            let projecaoLiquida = priceChange - spreadFator - 50.0;
             
             let estadoOp = 'pula';
             let isTarget = false;
-            if (priceChange > 0.0 && rsiCalculado > 48) {
+            if (projecaoLiquida > 0.0 && rsiCalculado > 48 && priceBRL > vwapCalculado * 0.99) {
                 estadoOp = 'entra';
                 isTarget = true;
-            } else if (priceChange < -1.0 || rsiCalculado < 30) {
+            } else if (projecaoLiquida < -1.0 || rsiCalculado < 30) {
                 estadoOp = 'não entra';
             }
 
             assetData.push({
-                s: item.symbol, p: priceBRL, pct: priceChange, spread: item.spread, rsi: rsiCalculado, delta: deltaCalculado, isTarget, estadoOp
+                s: item.symbol, p: priceBRL, pct: priceChange, spread: item.spread, rsi: rsiCalculado, delta: deltaCalculado, vwap: vwapCalculado, vol: volatilidade, ema: emaRapida, liquido: projecaoLiquida, isTarget, estadoOp
             });
         });
 
@@ -445,7 +454,7 @@
                         card.classList.add('pulse');
                         card.dataset.isTarget = 'true';
                         if (!eraAlvoAnterior) {
-                            addAlert(`SINAL ENTRA: ${asset.s} (Delta: ${asset.delta.toFixed(2)})`);
+                            addAlert(`SINAL ENTRA: ${asset.s} (Líquido: ${asset.liquido.toFixed(2)}%)`);
                         }
                     } else if (asset.estadoOp === 'não entra') {
                         tagEl.style.color = "var(--red-nitido)";
