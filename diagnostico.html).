@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SENTINEL_DIAGNOSTICO // ISOLAMENTO DE ERROS</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg: #050505; 
+            --card: #0a0a0a; 
+            --green: #00ff88; 
+            --red: #ff3e3e;   
+            --border: #222; 
+        }
+        body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 15px; user-select: none; }
+        
+        .header { 
+            background: var(--card); border: 1px solid var(--border); 
+            border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px;
+        }
+        .clock-box { 
+            font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 800; 
+            color: var(--green); margin-top: 10px; text-shadow: 0 0 10px rgba(0,255,136,0.3);
+        }
+        
+        .console-container {
+            background: #000; border: 1px solid var(--border); border-radius: 10px;
+            padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+            height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
+        }
+        .log-item { padding: 4px 6px; border-radius: 4px; border-left: 3px solid var(--green); background: rgba(0,255,136,0.05); }
+        .log-error { border-left-color: var(--red); background: rgba(255,62,62,0.05); color: var(--red); }
+        
+        .btn-test {
+            width: 100%; margin-top: 15px; padding: 12px; background: #111; color: #fff;
+            border: 1px solid var(--border); border-radius: 8px; font-family: 'JetBrains Mono', monospace;
+            font-weight: 900; cursor: pointer; font-size: 11px;
+        }
+        .btn-test:active { background: #222; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div style="font-size: 10px; font-weight: 900; color: #777; letter-spacing: 2px;">TESTE DE ISOLAMENTO DE RELÓGIO</div>
+    <div class="clock-box" id="isolated-clock">00:00:00</div>
+</div>
+
+<div style="font-size: 9px; font-weight: 900; color: #666; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace;">CONSOLA DE LOGS EM TEMPO REAL:</div>
+<div class="console-container" id="console-box">
+    <div class="log-item">[INIT] Ambiente isolado de diagnóstico iniciado com sucesso.</div>
+</div>
+
+<button class="btn-test" onclick="testarExecucao()">FORÇAR TESTE DE EXCEÇÃO & LOG</button>
+
+<script>
+    function addLog(msg, isError = false) {
+        const box = document.getElementById('console-box');
+        if (!box) return;
+        const div = document.createElement('div');
+        div.className = isError ? 'log-item log-error' : 'log-item';
+        const horaAtual = new Date().toLocaleTimeString();
+        div.innerText = `[${horaAtual}] ${msg}`;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    // Loop do relógio isolado com tratamento total de erros
+    function iniciarRelogioIsolado() {
+        try {
+            setInterval(() => {
+                const d = new Date();
+                const h = String(d.getHours()).padStart(2, '0');
+                const m = String(d.getMinutes()).padStart(2, '0');
+                const s = String(d.getSeconds()).padStart(2, '0');
+                const el = document.getElementById('isolated-clock');
+                if (el) {
+                    el.innerText = `${h}:${m}:${s}`;
+                } else {
+                    addLog("Elemento do relógio não encontrado no DOM!", true);
+                }
+            }, 1000);
+            addLog("Loop do relógio ativado com sucesso.");
+        } catch (e) {
+            addLog("Erro crítico ao iniciar o relógio: " + e.message, true);
+        }
+    }
+
+    function testarExecucao() {
+        try {
+            addLog("Teste manual disparado pelo utilizador.");
+            // Teste de gravação no localStorage para verificar permissões do telemóvel
+            localStorage.setItem('teste_diagnostico', 'ativo');
+            addLog("LocalStorage verificado: Operacional.");
+        } catch (e) {
+            addLog("Falha no teste manual: " + e.message, true);
+        }
+    }
+
+    // Inicialização segura
+    window.addEventListener('DOMContentLoaded', () => {
+        addLog("DOM totalmente carregado.");
+        iniciarRelogioIsolado();
+    });
+</script>
+
+</body>
+</html>
