@@ -149,7 +149,10 @@
             <div class="bell-dot" id="dot"></div>
             <span style="font-size: 11px;">🔔</span>
         </div>
-        <div class="clock-modern" id="clock">00:00:00</div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button onclick="location.reload(true)" style="background: #111; border: 1px solid #333; color: #00ff88; font-size: 8px; font-weight: 900; padding: 6px 8px; border-radius: 4px; cursor: pointer;">🔄 RECARREGAR</button>
+            <div class="clock-modern" id="clock">00:00:00</div>
+        </div>
     </div>
     <div class="st-metrics">
         <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">HFT SUPREMO</span></div>
@@ -216,10 +219,14 @@
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
     let audioCtx = null;
 
-    // Execução imediata na carga da página
-    renderInitialCards();
-    setFilter(currentFilter, false);
-    sync();
+    // Inicialização forçada imediata
+    try {
+        renderInitialCards();
+        setFilter(currentFilter, false);
+        sync();
+    } catch (e) {
+        console.error("Erro na inicialização:", e);
+    }
 
     function playBeep() {
         try {
@@ -247,6 +254,7 @@
 
     function renderInitialCards() {
         const listContainer = document.getElementById('list');
+        if(!listContainer) return;
         listContainer.innerHTML = '';
         coins.forEach((s, index) => {
             let card = document.createElement('div');
@@ -271,7 +279,7 @@
                         </div>
                     </div>
                     <div class="a-right">
-                        <div class="a-price" id="pr-${s}" onclick="copyPrice(0, '${s}')">R$ 0,00</div>
+                        <div class="a-price" id="pr-${s}">R$ 0,00</div>
                         <div class="status-box">
                             <span class="flow-tag" id="tag-${s}">AGUARDA</span>
                             <span class="a-pct pos-txt" id="pct-${s}">+0.00%</span>
@@ -289,17 +297,25 @@
         if (save) {
             localStorage.setItem('sentinel_filter_v16', filter);
         }
-        document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
-        document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
-        document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
-        document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
+        let btnAll = document.getElementById('btn-all');
+        let btnTargets = document.getElementById('btn-targets');
+        let btnTop = document.getElementById('btn-top');
+        let btnSpread = document.getElementById('btn-spread');
+        
+        if(btnAll) btnAll.classList.toggle('active', filter === 'ALL');
+        if(btnTargets) btnTargets.classList.toggle('active', filter === 'TARGETS');
+        if(btnTop) btnTop.classList.toggle('active', filter === 'TOP');
+        if(btnSpread) btnSpread.classList.toggle('active', filter === 'SPREAD');
         sync();
     }
 
     function toggleNotifs() {
         const panel = document.getElementById('notif-panel');
-        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-        document.getElementById('dot').style.display = 'none';
+        if(panel) {
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+            let dot = document.getElementById('dot');
+            if(dot) dot.style.display = 'none';
+        }
     }
 
     function clearAlerts() {
@@ -314,7 +330,8 @@
         if(alerts.length > 30) alerts.pop();
         localStorage.setItem('fenix_quantum_alerts_v16', JSON.stringify(alerts));
         renderAlerts();
-        document.getElementById('dot').style.display = 'block';
+        let dot = document.getElementById('dot');
+        if(dot) dot.style.display = 'block';
         playBeep();
     }
 
@@ -339,7 +356,6 @@
         } catch (e) {}
 
         let assetData = [];
-        let novosAlvosDetectados = 0;
 
         for (let i = 0; i < coins.length; i++) {
             let s = coins[i];
@@ -363,8 +379,6 @@
             let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 3.5) + ((i % 3) * 2)));
             let isTarget = (s !== "BTC" && priceChange > 1.0 && rsiCalculado > 55);
 
-            if (isTarget) novosAlvosDetectados++;
-
             assetData.push({
                 s, p: priceBRL, pct: priceChange, spread: spreadSimulado, rsi: rsiCalculado,
                 isTarget
@@ -381,15 +395,7 @@
                 card.style.display = showCard ? 'flex' : 'none';
 
                 const isPos = asset.pct >= 0;
-                document.getElementById(`pill-${asset.s}`).className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
+                let pill = document.getElementById(`pill-${asset.s}`);
+                if(pill) pill.className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
                 
-                const priceEl = document.getElementById(`pr-${asset.s}`);
-                priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                priceEl.setAttribute('onclick', `copyPrice(${asset.p}, '${asset.s}')`);
-
-                document.getElementById(`spread-${asset.s}`).innerText = `SPREAD: ${asset.spread.toFixed(2)}%`;
-                document.getElementById(`rsi-${asset.s}`).innerText = `RSI: ${asset.rsi.toFixed(1)}`;
-
-                const pctEl = document.getElementById(`pct-${asset.s}`);
-                pctEl.innerText = (isPos ? "+" : "") + asset.pct.toFixed(2) + "%";
-                pctEl.className = `a-pct $
+                const priceEl = document.getEle
