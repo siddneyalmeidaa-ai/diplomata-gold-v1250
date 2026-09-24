@@ -9,11 +9,9 @@
         :root { 
             --bg: #010101; 
             --card: #060606; 
-            --card-hover: #0b0b0b;
             --green-nitido: #00ff88; 
             --red-nitido: #ff3e3e;   
             --border-dark: #1a1a1a; 
-            --border-glow: #2a2a2a;
             --glass: rgba(3, 3, 3, 0.98);
         }
         body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; user-select: none; }
@@ -89,7 +87,6 @@
             flex-direction: column; 
             position: relative; 
             overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
@@ -118,7 +115,7 @@
         .rsi-tag { color: #f59e0b; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); }
 
         .a-right { text-align: right; }
-        .a-price { font-size: 18px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: color 0.2s; }
+        .a-price { font-size: 18px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; cursor: pointer; }
         .a-price:hover { color: var(--green-nitido); }
         
         .status-box { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 5px; }
@@ -128,7 +125,6 @@
             font-size: 8px; font-weight: 900; padding: 2px 6px; 
             border-radius: 4px; background: #090909; 
             border: 1px solid #1f1f1f; color: #666; 
-            letter-spacing: 0.5px;
         }
 
         .chart-box { display: none; width: 100%; height: 420px; margin-top: 14px; border-top: 1px solid var(--border-dark); padding-top: 4px; }
@@ -168,7 +164,7 @@
         <span id="risk-suggestion" style="font-size: 8px; color: #f59e0b;">STAKE SUGERIDA: R$ 1,00</span>
     </div>
     <div class="qp-grid">
-        <div>Motor: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Monitoramento RSI, SPREAD & Alerta Sonoro Ativo</span></div>
+        <div>Motor: <span class="qp-val" style="color: var(--green-nitido);">Monitoramento RSI, SPREAD & Alerta Sonoro Ativo</span></div>
     </div>
     <div class="risk-manager-box">
         <div class="risk-field">
@@ -205,66 +201,57 @@
 </div>
 
 <div class="container" id="list">
-    <!-- Lista gerada dinamicamente para evitar qualquer falha de elementos em falta -->
+    <!-- ATIVOS FIXOS NO HTML PARA GARANTIR VISIBILIDADE IMEDIATA NO MÓVEL -->
+    <div class="c-asset" id="card-BTC" onclick="toggle('BTC')">
+        <div class="side-pill pos-bg" id="pill-BTC"></div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=025"><div class="a-info"><span class="a-sym">BTC</span><div class="a-subinfo"><span class="a-pair" id="spread-BTC">SPREAD: 0.30%</span><span class="hft-tag flow-buy" id="flow-BTC">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-BTC">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-BTC" onclick="event.stopPropagation(); copyPrice(basePrices.BTC, 'BTC')">R$ 375.000,00</div><div class="status-box"><span class="flow-tag" id="tag-BTC">AGUARDA</span><span class="a-pct pos-txt" id="pct-BTC">+0.00%</span></div></div></div>
+        <div class="chart-box" id="tv-BTC"></div>
+    </div>
+
+    <div class="c-asset" id="card-ETH" onclick="toggle('ETH')">
+        <div class="side-pill pos-bg" id="pill-ETH"></div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/ethereum-eth-logo.png?v=025"><div class="a-info"><span class="a-sym">ETH</span><div class="a-subinfo"><span class="a-pair" id="spread-ETH">SPREAD: 0.34%</span><span class="hft-tag flow-buy" id="flow-ETH">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-ETH">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-ETH" onclick="event.stopPropagation(); copyPrice(basePrices.ETH, 'ETH')">R$ 18.500,00</div><div class="status-box"><span class="flow-tag" id="tag-ETH">AGUARDA</span><span class="a-pct pos-txt" id="pct-ETH">+0.00%</span></div></div></div>
+        <div class="chart-box" id="tv-ETH"></div>
+    </div>
+
+    <div class="c-asset" id="card-SOL" onclick="toggle('SOL')">
+        <div class="side-pill pos-bg" id="pill-SOL"></div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/solana-sol-logo.png?v=025"><div class="a-info"><span class="a-sym">SOL</span><div class="a-subinfo"><span class="a-pair" id="spread-SOL">SPREAD: 0.38%</span><span class="hft-tag flow-buy" id="flow-SOL">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-SOL">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-SOL" onclick="event.stopPropagation(); copyPrice(basePrices.SOL, 'SOL')">R$ 850,00</div><div class="status-box"><span class="flow-tag" id="tag-SOL">AGUARDA</span><span class="a-pct pos-txt" id="pct-SOL">+0.00%</span></div></div></div>
+        <div class="chart-box" id="tv-SOL"></div>
+    </div>
+
+    <div class="c-asset" id="card-LINK" onclick="toggle('LINK')">
+        <div class="side-pill pos-bg" id="pill-LINK"></div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/chainlink-link-logo.png?v=025"><div class="a-info"><span class="a-sym">LINK</span><div class="a-subinfo"><span class="a-pair" id="spread-LINK">SPREAD: 0.42%</span><span class="hft-tag flow-buy" id="flow-LINK">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-LINK">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-LINK" onclick="event.stopPropagation(); copyPrice(basePrices.LINK, 'LINK')">R$ 75,00</div><div class="status-box"><span class="flow-tag" id="tag-LINK">AGUARDA</span><span class="a-pct pos-txt" id="pct-LINK">+0.00%</span></div></div></div>
+        <div class="chart-box" id="tv-LINK"></div>
+    </div>
+
+    <div class="c-asset" id="card-STX" onclick="toggle('STX')">
+        <div class="side-pill pos-bg" id="pill-STX"></div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/stacks-stx-logo.png?v=025"><div class="a-info"><span class="a-sym">STX</span><div class="a-subinfo"><span class="a-pair" id="spread-STX">SPREAD: 0.46%</span><span class="hft-tag flow-buy" id="flow-STX">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-STX">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-STX" onclick="event.stopPropagation(); copyPrice(basePrices.STX, 'STX')">R$ 12,50</div><div class="status-box"><span class="flow-tag" id="tag-STX">AGUARDA</span><span class="a-pct pos-txt" id="pct-STX">+0.00%</span></div></div></div>
+        <div class="chart-box" id="tv-STX"></div>
+    </div>
+
+    <div class="c-asset" id="card-RENDER" onclick="toggle('RENDER')">
+        <div class="side-pill pos-bg" id="pill-RENDER"></div>
+        <div class="asset-row"><div class="a-left"><img class="coin-icon" src="https://cryptologos.cc/logos/render-token-rndr-logo.png?v=025"><div class="a-info"><span class="a-sym">RENDER</span><div class="a-subinfo"><span class="a-pair" id="spread-RENDER">SPREAD: 0.50%</span><span class="hft-tag flow-buy" id="flow-RENDER">DELTA: +1.2%</span><span class="hft-tag rsi-tag" id="rsi-RENDER">RSI: 50.0</span></div></div></div><div class="a-right"><div class="a-price" id="pr-RENDER" onclick="event.stopPropagation(); copyPrice(basePrices.RENDER, 'RENDER')">R$ 45,00</div><div class="status-box"><span class="flow-tag" id="tag-RENDER">AGUARDA</span><span class="a-pct pos-txt" id="pct-RENDER">+0.00%</span></div></div></div>
+        <div class="chart-box" id="tv-RENDER"></div>
+    </div>
 </div>
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    const coinsDataConfig = [
-        { s: "BTC", name: "Bitcoin", icon: "bitcoin-btc-logo.png", base: 375000.0, spread: 0.30 },
-        { s: "ETH", name: "Ethereum", icon: "ethereum-eth-logo.png", base: 18500.0, spread: 0.34 },
-        { s: "SOL", name: "Solana", icon: "solana-sol-logo.png", base: 850.0, spread: 0.38 },
-        { s: "LINK", name: "Chainlink", icon: "chainlink-link-logo.png", base: 75.0, spread: 0.42 },
-        { s: "STX", name: "Stacks", icon: "stacks-stx-logo.png", base: 12.50, spread: 0.46 },
-        { s: "RENDER", name: "Render", icon: "render-token-rndr-logo.png", base: 45.0, spread: 0.50 },
-        { s: "NEAR", name: "Near", icon: "near-protocol-near-logo.png", base: 24.0, spread: 0.54 },
-        { s: "SEI", name: "Sei", icon: "sei-sei-logo.png", base: 2.50, spread: 0.58 },
-        { s: "ADA", name: "Cardano", icon: "cardano-ada-logo.png", base: 3.20, spread: 0.62 },
-        { s: "DOT", name: "Polkadot", icon: "polkadot-new-dot-logo.png", base: 22.0, spread: 0.66 },
-        { s: "FET", name: "Fetch.ai", icon: "fetch-ai-fet-logo.png", base: 8.50, spread: 0.70 }
-    ];
-
-    let basePrices = {};
-    coinsDataConfig.forEach(c => basePrices[c.s] = c.base);
+    const coins = ["BTC", "ETH", "SOL", "LINK", "STX", "RENDER"];
+    let basePrices = {
+        "BTC": 375000.0, "ETH": 18500.0, "SOL": 850.0, 
+        "LINK": 75.0, "STX": 12.50, "RENDER": 45.0
+    };
+    let spreads = { "BTC": 0.30, "ETH": 0.34, "SOL": 0.38, "LINK": 0.42, "STX": 0.46, "RENDER": 0.50 };
 
     let currentFilter = localStorage.getItem('sentinel_filter_v16') || 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
     let audioCtx = null;
 
-    function buildUI() {
-        const listContainer = document.getElementById('list');
-        let html = '';
-        coinsDataConfig.forEach(coin => {
-            html += `
-            <div class="c-asset" id="card-${coin.s}" onclick="if(!event.target.classList.contains('a-price')) toggle('${coin.s}')">
-                <div class="side-pill pos-bg" id="pill-${coin.s}"></div>
-                <div class="asset-row">
-                    <div class="a-left">
-                        <img class="coin-icon" src="https://cryptologos.cc/logos/${coin.icon}?v=025" onerror="this.src='https://ui-avatars.com/api/?name=${coin.s}&background=111&color=fff'">
-                        <div class="a-info">
-                            <span class="a-sym">${coin.s}</span>
-                            <div class="a-subinfo">
-                                <span class="a-pair" id="spread-${coin.s}">SPREAD: ${coin.spread.toFixed(2)}%</span>
-                                <span class="hft-tag flow-buy" id="flow-${coin.s}">DELTA: +1.2%</span>
-                                <span class="hft-tag rsi-tag" id="rsi-${coin.s}">RSI: 50.0</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="a-right">
-                        <div class="a-price" id="pr-${coin.s}">R$ 0,00</div>
-                        <div class="status-box">
-                            <span class="flow-tag" id="tag-${coin.s}">AGUARDA</span>
-                            <span class="a-pct pos-txt" id="pct-${coin.s}">+0.00%</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="chart-box" id="tv-${coin.s}"></div>
-            </div>`;
-        });
-        listContainer.innerHTML = html;
-    }
-
-    buildUI();
     setFilter(currentFilter, false);
     sync();
 
@@ -327,56 +314,3 @@
         if(dot) dot.style.display = 'block';
         playBeep();
     }
-
-    function renderAlerts() {
-        const listEl = document.getElementById('notif-list');
-        if(listEl) {
-            listEl.innerHTML = alerts.length ? alerts.map(a => `<div class="notif-item">${a}</div>`).join('') : '<div class="notif-item">Sem eventos recentes.</div>';
-        }
-    }
-    renderAlerts();
-
-    function copyPrice(val, symbol) {
-        navigator.clipboard.writeText(val.toFixed(2));
-        addAlert(`Copiado [${symbol}]: R$ ${val.toFixed(2)}`);
-    }
-
-    function sync() {
-        let assetData = [];
-
-        coinsDataConfig.forEach((coin, i) => {
-            let s = coin.s;
-            let variacaoAleatoria = (Math.random() * 2.4) - 1.1; 
-            basePrices[s] = basePrices[s] * (1 + (variacaoAleatoria / 100));
-            
-            let priceBRL = basePrices[s];
-            let priceChange = parseFloat(variacaoAleatoria.toFixed(2));
-            let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 12) + ((i % 3) * 3)));
-            let isTarget = (s !== "BTC" && priceChange > 0.3 && rsiCalculado > 52);
-
-            assetData.push({
-                s, p: priceBRL, pct: priceChange, spread: coin.spread, rsi: rsiCalculado, isTarget
-            });
-        });
-
-        assetData.forEach((asset, index) => {
-            let card = document.getElementById(`card-${asset.s}`);
-            if (card) {
-                card.style.order = index;
-                let showCard = true;
-                if (currentFilter === 'TARGETS' && !asset.isTarget) showCard = false;
-                if (currentFilter === 'SPREAD' && asset.spread <= 0.1) showCard = false;
-                card.style.display = showCard ? 'flex' : 'none';
-
-                const isPos = asset.pct >= 0;
-                let pill = document.getElementById(`pill-${asset.s}`);
-                if(pill) pill.className = `side-pill ${isPos ? 'pos-bg' : 'neg-bg'}`;
-                
-                const priceEl = document.getElementById(`pr-${asset.s}`);
-                if(priceEl) {
-                    priceEl.innerText = "R$ " + asset.p.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                    priceEl.setAttribute('onclick', `copyPrice(${asset.p}, '${asset.s}')`);
-                }
-
-                let spreadEl = document.getElementById(`spread-${asset.s}`);
-                if(spreadEl) spreadEl.innerText = `SPREAD: ${asset.spread.
