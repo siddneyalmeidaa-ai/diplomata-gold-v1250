@@ -214,7 +214,6 @@
         renderErrors();
     }
 
-    // 15 Altcoins com símbolos isolados e corretos
     const coinsData = [
         { symbol: "BTC", name: "Bitcoin", pair: "BTCUSDT", spread: 0.30, baseBRL: 435000, logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png" },
         { symbol: "ETH", name: "Ethereum", pair: "ETHUSDT", spread: 0.34, baseBRL: 14000, logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
@@ -255,7 +254,7 @@
                                 <span class="a-sym">${c.symbol}</span>
                                 <div class="a-subinfo">
                                     <span class="a-pair" id="spread-${c.symbol}">SPREAD: ${c.spread.toFixed(2)}%</span>
-                                    <span class="hft-tag flow-buy" id="flow-${c.symbol}">BLINDADO</span>
+                                    <span class="hft-tag flow-buy" id="flow-${c.symbol}">DELTA: 0.00</span>
                                     <span class="hft-tag rsi-tag" id="rsi-${c.symbol}">RSI: 50.0</span>
                                 </div>
                             </div>
@@ -379,6 +378,7 @@
             liveChanges[item.symbol] = priceChange;
 
             let rsiCalculado = Math.min(95, Math.max(15, 50 + (priceChange * 6) + ((i % 3) * 3)));
+            let deltaCalculado = priceChange * 1.25;
             
             let estadoOp = 'pula';
             let isTarget = false;
@@ -390,7 +390,7 @@
             }
 
             assetData.push({
-                s: item.symbol, p: priceBRL, pct: priceChange, spread: item.spread, rsi: rsiCalculado, isTarget, estadoOp
+                s: item.symbol, p: priceBRL, pct: priceChange, spread: item.spread, rsi: rsiCalculado, delta: deltaCalculado, isTarget, estadoOp
             });
         });
 
@@ -415,6 +415,20 @@
                 let rsiEl = document.getElementById(`rsi-${asset.s}`);
                 if(rsiEl) rsiEl.innerText = `RSI: ${asset.rsi.toFixed(1)}`;
 
+                let flowEl = document.getElementById(`flow-${asset.s}`);
+                if(flowEl) {
+                    flowEl.innerText = `DELTA: ${asset.delta > 0 ? "+" : ""}${asset.delta.toFixed(2)}`;
+                    if(asset.delta < 0) {
+                        flowEl.style.color = "var(--red-nitido)";
+                        flowEl.style.background = "rgba(255, 62, 62, 0.08)";
+                        flowEl.style.borderColor = "rgba(255, 62, 62, 0.2)";
+                    } else {
+                        flowEl.style.color = "var(--green-nitido)";
+                        flowEl.style.background = "rgba(0, 255, 136, 0.08)";
+                        flowEl.style.borderColor = "rgba(0, 255, 136, 0.2)";
+                    }
+                }
+
                 const pctEl = document.getElementById(`pct-${asset.s}`);
                 if(pctEl) {
                     pctEl.innerText = (isPos ? "+" : "") + asset.pct.toFixed(2) + "%";
@@ -431,7 +445,7 @@
                         card.classList.add('pulse');
                         card.dataset.isTarget = 'true';
                         if (!eraAlvoAnterior) {
-                            addAlert(`SINAL ENTRA: ${asset.s} (RSI: ${asset.rsi.toFixed(1)})`);
+                            addAlert(`SINAL ENTRA: ${asset.s} (Delta: ${asset.delta.toFixed(2)})`);
                         }
                     } else if (asset.estadoOp === 'não entra') {
                         tagEl.style.color = "var(--red-nitido)";
