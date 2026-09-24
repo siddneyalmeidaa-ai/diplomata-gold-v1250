@@ -258,9 +258,8 @@
         renderErrors();
     }
 
-    // Valores reais ajustados e coerentes com o mercado de criptomoedas
+    // Valores reais ajustados e coerentes com o mercado de criptomoedas (Linha órfã removida)
     const coinsData = [
-        let s = item.symbol;
         { symbol: "BTC", name: "Bitcoin", base: 350000.0, spread: 0.30 },
         { symbol: "ETH", name: "Ethereum", base: 18000.0, spread: 0.34 },
         { symbol: "SOL", name: "Solana", base: 750.0, spread: 0.38 },
@@ -383,4 +382,4 @@
         if(alerts.length > 30) alerts.pop();
         localStorage.setItem('fenix_quantum_alerts_v16', JSON.stringify(alerts));
         renderAlerts();
-        let dot = doc
+        let dot = document.g
