@@ -1,4 +1,3 @@
-    
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -153,11 +152,11 @@
 <div class="st-bar" id="main-header">
     <div class="st-top-row">
         <div class="notif-bell" id="bell" onclick="toggleNotifs()">
-            <span id="last-alert">SENTINEL_V19 // CONSULTOR FINANCEIRO ATIVO</span>
+            <span id="last-alert">SENTINEL_V19 // SISTEMA ONLINE</span>
             <div class="bell-dot" id="dot"></div>
             <span style="font-size: 11px;">🔔</span>
         </div>
-        <div class="clock-modern" id="clock">00:00:00</div>
+        <div class="clock-modern" id="clock">--:--:--</div>
     </div>
     <div class="st-metrics">
         <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">HFT SUPREMO</span></div>
@@ -195,7 +194,7 @@
 <div class="quantum-panel-sugestoes">
     <div class="qp-title">⚡ STATUS DO CONSULTOR QUÂNTICO</div>
     <div class="qp-grid">
-        <div>Filtragem: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Análise Automatizada Pronta para Execução</span></div>
+        <div>Filtragem: <span class="qp-val" id="status-carregamento" style="color: var(--green-nitido);">Motor HFT Ativo e Sincronizado</span></div>
     </div>
 </div>
 
@@ -333,7 +332,7 @@
     </div>
 </div>
 
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js" defer></script>
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     const coins = ["BTC", "ETH", "SOL", "LINK"];
     let alerts = [];
@@ -350,6 +349,15 @@
     window['price_ETH'] = 19250.00;
     window['price_SOL'] = 1150.00;
     window['price_LINK'] = 85.00;
+
+    function atualizarRelogio() {
+        const clockEl = document.getElementById('clock');
+        if(clockEl) {
+            clockEl.innerText = new Date().toLocaleTimeString('pt-BR');
+        }
+    }
+    atualizarRelogio();
+    setInterval(atualizarRelogio, 1000);
 
     function toggle(s) {
         const card = document.getElementById(`card-${s}`);
@@ -388,7 +396,4 @@
 
     function setFilter(filter) {
         document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
-        document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
-        document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
-        document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
-       
+        document.getElementById('btn-targets').cl     
