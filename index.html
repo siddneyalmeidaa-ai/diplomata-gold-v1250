@@ -238,7 +238,6 @@
     let previousPrices = {};
     let activeStates = {}; 
     let currentFilter = 'ALL';
-    let audioCtx = null;
     let usdtBrlRate = 5.12; 
     let activeTargetsCount = 0;
 
@@ -363,7 +362,7 @@
 
             activeTargetsCount = 0;
 
-            coinsData.forEach(c => {
+            coinsData.forEach((c, index) => {
                 let priceInUSDT = priceMap[c.pair];
                 if(priceInUSDT) {
                     let priceInBRL = priceInUSDT * usdtBrlRate;
@@ -371,15 +370,13 @@
                     previousPrices[c.symbol] = priceInBRL;
                     livePrices[c.symbol] = priceInBRL;
 
-                    // Cálculo dinâmico do Delta e Variação percentual
                     let diff = priceInBRL - oldPrice;
                     let pct = oldPrice > 0 ? (diff / oldPrice) * 100 : 0;
                     let deltaVal = (diff * 1000).toFixed(2);
 
-                    // RSI Dinâmico baseado no hash do símbolo e variação
-                    let rsiVal = 50 + (Math.sin(Date.now() / 2000 + c.baseBRL || 1) * 25) + (pct * 5);
+                    let rsiVal = 50 + (Math.sin(Date.now() / 1500 + index * 1.5) * 28) + (pct * 15);
                     if(rsiVal > 95) rsiVal = 95;
-                    if(rsiVal < 5) rsiVal = 5;
+                    if(rsiVal < 10) rsiVal = 10;
 
                     let priceEl = document.getElementById(`pr-${c.symbol}`);
                     if(priceEl) {
@@ -407,14 +404,13 @@
                         rsiEl.innerText = "RSI: " + rsiVal.toFixed(1);
                     }
 
-                    // Condicionais de Entrada (Entra, Pula, Aguarda)
                     if(tagEl) {
-                        if(rsiVal < 30 || pct > 0.4) {
+                        if(rsiVal < 40) {
                             tagEl.innerText = "ENTRA";
                             tagEl.style.color = "#00ff88";
                             tagEl.style.borderColor = "#00ff88";
                             activeTargetsCount++;
-                        } else if(rsiVal > 70 || pct < -0.4) {
+                        } else if(rsiVal > 60) {
                             tagEl.innerText = "PULA";
                             tagEl.style.color = "#ff3e3e";
                             tagEl.style.borderColor = "#ff3e3e";
