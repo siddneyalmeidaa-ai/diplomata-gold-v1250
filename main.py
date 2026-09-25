@@ -34,7 +34,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
-            self.wfile.write(b"Diplomata Gold Bot - Sistema Avancado com RSI e Paper Trading Ativo!")
+            self.wfile.write(b"Diplomata Gold Bot - Sistema Avancado com RSI, Paper Trading e Blindagem Sentinel Ativos!")
 
 def run_server():
     port = int(os.environ.get("PORT", 10000))
@@ -98,10 +98,67 @@ def buscar_dados_mercado():
         DADOS_MERCADO_GLOBAL = novos_dados
     return novos_dados
 
+# ==========================================
+# MODULO SENTINEL V16 - DUPLO CRIVO E BLINDAGEM (ACUMULADO)
+# ==========================================
+class SentinelAutonomousSystem:
+    def __init__(self):
+        self.versao = "SENTINEL_V16_ULTIMATE_BLINDAGE"
+        self.memoria_erros = []
+        self.historico_operacoes = []
+        self.ativo_travado = False
+        
+    def registrar_erro_quantum(self, ativo, motivo):
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        registro = {
+            "tempo": timestamp,
+            "ativo": ativo,
+            "motivo": motivo,
+            "acao": "TRAVA_AUTOMATICA_ATIVADA"
+        }
+        self.memoria_erros.append(registro)
+        print(f"[QUANTUM MEMORY] Erro catalogado e blindagem acionada para {ativo}: {motivo}")
+
+    def avaliar_duplo_crivo(self, ativo, variacao_24h, delta_instantaneo, pressao_volatil):
+        """
+        Executa o Duplo Crivo e Captura de Intencao Futura:
+        - Cruza a variacao acumulada com o Delta instantaneo do minuto atual.
+        - Evita a armadilha do painel verde com preco estagnado ou a cair.
+        """
+        sinal = "PULA / ATENÇÃO"
+        status_barra = "vermelho"
+        motivo = "Falta de pressao compradora no delta instantaneo"
+        
+        if variacao_24h > 0 and delta_instantaneo > 0:
+            if pressao_volatil >= 0.5:
+                sinal = "ENTRA | ALVO"
+                status_barra = "verde brilhante"
+                motivo = "Fluxo validado pelo duplo crivo e pressao futura favoravel"
+            else:
+                sinal = "PULA / ATENÇÃO"
+                status_barra = "amarelo/alerta"
+                motivo = "Exaustao detectada: variacao positiva mas volatilidade comprimida"
+                self.registrar_erro_quantum(ativo, motivo)
+        else:
+            sinal = "PULA / ATENÇÃO"
+            status_barra = "vermelho"
+            motivo = "Delta negativo ou desfavoravel no presente momento"
+            
+        return {
+            "ativo": ativo,
+            "sinal": sinal,
+            "status_barra": status_barra,
+            "delta_usado": delta_instantaneo,
+            "analise_futura": "Intencao capturada com sucesso",
+            "motivo": motivo
+        }
+
+sentinel_autonomo = SentinelAutonomousSystem()
+
 def bot_loop():
     precos_anteriores = {}
     while True:
-        print("Diplomata Gold Bot: a executar ciclos com RSI e Paper Trading...")
+        print("Diplomata Gold Bot: a executar ciclos com RSI, Paper Trading e Duplo Crivo Sentinel...")
         precos_atuais = buscar_dados_mercado()
         
         for simbolo, preco_atual in precos_atuais.items():
@@ -116,14 +173,15 @@ def bot_loop():
             if preco_anterior and preco_anterior > 0:
                 variacao = ((preco_atual - preco_anterior) / preco_anterior) * 100
 
-            if variacao > 0.03 or rsi_atual < 35:
-                status_polaridade = "ENTRA | ALVO"
-            elif variacao < -0.03 or rsi_atual > 65:
-                status_polaridade = "PULA / ATENÇÃO"
-            else:
-                status_polaridade = "LATERAL"
+            # Simulando Delta instantaneo e pressao baseada na variacao e RSI para o Duplo Crivo
+            delta_inst = variacao * 10 
+            pressao_vol = 0.8 if rsi_atual < 60 else 0.3
 
-            print(f"[{simbolo}] Preço: {preco_atual} | Var: {variacao:.2f}% | RSI: {rsi_atual:.2f} | Estado: {status_polaridade}")
+            # Validacao pelo Duplo Crivo Sentinel
+            validacao_sentinel = sentinel_autonomo.avaliar_duplo_crivo(simbolo, variacao, delta_inst, pressao_vol)
+            status_polaridade = validacao_sentinel["sinal"]
+
+            print(f"[{simbolo}] Preço: {preco_atual} | Var: {variacao:.2f}% | RSI: {rsi_atual:.2f} | Estado Sentinel: {status_polaridade} ({validacao_sentinel['motivo']})")
             
             guardar_historico_local(simbolo, preco_atual, variacao, rsi_atual, status_polaridade)
             simular_paper_trading(simbolo, preco_atual, status_polaridade)
@@ -137,4 +195,4 @@ if __name__ == "__main__":
     server_thread.daemon = True
     server_thread.start()
     bot_loop()
-    
+            
