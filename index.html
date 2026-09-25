@@ -219,19 +219,19 @@
     const coinsData = [
         { symbol: "BTC", name: "Bitcoin", pair: "BTCUSDT", spread: 0.30, baseBRL: 435000, logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png" },
         { symbol: "ETH", name: "Ethereum", pair: "ETHUSDT", spread: 0.34, baseBRL: 14000, logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
-        { symbol: "SOL", name: "Solana", pair: "SOLUSDT", spread: 0.38, baseBRL: 600, logo: "https://cryptologos.cc/logos/solana-sol-logo.png" },
-        { symbol: "LINK", name: "Chainlink", pair: "LINKUSDT", spread: 0.42, baseBRL: 65, logo: "https://cryptologos.cc/logos/chainlink-link-logo.png" },
+        { symbol: "SOL", name: "Solana", pair: "SOLUSDT", spread: 0.38, baseBRL: 520, logo: "https://cryptologos.cc/logos/solana-sol-logo.png" },
+        { symbol: "LINK", name: "Chainlink", pair: "LINKUSDT", spread: 0.42, baseBRL: 58.50, logo: "https://cryptologos.cc/logos/chainlink-link-logo.png" },
         { symbol: "STX", name: "Stacks", pair: "STXUSDT", spread: 0.46, baseBRL: 1.60, logo: "https://cryptologos.cc/logos/stacks-stx-logo.png" },
-        { symbol: "RENDER", name: "Render", pair: "RENDERUSDT", spread: 0.50, baseBRL: 9.50, logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff88'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" },
-        { symbol: "ADA", name: "Cardano", pair: "ADAUSDT", spread: 0.32, baseBRL: 3.50, logo: "https://cryptologos.cc/logos/cardano-ada-logo.png" },
-        { symbol: "XRP", name: "XRP", pair: "XRPUSDT", spread: 0.28, baseBRL: 3.10, logo: "https://cryptologos.cc/logos/xrp-xrp-logo.png" },
-        { symbol: "AVAX", name: "Avalanche", pair: "AVAXUSDT", spread: 0.45, baseBRL: 140, logo: "https://cryptologos.cc/logos/avalanche-avax-logo.png" },
-        { symbol: "DOGE", name: "Dogecoin", pair: "DOGEUSDT", spread: 0.55, baseBRL: 0.85, logo: "https://cryptologos.cc/logos/dogecoin-doge-logo.png" },
-        { symbol: "NEAR", name: "NEAR Protocol", pair: "NEARUSDT", spread: 0.48, baseBRL: 22, logo: "https://cryptologos.cc/logos/near-protocol-near-logo.png" },
-        { symbol: "POL", name: "Polygon", pair: "POLUSDT", spread: 0.40, baseBRL: 2.50, logo: "https://cryptologos.cc/logos/polygon-matic-logo.png" },
-        { symbol: "DOT", name: "Polkadot", pair: "DOTUSDT", spread: 0.36, baseBRL: 28, logo: "https://cryptologos.cc/logos/polkadot-new-dot-logo.png" },
-        { symbol: "UNI", name: "Uniswap", pair: "UNIUSDT", spread: 0.44, baseBRL: 45, logo: "https://cryptologos.cc/logos/uniswap-uni-logo.png" },
-        { symbol: "ATOM", name: "Cosmos", pair: "ATOMUSDT", spread: 0.52, baseBRL: 20, logo: "https://cryptologos.cc/logos/cosmos-atom-logo.png" }
+        { symbol: "RENDER", name: "Render", pair: "RENDERUSDT", spread: 0.50, baseBRL: 9.44, logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff88'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" },
+        { symbol: "ADA", name: "Cardano", pair: "ADAUSDT", spread: 0.32, baseBRL: 3.47, logo: "https://cryptologos.cc/logos/cardano-ada-logo.png" },
+        { symbol: "XRP", name: "XRP", pair: "XRPUSDT", spread: 0.28, baseBRL: 3.08, logo: "https://cryptologos.cc/logos/xrp-xrp-logo.png" },
+        { symbol: "AVAX", name: "Avalanche", pair: "AVAXUSDT", spread: 0.45, baseBRL: 138.79, logo: "https://cryptologos.cc/logos/avalanche-avax-logo.png" },
+        { symbol: "DOGE", name: "Dogecoin", pair: "DOGEUSDT", spread: 0.55, baseBRL: 0.84, logo: "https://cryptologos.cc/logos/dogecoin-doge-logo.png" },
+        { symbol: "NEAR", name: "NEAR Protocol", pair: "NEARUSDT", spread: 0.48, baseBRL: 21.81, logo: "https://cryptologos.cc/logos/near-protocol-near-logo.png" },
+        { symbol: "POL", name: "Polygon", pair: "POLUSDT", spread: 0.40, baseBRL: 2.48, logo: "https://cryptologos.cc/logos/polygon-matic-logo.png" },
+        { symbol: "DOT", name: "Polkadot", pair: "DOTUSDT", spread: 0.36, baseBRL: 28.00, logo: "https://cryptologos.cc/logos/polkadot-new-dot-logo.png" },
+        { symbol: "UNI", name: "Uniswap", pair: "UNIUSDT", spread: 0.44, baseBRL: 45.00, logo: "https://cryptologos.cc/logos/uniswap-uni-logo.png" },
+        { symbol: "ATOM", name: "Cosmos", pair: "ATOMUSDT", spread: 0.52, baseBRL: 20.00, logo: "https://cryptologos.cc/logos/cosmos-atom-logo.png" }
     ];
 
     let livePrices = {};
@@ -374,129 +374,29 @@
         }
     }
 
-    function clearAlerts() {
-        alerts = [];
-        localStorage.removeItem('fenix_quantum_alerts_v16');
-        const notifList = document.getElementById('notif-list');
-        if(notifList) notifList.innerHTML = '';
-    }
-
-    function pushAlert(msg, type = 'entry') {
-        try {
-            let timeStr = new Date().toLocaleTimeString();
-            let alertObj = { time: timeStr, text: msg, type: type };
-            alerts.unshift(alertObj);
-            if(alerts.length > 50) alerts.pop();
-            localStorage.setItem('fenix_quantum_alerts_v16', JSON.stringify(alerts));
-            
-            const notifList = document.getElementById('notif-list');
-            if(notifList) {
-                notifList.innerHTML = alerts.map(a => `<div class="notif-item">[${a.time}] ${a.text}</div>`).join('');
-            }
-            
-            const lastAlert = document.getElementById('last-alert');
-            if(lastAlert) lastAlert.innerText = msg;
-            
-            const dot = document.getElementById('dot');
-            if(dot) dot.style.display = 'block';
-
-            playBeep(type);
-        } catch(e) {
-            logErrorCustom("Erro ao empurrar alerta: " + e.message);
-        }
-    }
-
-    if(alerts.length > 0) {
-        const notifList = document.getElementById('notif-list');
-        if(notifList) {
-            notifList.innerHTML = alerts.map(a => `<div class="notif-item">[${a.time}] ${a.text}</div>`).join('');
-        }
-    }
-
     function sync() {
         try {
-            let activeTargets = 0;
+            let now = new Date();
+            let clockEl = document.getElementById('clock');
+            if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0] + "." + Math.floor(now.getMilliseconds()/100);
+
+            activeTargetsCount = 0;
             coinsData.forEach(c => {
-                let randomVar = (Math.sin(Date.now() / 1000 + c.spread) * 1.5) + (Math.random() * 0.4 - 0.2);
-                let currentPct = c.spread + randomVar;
-                let currentPriceBRL = c.baseBRL * (1 + currentPct / 100);
-                
-                let rsiVal = 40 + (Math.sin(Date.now() / 2000 + c.spread * 10) * 25) + (Math.random() * 5);
-                if(rsiVal > 100) rsiVal = 99.9;
-                if(rsiVal < 0) rsiVal = 0.1;
+                let randomFactor = 1 + (Math.sin(Date.now() / 1000 + c.baseBRL) * 0.005);
+                let currentVal = c.baseBRL * randomFactor;
+                livePrices[c.symbol] = currentVal;
 
-                let deltaVal = (Math.random() * 2 - 0.95).toFixed(2);
-
-                livePrices[c.symbol] = currentPriceBRL;
-
-                let prEl = document.getElementById(`pr-${c.symbol}`);
-                let pctEl = document.getElementById(`pct-${c.symbol}`);
-                let tagEl = document.getElementById(`tag-${c.symbol}`);
-                let pillEl = document.getElementById(`pill-${c.symbol}`);
-                let cardEl = document.getElementById(`card-${c.symbol}`);
-                let rsiEl = document.getElementById(`rsi-${c.symbol}`);
-                let flowEl = document.getElementById(`flow-${c.symbol}`);
-
-                if(prEl) prEl.innerText = `R$ ${currentPriceBRL.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                if(pctEl) {
-                    pctEl.innerText = `${currentPct >= 0 ? '+' : ''}${currentPct.toFixed(2)}%`;
-                    pctEl.className = `a-pct ${currentPct >= 0 ? 'pos-txt' : 'neg-txt'}`;
-                }
-                if(pillEl) {
-                    pillEl.className = `side-pill ${currentPct >= 0 ? 'pos-bg' : 'neg-bg'}`;
-                }
-                if(rsiEl) {
-                    rsiEl.innerText = `RSI: ${rsiVal.toFixed(1)}`;
-                }
-                if(flowEl) {
-                    flowEl.innerText = `DELTA: ${deltaVal >= 0 ? '+' : ''}${deltaVal}`;
-                    flowEl.className = `hft-tag ${deltaVal >= 0 ? 'flow-buy' : 'flow-sell'}`;
-                }
-
-                let isTarget = rsiVal < 35 || rsiVal > 68 || Math.abs(currentPct) > 0.48;
-                if(isTarget) activeTargets++;
-
-                if(tagEl) {
-                    if(rsiVal < 35) {
-                        tagEl.innerText = 'COMPRA FORTE';
-                        tagEl.style.color = 'var(--green-nitido)';
-                        tagEl.style.borderColor = 'rgba(0,255,136,0.4)';
-                    } else if(rsiVal > 68) {
-                        tagEl.innerText = 'VENDA / SAÍDA';
-                        tagEl.style.color = 'var(--red-nitido)';
-                        tagEl.style.borderColor = 'rgba(255,62,62,0.4)';
-                    } else {
-                        tagEl.innerText = 'MONITORANDO';
-                        tagEl.style.color = '#666';
-                        tagEl.style.borderColor = '#1f1f1f';
-                    }
-                }
-
-                if(cardEl) {
-                    let show = true;
-                    if(currentFilter === 'TARGETS' && !isTarget) show = false;
-                    if(currentFilter === 'TOP' && currentPct < 0.35) show = false;
-                    if(currentFilter === 'SPREAD' && c.spread < 0.45) show = false;
-                    cardEl.style.display = show ? 'flex' : 'none';
+                let priceEl = document.getElementById(`pr-${c.symbol}`);
+                if(priceEl) {
+                    priceEl.innerText = "R$ " + currentVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 }
             });
-
-            activeTargetsCount = activeTargets;
-            const targetCountEl = document.getElementById('target-count');
-            if(targetCountEl) targetCountEl.innerText = activeTargetsCount;
-
-            const clockEl = document.getElementById('clock');
-            if(clockEl) {
-                const now = new Date();
-                clockEl.innerText = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0').slice(0, 2);
-            }
         } catch(e) {
-            logErrorCustom("Erro no loop de sincronização (sync): " + e.message);
+            logErrorCustom("Erro no ciclo de sincronização: " + e.message);
         }
     }
 
     setInterval(sync, 1000);
-    sync();
 </script>
 </body>
 </html>
