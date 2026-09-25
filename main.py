@@ -34,7 +34,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
-            self.wfile.write(b"Diplomata Gold Bot - Sistema Avancado com RSI, Paper Trading e Blindagem Sentinel Ativos!")
+            self.wfile.write(b"Diplomata Gold Bot - Sistema Avancado com RSI, Paper Trading e Blindagem Sentinel V16 Ativa!")
 
 def run_server():
     port = int(os.environ.get("PORT", 10000))
@@ -69,37 +69,9 @@ def guardar_historico_local(ativo, preco, variacao, rsi, status_polaridade):
     except Exception as e:
         print(f"Aviso ao gravar histórico local: {e}")
 
-def simular_paper_trading(ativo, preco, status_polaridade):
-    global posicoes_virtuais
-    if status_polaridade == "ENTRA | ALVO" and ativo not in posicoes_virtuais:
-        posicoes_virtuais[ativo] = preco
-        print(f"PAPER TRADING: Compra virtual aberta para {ativo} a {preco}")
-    elif status_polaridade == "PULA / ATENÇÃO" and ativo in posicoes_virtuais:
-        preco_entrada = posicoes_virtuais[ativo]
-        lucro = ((preco - preco_entrada) / preco_entrada) * 100
-        print(f"PAPER TRADING: Venda virtual fechada para {ativo}. Lucro/Prejuízo teórico: {lucro:.2f}%")
-        del posicoes_virtuais[ativo]
-
-def buscar_dados_mercado():
-    global DADOS_MERCADO_GLOBAL
-    novos_dados = {}
-    for simbolo, coin_id in ATIVOS_MONITORIZADOS.items():
-        try:
-            url = f"https://api.coincap.io/v2/assets/{coin_id}"
-            response = requests.get(url, timeout=10)
-            if response.status_code == 200:
-                dados = response.json()
-                preco = float(dados['data']['priceUsd'])
-                novos_dados[simbolo] = preco
-        except Exception as e:
-            print(f"Aviso na recolha de dados para {simbolo}: {e}")
-            
-    if novos_dados:
-        DADOS_MERCADO_GLOBAL = novos_dados
-    return novos_dados
-
 # ==========================================
-# MODULO SENTINEL V16 - DUPLO CRIVO E BLINDAGEM (ACUMULADO)
+# MODULO SENTINEL V16 - BLINDAGEM COMPLETA (ACUMULADO)
+# Inclui: Duplo Crivo, Memoria Quântica, Filtro de Volume Real e Saída Dinâmica de Fluxo
 # ==========================================
 class SentinelAutonomousSystem:
     def __init__(self):
@@ -119,49 +91,98 @@ class SentinelAutonomousSystem:
         self.memoria_erros.append(registro)
         print(f"[QUANTUM MEMORY] Erro catalogado e blindagem acionada para {ativo}: {motivo}")
 
-    def avaliar_duplo_crivo(self, ativo, variacao_24h, delta_instantaneo, pressao_volatil):
+    def avaliar_duplo_crivo_e_volume(self, ativo, variacao_24h, delta_instantaneo, pressao_volatil, volume_real):
         """
-        Executa o Duplo Crivo e Captura de Intencao Futura:
-        - Cruza a variacao acumulada com o Delta instantaneo do minuto atual.
-        - Evita a armadilha do painel verde com preco estagnado ou a cair.
+        Executa o Duplo Crivo Avançado:
+        - Cruza variação de 24h com Delta instantâneo.
+        - Aplica o Filtro de Volume Real (barra variações vazias/sem liquidez).
         """
         sinal = "PULA / ATENÇÃO"
         status_barra = "vermelho"
-        motivo = "Falta de pressao compradora no delta instantaneo"
+        motivo = "Falta de pressão ou volume no delta instantâneo"
         
+        # Exigência de Volume Real mínimo para evitar falsos rompimentos
+        VOLUME_MINIMO_EXIGIDO = 1000.0  
+
+        if volume_real < VOLUME_MINIMO_EXIGIDO:
+            motivo = "Variação vazia: volume real abaixo do limiar institucional"
+            self.registrar_erro_quantum(ativo, motivo)
+            return {"ativo": ativo, "sinal": sinal, "status_barra": "amarelo/alerta", "motivo": motivo}
+
         if variacao_24h > 0 and delta_instantaneo > 0:
             if pressao_volatil >= 0.5:
                 sinal = "ENTRA | ALVO"
                 status_barra = "verde brilhante"
-                motivo = "Fluxo validado pelo duplo crivo e pressao futura favoravel"
+                motivo = "Fluxo validado por Duplo Crivo e Volume Real favorável"
             else:
                 sinal = "PULA / ATENÇÃO"
                 status_barra = "amarelo/alerta"
-                motivo = "Exaustao detectada: variacao positiva mas volatilidade comprimida"
+                motivo = "Exaustão detectada: variação positiva mas volatilidade comprimida"
                 self.registrar_erro_quantum(ativo, motivo)
         else:
             sinal = "PULA / ATENÇÃO"
             status_barra = "vermelho"
-            motivo = "Delta negativo ou desfavoravel no presente momento"
+            motivo = "Delta negativo ou desfavorável no presente momento"
             
         return {
             "ativo": ativo,
             "sinal": sinal,
             "status_barra": status_barra,
             "delta_usado": delta_instantaneo,
-            "analise_futura": "Intencao capturada com sucesso",
             "motivo": motivo
         }
 
+    def gerenciar_saida_dinamica(self, ativo, preco_atual, delta_instantaneo):
+        """
+        Gerencia posições abertas em Paper Trading:
+        - Dispara saída dinâmica se o fluxo (Delta) inverter violentamente contra a posição.
+        """
+        global posicoes_virtuais
+        if ativo in posicoes_virtuais:
+            preco_entrada = posicoes_virtuais[ativo]["preco"]
+            delta_entrada = posicoes_virtuais[ativo]["delta_inicial"]
+            
+            # Condição de Inversão de Fluxo: Se o Delta estava positivo na entrada e agora virou fortemente negativo
+            if delta_instantaneo < -0.2:
+                lucro = ((preco_atual - preco_entrada) / preco_entrada) * 100
+                print(f"[SAÍDA DINÂMICA DE FLUXO] Inversão detectada em {ativo}! Fechamento forçado de segurança. Lucro/Prejuízo: {lucro:.2f}%")
+                del posicoes_virtuais[ativo]
+                return True
+        return False
+
 sentinel_autonomo = SentinelAutonomousSystem()
+posicoes_virtuais = {} # Estrutura enriquecida: {ativo: {"preco": val, "delta_inicial": val}}
+
+def buscar_dados_mercado():
+    global DADOS_MERCADO_GLOBAL
+    novos_dados = {}
+    for simbolo, coin_id in ATIVOS_MONITORIZADOS.items():
+        try:
+            url = f"https://api.coincap.io/v2/assets/{coin_id}"
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                dados = response.json()
+                preco = float(dados['data']['priceUsd'])
+                # Simulando captura de volume real baseada no coinmarketcap/coincap se disponível, ou métrica proporcional
+                volume = float(dados['data'].get('volumeUsd24Hr', 1500000)) / 1440 # Volume aproximado por minuto
+                novos_dados[simbolo] = {"preco": preco, "volume": volume}
+        except Exception as e:
+            print(f"Aviso na recolha de dados para {simbolo}: {e}")
+            
+    if novos_dados:
+        DADOS_MERCADO_GLOBAL = {k: v["preco"] for k, v in novos_dados.items()}
+    return novos_dados
 
 def bot_loop():
     precos_anteriores = {}
     while True:
-        print("Diplomata Gold Bot: a executar ciclos com RSI, Paper Trading e Duplo Crivo Sentinel...")
-        precos_atuais = buscar_dados_mercado()
+        print("Diplomata Gold Bot: a executar ciclos com RSI, Paper Trading e Blindagem Sentinel V16...")
+        dados_ativos = buscar_dados_mercado()
         
-        for simbolo, preco_atual in precos_atuais.items():
+        for simbolo, info in dados_ativos.items():
+            preco_atual = info["preco"]
+            volume_atual = info["volume"]
+
             historico_recente[simbolo].append(preco_atual)
             if len(historico_recente[simbolo]) > 14:
                 historico_recente[simbolo].pop(0)
@@ -173,18 +194,25 @@ def bot_loop():
             if preco_anterior and preco_anterior > 0:
                 variacao = ((preco_atual - preco_anterior) / preco_anterior) * 100
 
-            # Simulando Delta instantaneo e pressao baseada na variacao e RSI para o Duplo Crivo
+            # Simulação de Delta e Pressão com base nas métricas reais
             delta_inst = variacao * 10 
             pressao_vol = 0.8 if rsi_atual < 60 else 0.3
 
-            # Validacao pelo Duplo Crivo Sentinel
-            validacao_sentinel = sentinel_autonomo.avaliar_duplo_crivo(simbolo, variacao, delta_inst, pressao_vol)
+            # 1. Executa Saída Dinâmica em posições abertas se o fluxo inverter
+            sentinel_autonomo.gerenciar_saida_dinamica(simbolo, preco_atual, delta_inst)
+
+            # 2. Validação por Duplo Crivo e Volume Real
+            validacao_sentinel = sentinel_autonomo.avaliar_duplo_crivo_e_volume(simbolo, variacao, delta_inst, pressao_vol, volume_atual)
             status_polaridade = validacao_sentinel["sinal"]
 
             print(f"[{simbolo}] Preço: {preco_atual} | Var: {variacao:.2f}% | RSI: {rsi_atual:.2f} | Estado Sentinel: {status_polaridade} ({validacao_sentinel['motivo']})")
             
             guardar_historico_local(simbolo, preco_atual, variacao, rsi_atual, status_polaridade)
-            simular_paper_trading(simbolo, preco_atual, status_polaridade)
+            
+            # Gestão de Paper Trading com base no sinal validado
+            if status_polaridade == "ENTRA | ALVO" and simbolo not in posicoes_virtuais:
+                posicoes_virtuais[simbolo] = {"preco": preco_atual, "delta_inicial": delta_inst}
+                print(f"PAPER TRADING: Compra virtual aberta para {simbolo} a {preco_atual} com Delta validado.")
 
             precos_anteriores[simbolo] = preco_atual
             
@@ -195,4 +223,4 @@ if __name__ == "__main__":
     server_thread.daemon = True
     server_thread.start()
     bot_loop()
-            
+        
