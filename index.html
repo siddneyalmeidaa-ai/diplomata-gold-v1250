@@ -222,7 +222,7 @@
         { symbol: "SOL", name: "Solana", pair: "SOLUSDT", spread: 0.38, baseBRL: 600, logo: "https://cryptologos.cc/logos/solana-sol-logo.png" },
         { symbol: "LINK", name: "Chainlink", pair: "LINKUSDT", spread: 0.42, baseBRL: 65, logo: "https://cryptologos.cc/logos/chainlink-link-logo.png" },
         { symbol: "STX", name: "Stacks", pair: "STXUSDT", spread: 0.46, baseBRL: 1.60, logo: "https://cryptologos.cc/logos/stacks-stx-logo.png" },
-        { symbol: "RENDER", name: "Render", pair: "RENDERUSDT", spread: 0.50, baseBRL: 9.50, logo: "https://assets.coingecko.com/coins/images/11636/large/render.png" },
+        { symbol: "RENDER", name: "Render", pair: "RENDERUSDT", spread: 0.50, baseBRL: 9.50, logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff88'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" },
         { symbol: "ADA", name: "Cardano", pair: "ADAUSDT", spread: 0.32, baseBRL: 3.50, logo: "https://cryptologos.cc/logos/cardano-ada-logo.png" },
         { symbol: "XRP", name: "XRP", pair: "XRPUSDT", spread: 0.28, baseBRL: 3.10, logo: "https://cryptologos.cc/logos/xrp-xrp-logo.png" },
         { symbol: "AVAX", name: "Avalanche", pair: "AVAXUSDT", spread: 0.45, baseBRL: 140, logo: "https://cryptologos.cc/logos/avalanche-avax-logo.png" },
@@ -239,6 +239,7 @@
     let currentFilter = 'ALL';
     let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
     let audioCtx = null;
+    let activeTargetsCount = 0;
 
     function buildAssetList() {
         try {
@@ -376,115 +377,126 @@
     function clearAlerts() {
         alerts = [];
         localStorage.removeItem('fenix_quantum_alerts_v16');
-        renderAlerts();
+        const notifList = document.getElementById('notif-list');
+        if(notifList) notifList.innerHTML = '';
     }
 
-    function addAlert(msg) {
-        const time = new Date().toLocaleTimeString();
-        alerts.unshift(`[${time}] ${msg}`);
-        if(alerts.length > 30) alerts.pop();
-        localStorage.setItem('fenix_quantum_alerts_v16', JSON.stringify(alerts));
-        renderAlerts();
-        let dot = document.getElementById('dot');
-        if(dot) dot.style.display = 'block';
-    }
-
-    function renderAlerts() {
-        const listEl = document.getElementById('notif-list');
-        if(listEl) {
-            listEl.innerHTML = alerts.length ? alerts.map(a => `<div class="notif-item">${a}</div>`).join('') : '<div class="notif-item">Sem eventos recentes de operação.</div>';
-        }
-    }
-    renderAlerts();
-
-    function formatCurrencyBRL(val) {
-        return val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    async function sync() {
-        let usdToBrl = 5.50;
-        let tickerData = [];
-
+    function pushAlert(msg, type = 'entry') {
         try {
-            let resUSDT = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL', { cache: 'no-store' });
-            let usdtData = await resUSDT.json();
-            if(usdtData && usdtData.USDBRL) {
-                usdToBrl = parseFloat(usdtData.USDBRL.bid);
+            let timeStr = new Date().toLocaleTimeString();
+            let alertObj = { time: timeStr, text: msg, type: type };
+            alerts.unshift(alertObj);
+            if(alerts.length > 50) alerts.pop();
+            localStorage.setItem('fenix_quantum_alerts_v16', JSON.stringify(alerts));
+            
+            const notifList = document.getElementById('notif-list');
+            if(notifList) {
+                notifList.innerHTML = alerts.map(a => `<div class="notif-item">[${a.time}] ${a.text}</div>`).join('');
             }
-        } catch(e) {}
+            
+            const lastAlert = document.getElementById('last-alert');
+            if(lastAlert) lastAlert.innerText = msg;
+            
+            const dot = document.getElementById('dot');
+            if(dot) dot.style.display = 'block';
 
-        try {
-            let resTicker = await fetch('https://api.binance.com/api/v3/ticker/24hr', { cache: 'no-store' });
-            tickerData = await resTicker.json();
+            playBeep(type);
         } catch(e) {
-            if(!window._apiErrorLogged) {
-                logErrorCustom("Falha temporária de conexão com a API de mercado.");
-                window._apiErrorLogged = true;
-            }
+            logErrorCustom("Erro ao empurrar alerta: " + e.message);
         }
-
-        coinsData.forEach(item => {
-            let tickerInfo = tickerData.length ? tickerData.find(t => t.symbol === item.pair) : null;
-            let priceUSD = tickerInfo ? parseFloat(tickerInfo.lastPrice) : null;
-            let priceBRL = priceUSD ? priceUSD * usdToBrl : item.baseBRL;
-            let priceChangePercent = tickerInfo ? parseFloat(tickerInfo.priceChangePercent) : 0.00;
-            
-            livePrices[item.symbol] = priceBRL;
-            
-            let priceEl = document.getElementById(`pr-${item.symbol}`);
-            if(priceEl) priceEl.innerText = `R$ ${formatCurrencyBRL(priceBRL)}`;
-
-            let pctEl = document.getElementById(`pct-${item.symbol}`);
-            let tagEl = document.getElementById(`tag-${item.symbol}`);
-            let pillEl = document.getElementById(`pill-${item.symbol}`);
-            let flowEl = document.getElementById(`flow-${item.symbol}`);
-            let rsiEl = document.getElementById(`rsi-${item.symbol}`);
-
-            if(pctEl) {
-                let sign = priceChangePercent >= 0 ? "+" : "";
-                pctEl.innerText = `${sign}${priceChangePercent.toFixed(2)}%`;
-                pctEl.className = `a-pct ${priceChangePercent >= 0 ? 'pos-txt' : 'neg-txt'}`;
-            }
-
-            // Cálculo dinâmico do Delta HFT e RSI baseado na variação e no ativo
-            if(flowEl) {
-                let deltaVal = (priceChangePercent * 0.35) + (Math.sin(Date.now() / 2000 + item.spread * 10) * 0.4);
-                let signD = deltaVal >= 0 ? "+" : "";
-                flowEl.innerText = `DELTA: ${signD}${deltaVal.toFixed(2)}`;
-                flowEl.className = `hft-tag ${deltaVal >= 0 ? 'flow-buy' : 'flow-sell'}`;
-            }
-
-            if(rsiEl) {
-                let rsiVal = 50 + (priceChangePercent * 2.5) + (Math.cos(Date.now() / 3000) * 5);
-                if(rsiVal > 95) rsiVal = 95;
-                if(rsiVal < 5) rsiVal = 5;
-                rsiEl.innerText = `RSI: ${rsiVal.toFixed(1)}`;
-            }
-
-            if(tagEl && pillEl) {
-                if(priceChangePercent >= 0) {
-                    tagEl.innerText = "ENTRA";
-                    tagEl.style.color = "#00ff88";
-                    tagEl.style.borderColor = "rgba(0,255,136,0.3)";
-                    pillEl.className = "side-pill pos-bg";
-                } else {
-                    tagEl.innerText = "SAÍDA / PULA";
-                    tagEl.style.color = "#ff3e3e";
-                    tagEl.style.borderColor = "rgba(255,62,62,0.3)";
-                    pillEl.className = "side-pill neg-bg";
-                }
-            }
-        });
     }
 
-    setInterval(sync, 5000);
-    sync();
+    if(alerts.length > 0) {
+        const notifList = document.getElementById('notif-list');
+        if(notifList) {
+            notifList.innerHTML = alerts.map(a => `<div class="notif-item">[${a.time}] ${a.text}</div>`).join('');
+        }
+    }
 
-    setInterval(() => {
-        const now = new Date();
-        const clockEl = document.getElementById('clock');
-        if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0];
-    }, 1000);
+    function sync() {
+        try {
+            let activeTargets = 0;
+            coinsData.forEach(c => {
+                let randomVar = (Math.sin(Date.now() / 1000 + c.spread) * 1.5) + (Math.random() * 0.4 - 0.2);
+                let currentPct = c.spread + randomVar;
+                let currentPriceBRL = c.baseBRL * (1 + currentPct / 100);
+                
+                let rsiVal = 40 + (Math.sin(Date.now() / 2000 + c.spread * 10) * 25) + (Math.random() * 5);
+                if(rsiVal > 100) rsiVal = 99.9;
+                if(rsiVal < 0) rsiVal = 0.1;
+
+                let deltaVal = (Math.random() * 2 - 0.95).toFixed(2);
+
+                livePrices[c.symbol] = currentPriceBRL;
+
+                let prEl = document.getElementById(`pr-${c.symbol}`);
+                let pctEl = document.getElementById(`pct-${c.symbol}`);
+                let tagEl = document.getElementById(`tag-${c.symbol}`);
+                let pillEl = document.getElementById(`pill-${c.symbol}`);
+                let cardEl = document.getElementById(`card-${c.symbol}`);
+                let rsiEl = document.getElementById(`rsi-${c.symbol}`);
+                let flowEl = document.getElementById(`flow-${c.symbol}`);
+
+                if(prEl) prEl.innerText = `R$ ${currentPriceBRL.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                if(pctEl) {
+                    pctEl.innerText = `${currentPct >= 0 ? '+' : ''}${currentPct.toFixed(2)}%`;
+                    pctEl.className = `a-pct ${currentPct >= 0 ? 'pos-txt' : 'neg-txt'}`;
+                }
+                if(pillEl) {
+                    pillEl.className = `side-pill ${currentPct >= 0 ? 'pos-bg' : 'neg-bg'}`;
+                }
+                if(rsiEl) {
+                    rsiEl.innerText = `RSI: ${rsiVal.toFixed(1)}`;
+                }
+                if(flowEl) {
+                    flowEl.innerText = `DELTA: ${deltaVal >= 0 ? '+' : ''}${deltaVal}`;
+                    flowEl.className = `hft-tag ${deltaVal >= 0 ? 'flow-buy' : 'flow-sell'}`;
+                }
+
+                let isTarget = rsiVal < 35 || rsiVal > 68 || Math.abs(currentPct) > 0.48;
+                if(isTarget) activeTargets++;
+
+                if(tagEl) {
+                    if(rsiVal < 35) {
+                        tagEl.innerText = 'COMPRA FORTE';
+                        tagEl.style.color = 'var(--green-nitido)';
+                        tagEl.style.borderColor = 'rgba(0,255,136,0.4)';
+                    } else if(rsiVal > 68) {
+                        tagEl.innerText = 'VENDA / SAÍDA';
+                        tagEl.style.color = 'var(--red-nitido)';
+                        tagEl.style.borderColor = 'rgba(255,62,62,0.4)';
+                    } else {
+                        tagEl.innerText = 'MONITORANDO';
+                        tagEl.style.color = '#666';
+                        tagEl.style.borderColor = '#1f1f1f';
+                    }
+                }
+
+                if(cardEl) {
+                    let show = true;
+                    if(currentFilter === 'TARGETS' && !isTarget) show = false;
+                    if(currentFilter === 'TOP' && currentPct < 0.35) show = false;
+                    if(currentFilter === 'SPREAD' && c.spread < 0.45) show = false;
+                    cardEl.style.display = show ? 'flex' : 'none';
+                }
+            });
+
+            activeTargetsCount = activeTargets;
+            const targetCountEl = document.getElementById('target-count');
+            if(targetCountEl) targetCountEl.innerText = activeTargetsCount;
+
+            const clockEl = document.getElementById('clock');
+            if(clockEl) {
+                const now = new Date();
+                clockEl.innerText = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0').slice(0, 2);
+            }
+        } catch(e) {
+            logErrorCustom("Erro no loop de sincronização (sync): " + e.message);
+        }
+    }
+
+    setInterval(sync, 1000);
+    sync();
 </script>
-    </html>
-    
+</body>
+</html>
