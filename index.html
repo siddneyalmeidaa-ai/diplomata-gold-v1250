@@ -181,7 +181,7 @@
 </div>
 
 <div class="container" id="list"></div>
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     let systemErrors = JSON.parse(localStorage.getItem('sentinel_system_errors') || '[]');
 
@@ -217,29 +217,28 @@
     }
 
     const coinsData = [
-        { symbol: "BTC", name: "Bitcoin", pair: "BTCUSDT", spread: 0.30, baseBRL: 435000, logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png" },
-        { symbol: "ETH", name: "Ethereum", pair: "ETHUSDT", spread: 0.34, baseBRL: 14000, logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
-        { symbol: "SOL", name: "Solana", pair: "SOLUSDT", spread: 0.38, baseBRL: 520, logo: "https://cryptologos.cc/logos/solana-sol-logo.png" },
-        { symbol: "LINK", name: "Chainlink", pair: "LINKUSDT", spread: 0.42, baseBRL: 58.50, logo: "https://cryptologos.cc/logos/chainlink-link-logo.png" },
-        { symbol: "STX", name: "Stacks", pair: "STXUSDT", spread: 0.46, baseBRL: 1.60, logo: "https://cryptologos.cc/logos/stacks-stx-logo.png" },
-        { symbol: "RENDER", name: "Render", pair: "RENDERUSDT", spread: 0.50, baseBRL: 9.44, logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff88'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" },
-        { symbol: "ADA", name: "Cardano", pair: "ADAUSDT", spread: 0.32, baseBRL: 3.47, logo: "https://cryptologos.cc/logos/cardano-ada-logo.png" },
-        { symbol: "XRP", name: "XRP", pair: "XRPUSDT", spread: 0.28, baseBRL: 3.08, logo: "https://cryptologos.cc/logos/xrp-xrp-logo.png" },
-        { symbol: "AVAX", name: "Avalanche", pair: "AVAXUSDT", spread: 0.45, baseBRL: 138.79, logo: "https://cryptologos.cc/logos/avalanche-avax-logo.png" },
-        { symbol: "DOGE", name: "Dogecoin", pair: "DOGEUSDT", spread: 0.55, baseBRL: 0.84, logo: "https://cryptologos.cc/logos/dogecoin-doge-logo.png" },
-        { symbol: "NEAR", name: "NEAR Protocol", pair: "NEARUSDT", spread: 0.48, baseBRL: 21.81, logo: "https://cryptologos.cc/logos/near-protocol-near-logo.png" },
-        { symbol: "POL", name: "Polygon", pair: "POLUSDT", spread: 0.40, baseBRL: 2.48, logo: "https://cryptologos.cc/logos/polygon-matic-logo.png" },
-        { symbol: "DOT", name: "Polkadot", pair: "DOTUSDT", spread: 0.36, baseBRL: 28.00, logo: "https://cryptologos.cc/logos/polkadot-new-dot-logo.png" },
-        { symbol: "UNI", name: "Uniswap", pair: "UNIUSDT", spread: 0.44, baseBRL: 45.00, logo: "https://cryptologos.cc/logos/uniswap-uni-logo.png" },
-        { symbol: "ATOM", name: "Cosmos", pair: "ATOMUSDT", spread: 0.52, baseBRL: 20.00, logo: "https://cryptologos.cc/logos/cosmos-atom-logo.png" }
+        { symbol: "BTC", name: "Bitcoin", pair: "BTCUSDT", spread: 0.30, logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png" },
+        { symbol: "ETH", name: "Ethereum", pair: "ETHUSDT", spread: 0.34, logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
+        { symbol: "SOL", name: "Solana", pair: "SOLUSDT", spread: 0.38, logo: "https://cryptologos.cc/logos/solana-sol-logo.png" },
+        { symbol: "LINK", name: "Chainlink", pair: "LINKUSDT", spread: 0.42, logo: "https://cryptologos.cc/logos/chainlink-link-logo.png" },
+        { symbol: "STX", name: "Stacks", pair: "STXUSDT", spread: 0.46, logo: "https://cryptologos.cc/logos/stacks-stx-logo.png" },
+        { symbol: "RENDER", name: "Render", pair: "RENDERUSDT", spread: 0.50, logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff88'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" },
+        { symbol: "ADA", name: "Cardano", pair: "ADAUSDT", spread: 0.32, logo: "https://cryptologos.cc/logos/cardano-ada-logo.png" },
+        { symbol: "XRP", name: "XRP", pair: "XRPUSDT", spread: 0.28, logo: "https://cryptologos.cc/logos/xrp-xrp-logo.png" },
+        { symbol: "AVAX", name: "Avalanche", pair: "AVAXUSDT", spread: 0.45, logo: "https://cryptologos.cc/logos/avalanche-avax-logo.png" },
+        { symbol: "DOGE", name: "Dogecoin", pair: "DOGEUSDT", spread: 0.55, logo: "https://cryptologos.cc/logos/dogecoin-doge-logo.png" },
+        { symbol: "NEAR", name: "NEAR Protocol", pair: "NEARUSDT", spread: 0.48, logo: "https://cryptologos.cc/logos/near-protocol-near-logo.png" },
+        { symbol: "POL", name: "Polygon", pair: "POLUSDT", spread: 0.40, logo: "https://cryptologos.cc/logos/polygon-matic-logo.png" },
+        { symbol: "DOT", name: "Polkadot", pair: "DOTUSDT", spread: 0.36, logo: "https://cryptologos.cc/logos/polkadot-new-dot-logo.png" },
+        { symbol: "UNI", name: "Uniswap", pair: "UNIUSDT", spread: 0.44, logo: "https://cryptologos.cc/logos/uniswap-uni-logo.png" },
+        { symbol: "ATOM", name: "Cosmos", pair: "ATOMUSDT", spread: 0.52, logo: "https://cryptologos.cc/logos/cosmos-atom-logo.png" }
     ];
 
     let livePrices = {};
     let activeStates = {}; 
     let currentFilter = 'ALL';
-    let alerts = JSON.parse(localStorage.getItem('fenix_quantum_alerts_v16') || '[]');
     let audioCtx = null;
-    let activeTargetsCount = 0;
+    let usdtBrlRate = 5.12; // Cotação base do dólar para conversão em BRL
 
     function buildAssetList() {
         try {
@@ -280,33 +279,6 @@
     }
     
     buildAssetList();
-
-    function playBeep(type = 'entry') {
-        try {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.type = 'sine';
-            
-            if (type === 'entry') {
-                osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); 
-                osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15); 
-            } else {
-                osc.frequency.setValueAtTime(440, audioCtx.currentTime); 
-                osc.frequency.setValueAtTime(329.63, audioCtx.currentTime + 0.15); 
-            }
-
-            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.4);
-            if ("vibrate" in navigator) {
-                navigator.vibrate(type === 'entry' ? [200, 100, 200] : [400, 100, 100]);
-            }
-        } catch(e) {}
-    }
 
     function toggleChart(symbol, pair) {
         try {
@@ -362,7 +334,6 @@
         document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
         document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
         document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
-        sync();
     }
 
     function toggleNotifs() {
@@ -374,29 +345,41 @@
         }
     }
 
-    function sync() {
+    async function syncPrices() {
         try {
             let now = new Date();
             let clockEl = document.getElementById('clock');
             if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0] + "." + Math.floor(now.getMilliseconds()/100);
 
-            activeTargetsCount = 0;
-            coinsData.forEach(c => {
-                let randomFactor = 1 + (Math.sin(Date.now() / 1000 + c.baseBRL) * 0.005);
-                let currentVal = c.baseBRL * randomFactor;
-                livePrices[c.symbol] = currentVal;
+            // Requisição real à API pública da Binance para obter os preços de todos os pares
+            let response = await fetch('https://api.binance.com/api/v3/ticker/price');
+            let data = await response.json();
+            
+            let priceMap = {};
+            data.forEach(item => {
+                priceMap[item.symbol] = parseFloat(item.price);
+            });
 
-                let priceEl = document.getElementById(`pr-${c.symbol}`);
-                if(priceEl) {
-                    priceEl.innerText = "R$ " + currentVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            coinsData.forEach(c => {
+                let priceInUSDT = priceMap[c.pair];
+                if(priceInUSDT) {
+                    let priceInBRL = priceInUSDT * usdtBrlRate;
+                    livePrices[c.symbol] = priceInBRL;
+
+                    let priceEl = document.getElementById(`pr-${c.symbol}`);
+                    if(priceEl) {
+                        priceEl.innerText = "R$ " + priceInBRL.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    }
                 }
             });
         } catch(e) {
-            logErrorCustom("Erro no ciclo de sincronização: " + e.message);
+            logErrorCustom("Erro ao sincronizar preços reais da Binance: " + e.message);
         }
     }
 
-    setInterval(sync, 1000);
+    setInterval(syncPrices, 2000);
+    syncPrices();
 </script>
 </body>
-</html>
+    </html>
+    
