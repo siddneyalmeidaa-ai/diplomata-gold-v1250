@@ -179,7 +179,7 @@
     </div>
 
     <div class="coins-container" id="lista-ativos">
-        <!-- Injetado dinamicamente via JS -->
+        <!-- Dados carregados da API -->
     </div>
 
     <script>
@@ -211,7 +211,6 @@
 
         async function atualizarDados() {
             try {
-                // Lembra de ajustar para o URL completo da tua API no Render se necessário: 'https://TEU-SERVIDOR.onrender.com/api/dados'
                 let response = await fetch('/api/dados');
                 if (!response.ok) return;
                 let dados = await response.json();
@@ -228,13 +227,13 @@
                     let rsi = info.rsi.toFixed(1);
                     let estadoServidor = info.estado; 
 
-                    if (estadoServidor.includes("ENTRA")) {
+                    if (estadoServidor && estadoServidor.includes("ENTRA")) {
                         totalAlvos++;
                     }
 
                     let classeStatus = "status-lateral";
-                    if (estadoServidor.includes("ENTRA")) classeStatus = "status-entra";
-                    else if (estadoServidor.includes("PULA")) classeStatus = "status-pula";
+                    if (estadoServidor && estadoServidor.includes("ENTRA")) classeStatus = "status-entra";
+                    else if (estadoServidor && estadoServidor.includes("PULA")) classeStatus = "status-pula";
 
                     let varTexto = (variacao >= 0 ? "+" : "") + variacao.toFixed(2) + "%";
 
@@ -249,7 +248,7 @@
                             </div>
                             <div class="coin-price-box">
                                 <div class="coin-price">${preco}</div>
-                                <div class="coin-status ${classeStatus}">${estadoServidor}</div>
+                                <div class="coin-status ${classeStatus}">${estadoServidor || 'AGUARDA'}</div>
                             </div>
                         </div>
                     `;
@@ -259,7 +258,7 @@
                 document.getElementById('total-alvos').innerText = totalAlvos;
 
             } catch (e) {
-                console.error("Erro ao sincronizar dados:", e);
+                console.error("Erro ao carregar dados:", e);
             }
         }
 
