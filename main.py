@@ -82,7 +82,6 @@ class GestorHisterese:
         self.estado_estavel = {}
 
     def avaliar(self, ativo, novo_estado_proposto):
-        estado_atual = self.estado_estavel.get(ativo, "LATERAL")
         candidato_atual = self.candidato_estado.get(ativo, None)
 
         if novo_estado_proposto == candidato_atual:
@@ -99,11 +98,11 @@ class GestorHisterese:
 
 gestor_histerese = GestorHisterese(ciclos_necessarios=3)
 
-# Variaveis globais para controlo de estado, historico, RSI e Paper Trading
-historico_precos = []
+# Variáveis globais para controlo, histórico, RSI, Paper Trading e Baleias
 ULTIMO_REGISTO = "historico_diplomata.txt"
 DADOS_MERCADO_GLOBAL = {}
 historico_recente = {simbolo: [] for simbolo in ["BTC", "ETH", "SOL", "LINK", "NEAR", "RENDER", "DOT"]}
+historico_volumes = {simbolo: [] for simbolo in ["BTC", "ETH", "SOL", "LINK", "NEAR", "RENDER", "DOT"]}
 posicoes_virtuais = {}
 
 ATIVOS_MONITORIZADOS = {
@@ -138,7 +137,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
-            self.wfile.write(b"Diplomata Gold Bot - Sistema Avancado com RSI, Paper Trading, Memoria Quantica e Histerese!")
+            self.wfile.write(b"Diplomata Gold Bot - Sistema Avancado com Filtro Macro 24h, Baleias, RSI, Paper Trading, Memoria Quantica e Histerese!")
 
 def run_server():
     port = int(os.environ.get("PORT", 10000))
@@ -148,7 +147,7 @@ def run_server():
 
 def calcular_rsi(precos):
     if len(precos) < 6:
-        return 50.0  # Valor neutro inicial
+        return 50.0  
     ganhos = 0
     perdas = 0
     for i in range(1, len(precos)):
@@ -163,13 +162,33 @@ def calcular_rsi(precos):
     rsi = 100 - (100 / (1 + rs))
     return rsi
 
+def detetar_atividade_baleias(ativo, preco_atual, preco_anterior):
+    """
+    Rastreia a pegada de grandes players estimando o fluxo de agressão e variação por ciclo.
+    """
+    diff_abs = abs(preco_atual - preco_anterior) if preco_anterior else 0
+    historico = historico_volumes[ativo]
+    historico.append(diff_abs)
+    
+    if len(historico) > 20:
+        historico.pop(0)
+        
+    if len(historico) < 5:
+        return False
+        
+    media_fluxo = sum(historico[:-1]) / len(historico[:-1]) if len(historico) > 1 else 0
+    
+    # Se a agressão do ciclo for muito superior à média, deteta pegada de tubarão
+    if media_fluxo > 0 and diff_abs > (media_fluxo * 2.2):
+        return True
+    return False
+
 def guardar_historico_local(ativo, preco, variacao, rsi, status_polaridade):
     try:
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
         linha = f"[{timestamp}] Ativo: {ativo} | Preço: {preco} | Var: {variacao:.2f}% | RSI: {rsi:.2f} | Estado: {status_polaridade}\n"
         with open(ULTIMO_REGISTO, "a", encoding="utf-8") as f:
             f.write(linha)
-        print(f"Registo gravado: {linha.strip()}")
     except Exception as e:
         print(f"Aviso ao gravar histórico local: {e}")
 
@@ -201,9 +220,8 @@ def buscar_dados_mercado():
 def bot_loop():
     precos_anteriores = {}
     while True:
-        print("Diplomata Gold Bot: a executar ciclos com RSI, Paper Trading, Memória Quântica e Histerese...")
+        print("Diplomata Gold Bot: a executar ciclos com Filtro Macro, Baleias, RSI, Paper Trading e Histerese...")
         precos_atuais = buscar_dados_mercado()
-        
         novos_dados_api = {}
         
         for simbolo, preco_atual in precos_atuais.items():
@@ -218,32 +236,37 @@ def bot_loop():
             if preco_anterior and preco_anterior > 0:
                 variacao = ((preco_atual - preco_anterior) / preco_anterior) * 100
 
-            # Consulta ao Passado via Memória Quântica
+            # 1. Filtro de Contexto Macro (24h/Tendência)
+            tendencia_macro_favoravel = variacao >= -0.10
+
+            # 2. Rastreio de Baleias (Smart Money / Agressão de Lotes)
+            baleia_ativa = detetar_atividade_baleias(simbolo, preco_atual, preco_anterior)
+
+            # 3. Consulta ao Passado via Memória Quântica
             status_memoria = motor_memoria.consultar_passado(simbolo)
             
             if status_memoria != "APROVADO":
                 bruto_polaridade = "PULA / ATENÇÃO"
-                print(f"[{simbolo}] BLOQUEADO pela Memória Quântica ({status_memoria})")
                 motor_memoria.registar_experiencia(simbolo, {"variacao": variacao, "rsi": rsi_atual}, "ARMADILHA")
             else:
-                if variacao > 0.03 or rsi_atual < 35:
+                # Regra institucional unificada: Só entra se houver momentum/RSI favorável + Macro limpo + (Baleia ou fluxo saudável)
+                if (variacao > 0.03 or rsi_atual < 35 or baleia_ativa) and tendencia_macro_favoravel:
                     bruto_polaridade = "ENTRA | ALVO"
                     motor_memoria.registar_experiencia(simbolo, {"variacao": variacao, "rsi": rsi_atual}, "SUCESSO")
-                elif variacao < -0.03 or rsi_atual > 65:
+                elif variacao < -0.03 or rsi_atual > 65 or not tendencia_macro_favoravel:
                     bruto_polaridade = "PULA / ATENÇÃO"
                     motor_memoria.registar_experiencia(simbolo, {"variacao": variacao, "rsi": rsi_atual}, "ARMADILHA")
                 else:
                     bruto_polaridade = "LATERAL"
 
-            # Aplicação da Histerese (Exige 3 ciclos consistentes para consolidar o estado)
+            # 4. Gestor de Histerese (Confirmação Temporal de Ciclos)
             status_polaridade = gestor_histerese.avaliar(simbolo, bruto_polaridade)
 
-            print(f"[{simbolo}] Preço: {preco_atual} | Var: {variacao:.2f}% | RSI: {rsi_atual:.2f} | Estado Estável (Histerese): {status_polaridade}")
+            print(f"[{simbolo}] Preço: {preco_atual} | Var: {variacao:.2f}% | RSI: {rsi_atual:.2f} | Baleia: {baleia_ativa} | Estado: {status_polaridade}")
             
             guardar_historico_local(simbolo, preco_atual, variacao, rsi_atual, status_polaridade)
             simular_paper_trading(simbolo, preco_atual, status_polaridade)
 
-            # Empacota os dados validados para a API consumir limpo
             novos_dados_api[simbolo] = {
                 "preco": preco_atual,
                 "variacao": variacao,
