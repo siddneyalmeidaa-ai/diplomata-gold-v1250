@@ -142,9 +142,9 @@
         </div>
     </div>
     <div class="st-metrics">
-        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">API 24H & KLINES</span></div>
+        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">DELTA SUAVIZADO</span></div>
         <div class="stat-box"><span class="stat-label">Latência</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">Smart</span></div>
-        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">RSI REAL</span></div>
+        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">HISTERESE ATIVA</span></div>
         <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
@@ -233,7 +233,8 @@
     ];
         let livePrices = {};
     let previousPrices = {};
-    let activeStates = {}; 
+    let deltaHistory = {}; // Histórico para suavização do Delta
+    let assetStates = {};  // Armazena o estado atual com histerese
     let currentFilter = 'ALL';
     let usdtBrlRate = 5.12; 
     let activeTargetsCount = 0;
@@ -295,7 +296,6 @@
             });
             if(!isOpen) {
                 card.classList.add('open');
-                activeStates[symbol] = true; 
                 chartBox.innerHTML = '';
                 new TradingView.widget({
                     "width": "100%", "height": 330, "symbol": "BINANCE:" + pair,
@@ -305,7 +305,6 @@
                 });
             } else {
                 card.classList.remove('open');
-                activeStates[symbol] = false; 
                 chartBox.innerHTML = '';
             }
         } catch(e) {
@@ -336,7 +335,6 @@
         if(notifList) notifList.innerHTML = '<div class="notif-item">Nenhum evento recente registado.</div>';
     }
 
-    // Função matemática para calcular o RSI real baseado em velas (klines)
     function calculateRSI(closes) {
         if (!closes || closes.length < 15) return 50.0;
         let gains = 0;
@@ -359,7 +357,6 @@
             let clockEl = document.getElementById('clock');
             if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0] + "." + Math.floor(now.getMilliseconds()/100);
 
-            // Chamada ao endpoint de 24h da Binance para buscar variação oficial e preços reais
             let response = await fetch('https://api.binance.com/api/v3/ticker/24hr').catch(() => null);
             if(!response || !response.ok) return;
             let data = await response.json();
@@ -384,10 +381,17 @@
                     livePrices[c.symbol] = priceInBRL;
 
                     let diff = priceInBRL - oldPrice;
-                    let pct = mInfo.priceChangePercent; // Variação oficial de 24h fornecida pela Binance
-                    let deltaVal = (diff * 1000).toFixed(2);
+                    let rawDelta = diff * 1000;
 
-                    // Busca o RSI real através de klines se não estiver em cache recente
+                    // Suavização do Delta (Média Móvel de 3 ciclos para eliminar ruído instantâneo)
+                    if (!deltaHistory[c.symbol]) deltaHistory[c.symbol] = [rawDelta, rawDelta, rawDelta];
+                    deltaHistory[c.symbol].shift();
+                    deltaHistory[c.symbol].push(rawDelta);
+                    let smoothedDelta = deltaHistory[c.symbol].reduce((a, b) => a + b, 0) / 3;
+                    let deltaVal = smoothedDelta.toFixed(2);
+
+                    let pct = mInfo.priceChangePercent;
+
                     let rsiVal = rsiCache[c.symbol] || 50.0;
                     if (!rsiCache[c.symbol] || Math.random() < 0.3) {
                         try {
@@ -399,6 +403,39 @@
                                 rsiCache[c.symbol] = rsiVal;
                             }
                         } catch(err) {}
+                    }
+
+                    // Sistema de Histerese para Estabilidade de Estados (Elimina o piscar)
+                    let currentState = assetStates[c.symbol] || "AGUARDA";
+                    let newStatusText = currentState;
+                    let numDelta = parseFloat(deltaVal);
+
+                    if (currentState === "AGUARDA") {
+                        // Gatilhos de Entrada rigorosos
+                        if (rsiVal < 28 || numDelta > 7.0) {
+                            newStatusText = "⚡ ENTRA";
+                        } else if (rsiVal > 72 || numDelta < -7.0) {
+                            newStatusText = "⛔ PULA";
+                        }
+                    } else if (currentState === "⚡ ENTRA") {
+                        // Histerese de saída: só sai se o RSI recuperar acima de 34 ou o Delta recuar abaixo de 3.0
+                        if (rsiVal > 35 && numDelta < 3.0) {
+                            newStatusText = "AGUARDA";
+                        }
+                    } else if (currentState === "⛔ PULA") {
+                        // Histerese de saída para Pula: só sai se o RSI recuar abaixo de 65 ou o Delta subir acima de -3.0
+                        if (rsiVal < 65 && numDelta > -3.0) {
+                            newStatusText = "AGUARDA";
+                        }
+                    }
+
+                    assetStates[c.symbol] = newStatusText;
+                    let statusClass = "status-lateral";
+                    if (newStatusText === "⚡ ENTRA") {
+                        statusClass = "status-entra";
+                        activeTargetsCount++;
+                    } else if (newStatusText === "⛔ PULA") {
+                        statusClass = "status-pula";
                     }
 
                     let priceEl = document.getElementById(`pr-${c.symbol}`);
@@ -416,32 +453,19 @@
                     }
                     if(pillEl) pillEl.className = `side-pill ${pct >= 0 ? 'pos-bg' : 'neg-bg'}`;
                     if(flowEl) {
-                        flowEl.innerText = `DELTA: ${deltaVal >= 0 ? '+' : ''}${deltaVal}`;
-                        flowEl.className = `hft-tag ${deltaVal >= 0 ? 'flow-buy' : 'flow-sell'}`;
+                        flowEl.innerText = `DELTA: ${numDelta >= 0 ? '+' : ''}${deltaVal}`;
+                        flowEl.className = `hft-tag ${numDelta >= 0 ? 'flow-buy' : 'flow-sell'}`;
                     }
                     if(rsiEl) rsiEl.innerText = `RSI: ${rsiVal.toFixed(1)}`;
 
-                    // Critérios de transição blindados (RSI real + Delta)
-                    let statusText = "AGUARDA";
-                    let statusClass = "status-lateral";
-                    
-                    if (rsiVal < 28 || deltaVal > 7.0) {
-                        statusText = "⚡ ENTRA";
-                        statusClass = "status-entra";
-                        activeTargetsCount++;
-                    } else if (rsiVal > 72 || deltaVal < -7.0) {
-                        statusText = "⛔ PULA";
-                        statusClass = "status-pula";
-                    }
-
                     if(tagEl) {
-                        tagEl.innerText = statusText;
+                        tagEl.innerText = newStatusText;
                         tagEl.className = `flow-tag ${statusClass}`;
                     }
 
                     if(cardEl) {
                         let show = true;
-                        if(currentFilter === 'TARGETS' && statusText !== "⚡ ENTRA") show = false;
+                        if(currentFilter === 'TARGETS' && newStatusText !== "⚡ ENTRA") show = false;
                         if(currentFilter === 'TOP' && pct < 0) show = false;
                         if(currentFilter === 'SPREAD' && c.spread < 0.40) show = false;
                         let targetDisplay = show ? 'flex' : 'none';
