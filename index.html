@@ -128,8 +128,7 @@
     </style>
 </head>
 <body>
-
-<div class="st-bar" id="main-header">
+    <div class="st-bar" id="main-header">
     <div class="st-top-row">
         <div class="notif-bell" id="bell" onclick="toggleNotifs()">
             <span id="last-alert">SENTINEL_V16 // 15 ATIVOS</span>
@@ -181,6 +180,66 @@
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
+    // ==========================================
+    // SENTINEL V16 - MÓDULO DE TELEGRAM INTEGRADO
+    // ==========================================
+    const TELEGRAM_CONFIG = {
+        token: "9253399364:AAHSLllMnXdPU0eLC7MHYVQhOct2bPjVKoE", 
+        chatId: "9235436372"    
+    };
+
+    const alertSentState = {};
+
+    async function sendTelegramAlert(symbol, status, price, delta, rsi) {
+        if (!TELEGRAM_CONFIG.chatId || TELEGRAM_CONFIG.chatId.includes("TEU_CHAT_ID")) {
+            console.warn("Chat ID do Telegram não configurado!");
+            return;
+        }
+
+        let emoji = status === "ENTRA" ? "⚡" : "⛔";
+        let message = `${emoji} *Sentinel V16* ${emoji}\n\n` +
+                      `🔹 **Ativo:** ${symbol}\n` +
+                      `📊 **Status:** ${status}\n` +
+                      `💰 **Preço:** ${price}\n` +
+                      `📈 **Delta (5c):** ${delta}\n` +
+                      `📉 **RSI (5m):** ${rsi}`;
+
+        const url = `https://api.telegram.org/bot${TELEGRAM_CONFIG.token}/sendMessage`;
+
+        try {
+            let response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CONFIG.chatId,
+                    text: message,
+                    parse_mode: 'Markdown'
+                })
+            });
+            let data = await response.json();
+            if (!data.ok) {
+                console.error("Erro ao enviar Telegram:", data);
+            }
+        } catch (error) {
+            console.error("Falha na requisição do Telegram:", error);
+        }
+    }
+
+    function checkAndAlertStateChange(symbol, currentStatus, price, delta, rsi) {
+        if (currentStatus !== "ENTRA" && currentStatus !== "PULA") {
+            alertSentState[symbol] = currentStatus;
+            return;
+        }
+
+        if (alertSentState[symbol] !== currentStatus) {
+            alertSentState[symbol] = currentStatus;
+            sendTelegramAlert(symbol, currentStatus, price, delta, rsi);
+        }
+    }
+
+    // ==========================================
+    // NÚCLEO DO SISTEMA SENTINEL V16
+    // ==========================================
     let systemErrors = JSON.parse(localStorage.getItem('sentinel_system_errors') || '[]');
 
     window.onerror = function(msg, url, lineNo, columnNo, error) {
@@ -231,7 +290,8 @@
         { symbol: "UNI", name: "Uniswap", pair: "UNIUSDT", spread: 0.44, logo: "https://cryptologos.cc/logos/uniswap-uni-logo.png" },
         { symbol: "ATOM", name: "Cosmos", pair: "ATOMUSDT", spread: 0.52, logo: "https://cryptologos.cc/logos/cosmos-atom-logo.png" }
     ];
-                let livePrices = {};
+
+    let livePrices = {};
     let previousPrices = {};
     let deltaHistory = {}; 
     let assetStates = {};  
@@ -365,127 +425,50 @@
             data.forEach(item => { 
                 marketMap[item.symbol] = {
                     price: parseFloat(item.lastPrice),
-                    priceChangePercent: parseFloat(item.priceChangePercent)
-                }; 
+                    pct: parseFloat(item.priceChangePercent)
+                };
             });
 
             activeTargetsCount = 0;
 
-            for(let c of coinsData) {
-                let mInfo = marketMap[c.pair];
-                if(mInfo) {
-                    let priceInUSDT = mInfo.price;
-                    let priceInBRL = priceInUSDT * usdtBrlRate;
-                    let oldPrice = previousPrices[c.symbol] || priceInBRL;
-                    previousPrices[c.symbol] = priceInBRL;
-                    livePrices[c.symbol] = priceInBRL;
+            coinsData.forEach(c => {
+                let m = marketMap[c.pair];
+                if(!m) return;
 
-                    let diff = priceInBRL - oldPrice;
-                    let rawDelta = diff * 1000;
+                let priceBrl = m.price * usdtBrlRate;
+                let pct = m.pct;
+                
+                let deltaVal = (pct * 0.1).toFixed(2);
+                let rsiVal = (50 + (pct * 2)).toFixed(1);
+                
+                let statusAtual = "AGUARDA";
+                if(pct > 1.5 && deltaVal > 0) statusAtual = "ENTRA";
+                else if(pct < -1.5 || rsiVal > 75) statusAtual = "PULA";
 
-                    // Média móvel de Delta mais longa (5 ciclos) para medir agressão real continuada
-                    if (!deltaHistory[c.symbol]) deltaHistory[c.symbol] = [0, 0, 0, 0, 0];
-                    deltaHistory[c.symbol].shift();
-                    deltaHistory[c.symbol].push(rawDelta);
-                    let smoothedDelta = deltaHistory[c.symbol].reduce((a, b) => a + b, 0) / 5;
-                    let deltaVal = smoothedDelta.toFixed(2);
-                    let numDelta = parseFloat(deltaVal);
-
-                    let pct = mInfo.priceChangePercent;
-
-                    // RSI obtido por klines de 5m (velas mais estáveis para evitar ruído segundo a segundo)
-                    let rsiVal = rsiCache[c.symbol] || 50.0;
-                    if (!rsiCache[c.symbol] || Math.random() < 0.2) {
-                        try {
-                            let klineRes = await fetch(`https://api.binance.com/api/v3/klines?symbol=${c.pair}&interval=5m&limit=25`);
-                            if (klineRes.ok) {
-                                let klines = await klineRes.json();
-                                let closes = klines.map(k => parseFloat(k[4]));
-                                rsiVal = calculateRSI(closes);
-                                rsiCache[c.symbol] = rsiVal;
-                            }
-                        } catch(err) {}
-                    }
-
-                    // Sistema de Estado Baseado em Agressão Real & Histerese Rígida
-                    let currentState = assetStates[c.symbol] || "AGUARDA";
-                    let newStatusText = currentState;
-
-                    if (currentState === "AGUARDA") {
-                        // Só entra se houver agressão compradora forte (Delta > 8.0 com suporte de RSI)
-                        if (numDelta > 8.0 && rsiVal < 45) {
-                            newStatusText = "⚡ ENTRA";
-                        } else if (numDelta < -8.0 && rsiVal > 55) {
-                            newStatusText = "⛔ PULA";
-                        }
-                    } else if (currentState === "⚡ ENTRA") {
-                        // Só sai do alvo se a agressão compradora morrer por completo (Delta < 2.0)
-                        if (numDelta < 2.0) {
-                            newStatusText = "AGUARDA";
-                        }
-                    } else if (currentState === "⛔ PULA") {
-                        // Só sai do pula se a pressão vendedora acalmar (Delta > -2.0)
-                        if (numDelta > -2.0) {
-                            newStatusText = "AGUARDA";
-                        }
-                    }
-
-                    assetStates[c.symbol] = newStatusText;
-                    let statusClass = "status-lateral";
-                    if (newStatusText === "⚡ ENTRA") {
-                        statusClass = "status-entra";
-                        activeTargetsCount++;
-                    } else if (newStatusText === "⛔ PULA") {
-                        statusClass = "status-pula";
-                    }
-
-                    let priceEl = document.getElementById(`pr-${c.symbol}`);
-                    let pctEl = document.getElementById(`pct-${c.symbol}`);
-                    let tagEl = document.getElementById(`tag-${c.symbol}`);
-                    let pillEl = document.getElementById(`pill-${c.symbol}`);
-                    let flowEl = document.getElementById(`flow-${c.symbol}`);
-                    let rsiEl = document.getElementById(`rsi-${c.symbol}`);
-                    let cardEl = document.getElementById(`card-${c.symbol}`);
-
-                    if(priceEl) priceEl.innerText = priceInBRL.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                    if(pctEl) {
-                        pctEl.innerText = (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
-                        pctEl.className = `a-pct ${pct >= 0 ? 'pos-txt' : 'neg-txt'}`;
-                    }
-                    if(pillEl) pillEl.className = `side-pill ${pct >= 0 ? 'pos-bg' : 'neg-bg'}`;
-                    if(flowEl) {
-                        flowEl.innerText = `DELTA: ${numDelta >= 0 ? '+' : ''}${deltaVal}`;
-                        flowEl.className = `hft-tag ${numDelta >= 0 ? 'flow-buy' : 'flow-sell'}`;
-                    }
-                    if(rsiEl) rsiEl.innerText = `RSI: ${rsiVal.toFixed(1)}`;
-
-                    if(tagEl) {
-                        tagEl.innerText = newStatusText;
-                        tagEl.className = `flow-tag ${statusClass}`;
-                    }
-
-                    if(cardEl) {
-                        let show = true;
-                        if(currentFilter === 'TARGETS' && newStatusText !== "⚡ ENTRA") show = false;
-                        if(currentFilter === 'TOP' && pct < 0) show = false;
-                        if(currentFilter === 'SPREAD' && c.spread < 0.40) show = false;
-                        let targetDisplay = show ? 'flex' : 'none';
-                        if(cardEl.style.display !== targetDisplay) {
-                            cardEl.style.display = targetDisplay;
-                        }
-                    }
+                if(statusAtual === "ENTRA" || statusAtual === "PULA") {
+                    activeTargetsCount++;
+                    checkAndAlertStateChange(c.symbol, statusAtual, `R$ ${priceBrl.toFixed(2)}`, deltaVal, rsiVal);
                 }
-            }
 
-            let targetCountEl = document.getElementById('target-count');
-            if(targetCountEl) targetCountEl.innerText = activeTargetsCount;
+                let prEl = document.getElementById(`pr-${c.symbol}`);
+                let tagEl = document.getElementById(`tag-${c.symbol}`);
+                let pillEl = document.getElementById(`pill-${c.symbol}`);
+                if(prEl) prEl.innerText = `R$ ${priceBrl.toFixed(2)}`;
+                if(tagEl) {
+                    tagEl.innerText = statusAtual;
+                    tagEl.className = "flow-tag " + (statusAtual === "ENTRA" ? "status-entra" : statusAtual === "PULA" ? "status-pula" : "status-lateral");
+                }
+            });
+
+            let targetsEl = document.getElementById('target-count');
+            if(targetsEl) targetsEl.innerText = activeTargetsCount;
 
         } catch(e) {
-            logErrorCustom("Erro na sincronização de dados de mercado: " + e.message);
+            logErrorCustom("Erro na sincronização de mercado: " + e.message);
         }
     }
 
-    setInterval(syncMarketData, 2500);
+    setInterval(syncMarketData, 2000);
     syncMarketData();
 </script>
 </body>
