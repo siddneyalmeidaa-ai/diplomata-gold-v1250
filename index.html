@@ -121,6 +121,10 @@
         .neg-bg { background: var(--red-nitido) !important; box-shadow: 0 0 12px rgba(255, 62, 62, 0.3); }
         .pos-txt { color: var(--green-nitido) !important; }
         .neg-txt { color: var(--red-nitido) !important; }
+        
+        .status-entra { background: rgba(0, 255, 136, 0.15) !important; color: var(--green-nitido) !important; border: 1px solid var(--green-nitido) !important; }
+        .status-pula { background: rgba(255, 62, 62, 0.15) !important; color: var(--red-nitido) !important; border: 1px solid var(--red-nitido) !important; }
+        .status-lateral { background: rgba(245, 158, 11, 0.15) !important; color: #f59e0b !important; border: 1px solid #f59e0b !important; }
     </style>
 </head>
 <body>
@@ -144,6 +148,7 @@
         <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
+
 <div class="error-logger-box">
     <div class="el-title">
         <span>🚨 MAPEADOR DE ERROS & FALHAS DO SISTEMA</span>
@@ -173,6 +178,7 @@
 </div>
 
 <div class="container" id="list"></div>
+
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     let systemErrors = JSON.parse(localStorage.getItem('sentinel_system_errors') || '[]');
@@ -207,6 +213,7 @@
         localStorage.removeItem('sentinel_system_errors');
         renderErrors();
     }
+
     const coinsData = [
         { symbol: "BTC", name: "Bitcoin", pair: "BTCUSDT", spread: 0.30, logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png" },
         { symbol: "ETH", name: "Ethereum", pair: "ETHUSDT", spread: 0.34, logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
@@ -224,8 +231,7 @@
         { symbol: "UNI", name: "Uniswap", pair: "UNIUSDT", spread: 0.44, logo: "https://cryptologos.cc/logos/uniswap-uni-logo.png" },
         { symbol: "ATOM", name: "Cosmos", pair: "ATOMUSDT", spread: 0.52, logo: "https://cryptologos.cc/logos/cosmos-atom-logo.png" }
     ];
-
-    let livePrices = {};
+        let livePrices = {};
     let previousPrices = {};
     let activeStates = {}; 
     let currentFilter = 'ALL';
@@ -243,7 +249,7 @@
                     <div class="side-pill pos-bg" id="pill-${c.symbol}"></div>
                     <div class="asset-row">
                         <div class="a-left">
-                            <img class="coin-icon" src="${c.logo}" onerror="this.style.display='none'">
+                            <img class="coin-icon" src="${c.logo}" width="28" height="28" onerror="this.style.display='none'">
                             <div class="a-info">
                                 <span class="a-sym">${c.symbol}</span>
                                 <div class="a-subinfo">
@@ -362,30 +368,45 @@
                     let pctEl = document.getElementById(`pct-${c.symbol}`);
                     let tagEl = document.getElementById(`tag-${c.symbol}`);
                     let pillEl = document.getElementById(`pill-${c.symbol}`);
-                    let deltaEl = document.getElementById(`flow-${c.symbol}`);
+                    let flowEl = document.getElementById(`flow-${c.symbol}`);
                     let rsiEl = document.getElementById(`rsi-${c.symbol}`);
+                    let cardEl = document.getElementById(`card-${c.symbol}`);
 
-                    if(priceEl) priceEl.innerText = "R$ " + priceInBRL.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    if(priceEl) priceEl.innerText = priceInBRL.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                     if(pctEl) {
                         pctEl.innerText = (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
-                        pctEl.className = "a-pct " + (pct >= 0 ? "pos-txt" : "neg-txt");
+                        pctEl.className = `a-pct ${pct >= 0 ? 'pos-txt' : 'neg-txt'}`;
                     }
-                    if(deltaEl) deltaEl.innerText = "DELTA: " + (deltaVal >= 0 ? "+" : "") + deltaVal;
-                    if(rsiEl) rsiEl.innerText = "RSI: " + rsiVal.toFixed(1);
+                    if(pillEl) pillEl.className = `side-pill ${pct >= 0 ? 'pos-bg' : 'neg-bg'}`;
+                    if(flowEl) {
+                        flowEl.innerText = `DELTA: ${deltaVal >= 0 ? '+' : ''}${deltaVal}`;
+                        flowEl.className = `hft-tag ${deltaVal >= 0 ? 'flow-buy' : 'flow-sell'}`;
+                    }
+                    if(rsiEl) rsiEl.innerText = `RSI: ${rsiVal.toFixed(1)}`;
 
-                    if(tagEl && pillEl) {
-                        let proposedTag = "AGUARDA";
-                        let pillClass = "pos-bg";
-                        if(rsiVal < 35 || pct > 0.15) {
-                            proposedTag = "ENTRA";
-                            pillClass = "pos-bg";
-                            activeTargetsCount++;
-                        } else if(rsiVal > 65 || pct < -0.15) {
-                            proposedTag = "PULA";
-                            pillClass = "neg-bg";
-                        }
-                        tagEl.innerText = proposedTag;
-                        pillEl.className = "side-pill " + pillClass;
+                    let statusText = "AGUARDA";
+                    let statusClass = "status-lateral";
+                    
+                    if (rsiVal < 32 || deltaVal > 5) {
+                        statusText = "⚡ ENTRA";
+                        statusClass = "status-entra";
+                        activeTargetsCount++;
+                    } else if (rsiVal > 68 || deltaVal < -5) {
+                        statusText = "⛔ PULA";
+                        statusClass = "status-pula";
+                    }
+
+                    if(tagEl) {
+                        tagEl.innerText = statusText;
+                        tagEl.className = `flow-tag ${statusClass}`;
+                    }
+
+                    if(cardEl) {
+                        let show = true;
+                        if(currentFilter === 'TARGETS' && statusText !== "⚡ ENTRA") show = false;
+                        if(currentFilter === 'TOP' && pct < 0) show = false;
+                        if(currentFilter === 'SPREAD' && c.spread < 0.40) show = false;
+                        cardEl.style.display = show ? 'flex' : 'none';
                     }
                 }
             });
@@ -398,23 +419,8 @@
         }
     }
 
-    setInterval(syncPrices, 3000);
+    setInterval(syncPrices, 1500);
     syncPrices();
 </script>
 </body>
 </html>
-
-        /* TRAVÃO BLINDADO PARA OS LOGOS NÃO EXPLODIREM O LAYOUT */
-        .coin-icon { 
-            width: 32px !important; 
-            height: 32px !important; 
-            max-width: 32px !important;
-            max-height: 32px !important;
-            object-fit: contain;
-            border-radius: 50%; 
-            background: #0d0d0d; 
-            border: 1px solid #222; 
-            padding: 2px; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            flex-shrink: 0;
-        }
