@@ -28,7 +28,8 @@
             color: var(--text-main);
             padding: 12px;
         }
-                header {
+
+        header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -159,7 +160,7 @@
 
     <header>
         <span class="header-title">SENTINEL // 14 ATIVOS</span>
-        <span class="header-timer" id="timer">00:00:00</span>
+        <span class="header-timer" id="timer">00:00:01</span>
     </header>
 
     <div class="metrics-bar">
@@ -178,9 +179,10 @@
     </div>
 
     <div class="coins-container" id="lista-ativos">
-        <!-- Injetado dinamicamente via JS respeitando estritamente o backend -->
+        <!-- Injetado dinamicamente via JS -->
     </div>
-        <script>
+
+    <script>
         const iconesAtivos = {
             "BTC": "https://assets.coincap.io/assets/icons/btc@2x.png",
             "ETH": "https://assets.coincap.io/assets/icons/eth@2x.png",
@@ -209,6 +211,7 @@
 
         async function atualizarDados() {
             try {
+                // Lembra de ajustar para o URL completo da tua API no Render se necessário: 'https://TEU-SERVIDOR.onrender.com/api/dados'
                 let response = await fetch('/api/dados');
                 if (!response.ok) return;
                 let dados = await response.json();
@@ -233,7 +236,6 @@
                     if (estadoServidor.includes("ENTRA")) classeStatus = "status-entra";
                     else if (estadoServidor.includes("PULA")) classeStatus = "status-pula";
 
-                    let varCor = variacao >= 0 ? "color: var(--green);" : "color: var(--red);";
                     let varTexto = (variacao >= 0 ? "+" : "") + variacao.toFixed(2) + "%";
 
                     let htmlCard = `
@@ -257,7 +259,7 @@
                 document.getElementById('total-alvos').innerText = totalAlvos;
 
             } catch (e) {
-                console.error("Erro ao sincronizar dados da API:", e);
+                console.error("Erro ao sincronizar dados:", e);
             }
         }
 
