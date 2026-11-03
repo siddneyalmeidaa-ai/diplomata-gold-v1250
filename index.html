@@ -318,6 +318,7 @@
         document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
         document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
         document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
+        syncPrices();
     }
 
     function toggleNotifs() {
@@ -384,14 +385,15 @@
                     }
                     if(rsiEl) rsiEl.innerText = `RSI: ${rsiVal.toFixed(1)}`;
 
+                    // FILTROS CONSERVADORES (Maior Assertividade)
                     let statusText = "AGUARDA";
                     let statusClass = "status-lateral";
                     
-                    if (rsiVal < 32 || deltaVal > 5) {
+                    if (rsiVal < 28 || deltaVal > 7.0) {
                         statusText = "⚡ ENTRA";
                         statusClass = "status-entra";
                         activeTargetsCount++;
-                    } else if (rsiVal > 68 || deltaVal < -5) {
+                    } else if (rsiVal > 72 || deltaVal < -7.0) {
                         statusText = "⛔ PULA";
                         statusClass = "status-pula";
                     }
@@ -406,7 +408,10 @@
                         if(currentFilter === 'TARGETS' && statusText !== "⚡ ENTRA") show = false;
                         if(currentFilter === 'TOP' && pct < 0) show = false;
                         if(currentFilter === 'SPREAD' && c.spread < 0.40) show = false;
-                        cardEl.style.display = show ? 'flex' : 'none';
+                        let targetDisplay = show ? 'flex' : 'none';
+                        if(cardEl.style.display !== targetDisplay) {
+                            cardEl.style.display = targetDisplay;
+                        }
                     }
                 }
             });
