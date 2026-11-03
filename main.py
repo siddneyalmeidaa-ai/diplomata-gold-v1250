@@ -185,7 +185,6 @@ def simular_paper_trading(ativo, preco, status_polaridade):
         del posicoes_virtuais[ativo]
 
 def buscar_dados_mercado():
-    global DADOS_MERCADO_GLOBAL
     novos_dados = {}
     for simbolo, coin_id in ATIVOS_MONITORIZADOS.items():
         try:
@@ -197,9 +196,6 @@ def buscar_dados_mercado():
                 novos_dados[simbolo] = preco
         except Exception as e:
             print(f"Aviso na recolha de dados para {simbolo}: {e}")
-            
-    if novos_dados:
-        DADOS_MERCADO_GLOBAL = novos_dados
     return novos_dados
 
 def bot_loop():
@@ -207,6 +203,8 @@ def bot_loop():
     while True:
         print("Diplomata Gold Bot: a executar ciclos com RSI, Paper Trading, Memória Quântica e Histerese...")
         precos_atuais = buscar_dados_mercado()
+        
+        novos_dados_api = {}
         
         for simbolo, preco_atual in precos_atuais.items():
             historico_recente[simbolo].append(preco_atual)
@@ -237,7 +235,7 @@ def bot_loop():
                 else:
                     bruto_polaridade = "LATERAL"
 
-            # Aplicação da Histerese (Exige 3 ciclos consistentes para mudar o estado na interface)
+            # Aplicação da Histerese (Exige 3 ciclos consistentes para consolidar o estado)
             status_polaridade = gestor_histerese.avaliar(simbolo, bruto_polaridade)
 
             print(f"[{simbolo}] Preço: {preco_atual} | Var: {variacao:.2f}% | RSI: {rsi_atual:.2f} | Estado Estável (Histerese): {status_polaridade}")
@@ -245,7 +243,18 @@ def bot_loop():
             guardar_historico_local(simbolo, preco_atual, variacao, rsi_atual, status_polaridade)
             simular_paper_trading(simbolo, preco_atual, status_polaridade)
 
+            # Empacota os dados validados para a API consumir limpo
+            novos_dados_api[simbolo] = {
+                "preco": preco_atual,
+                "variacao": variacao,
+                "rsi": rsi_atual,
+                "estado": status_polaridade
+            }
+
             precos_anteriores[simbolo] = preco_atual
+            
+        global DADOS_MERCADO_GLOBAL
+        DADOS_MERCADO_GLOBAL = novos_dados_api
             
         time.sleep(60)
 
@@ -254,4 +263,4 @@ if __name__ == "__main__":
     server_thread.daemon = True
     server_thread.start()
     bot_loop()
-            
+        
