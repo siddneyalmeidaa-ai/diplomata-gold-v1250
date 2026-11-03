@@ -71,6 +71,34 @@ class MotorDeMemoriaAdaptativaPersistente:
 
 motor_memoria = MotorDeMemoriaAdaptativaPersistente()
 
+# ==========================================
+# GESTOR DE HISTERESE (CONFIRMAÇÃO TEMPORAL)
+# ==========================================
+class GestorHisterese:
+    def __init__(self, ciclos_necessarios=3):
+        self.ciclos_necessarios = ciclos_necessarios
+        self.candidato_estado = {}
+        self.contador_ciclos = {}
+        self.estado_estavel = {}
+
+    def avaliar(self, ativo, novo_estado_proposto):
+        estado_atual = self.estado_estavel.get(ativo, "LATERAL")
+        candidato_atual = self.candidato_estado.get(ativo, None)
+
+        if novo_estado_proposto == candidato_atual:
+            self.contador_ciclos[ativo] = self.contador_ciclos.get(ativo, 0) + 1
+        else:
+            self.candidato_estado[ativo] = novo_estado_proposto
+            self.contador_ciclos[ativo] = 1
+
+        # Se atingiu o limiar de persistência, consolida o estado (Elimina o flickering)
+        if self.contador_ciclos[ativo] >= self.ciclos_necessarios:
+            self.estado_estavel[ativo] = self.candidato_estado[ativo]
+
+        return self.estado_estavel.get(ativo, "LATERAL")
+
+gestor_histerese = GestorHisterese(ciclos_necessarios=3)
+
 # Variaveis globais para controlo de estado, historico, RSI e Paper Trading
 historico_precos = []
 ULTIMO_REGISTO = "historico_diplomata.txt"
@@ -110,7 +138,7 @@ class SimpleHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
-            self.wfile.write(b"Diplomata Gold Bot - Sistema Avancado com RSI, Paper Trading e Memoria Quantica Ativos!")
+            self.wfile.write(b"Diplomata Gold Bot - Sistema Avancado com RSI, Paper Trading, Memoria Quantica e Histerese!")
 
 def run_server():
     port = int(os.environ.get("PORT", 10000))
@@ -177,7 +205,7 @@ def buscar_dados_mercado():
 def bot_loop():
     precos_anteriores = {}
     while True:
-        print("Diplomata Gold Bot: a executar ciclos com RSI, Paper Trading e Memória Quântica...")
+        print("Diplomata Gold Bot: a executar ciclos com RSI, Paper Trading, Memória Quântica e Histerese...")
         precos_atuais = buscar_dados_mercado()
         
         for simbolo, preco_atual in precos_atuais.items():
@@ -196,20 +224,23 @@ def bot_loop():
             status_memoria = motor_memoria.consultar_passado(simbolo)
             
             if status_memoria != "APROVADO":
-                status_polaridade = "PULA / ATENÇÃO"
+                bruto_polaridade = "PULA / ATENÇÃO"
                 print(f"[{simbolo}] BLOQUEADO pela Memória Quântica ({status_memoria})")
                 motor_memoria.registar_experiencia(simbolo, {"variacao": variacao, "rsi": rsi_atual}, "ARMADILHA")
             else:
                 if variacao > 0.03 or rsi_atual < 35:
-                    status_polaridade = "ENTRA | ALVO"
+                    bruto_polaridade = "ENTRA | ALVO"
                     motor_memoria.registar_experiencia(simbolo, {"variacao": variacao, "rsi": rsi_atual}, "SUCESSO")
                 elif variacao < -0.03 or rsi_atual > 65:
-                    status_polaridade = "PULA / ATENÇÃO"
+                    bruto_polaridade = "PULA / ATENÇÃO"
                     motor_memoria.registar_experiencia(simbolo, {"variacao": variacao, "rsi": rsi_atual}, "ARMADILHA")
                 else:
-                    status_polaridade = "LATERAL"
+                    bruto_polaridade = "LATERAL"
 
-            print(f"[{simbolo}] Preço: {preco_atual} | Var: {variacao:.2f}% | RSI: {rsi_atual:.2f} | Estado: {status_polaridade}")
+            # Aplicação da Histerese (Exige 3 ciclos consistentes para mudar o estado na interface)
+            status_polaridade = gestor_histerese.avaliar(simbolo, bruto_polaridade)
+
+            print(f"[{simbolo}] Preço: {preco_atual} | Var: {variacao:.2f}% | RSI: {rsi_atual:.2f} | Estado Estável (Histerese): {status_polaridade}")
             
             guardar_historico_local(simbolo, preco_atual, variacao, rsi_atual, status_polaridade)
             simular_paper_trading(simbolo, preco_atual, status_polaridade)
@@ -223,4 +254,4 @@ if __name__ == "__main__":
     server_thread.daemon = True
     server_thread.start()
     bot_loop()
-        
+            
