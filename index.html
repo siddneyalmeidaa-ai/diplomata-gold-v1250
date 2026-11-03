@@ -1,420 +1,268 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V16 // AUTÓNOMO BLINDADO</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
+    <title>Sentinel - Terminal Institucional</title>
     <style>
-        :root { 
-            --bg: #010101; 
-            --card: #060606; 
-            --green-nitido: #00ff88; 
-            --red-nitido: #ff3e3e;   
-            --border-dark: #1a1a1a; 
-            --glass: rgba(3, 3, 3, 0.98);
-        }
-        body { background: var(--bg); color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; padding: 0; user-select: none; }
-
-        .st-bar { 
-            display: flex; flex-direction: column;
-            padding: 15px 20px; border-bottom: 2px solid var(--border-dark); 
-            background: var(--glass); backdrop-filter: blur(20px);
-            position: sticky; top: 0; z-index: 1000;
-        }
-        
-        .st-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .st-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; border-top: 1px solid #111; padding-top: 12px; }
-        
-        .stat-box { display: flex; flex-direction: column; }
-        .stat-label { font-size: 7px; font-weight: 900; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 3px; }
-        .stat-val { font-size: 10px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: #ddd; }
-
-        .clock-modern { 
-            font-family: 'JetBrains Mono', monospace; 
-            font-size: 16px; font-weight: 800; 
-            color: #fff; text-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
-            background: #0d0d0d; padding: 4px 10px; border-radius: 6px; border: 1px solid #1f1f1f;
+        :root {
+            --bg-color: #0b0e11;
+            --card-bg: #151a21;
+            --text-main: #eaecef;
+            --text-secondary: #848e9c;
+            --green: #0ecb81;
+            --red: #f6465d;
+            --yellow: #f0b90b;
+            --border: #2b313a;
         }
 
-        .notif-bell { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 900; color: #666; cursor: pointer; position: relative; }
-        .bell-dot { width: 7px; height: 7px; background: #ffcc00; border-radius: 50%; position: absolute; top: -3px; right: -3px; display: none; box-shadow: 0 0 10px #ffcc00; }
-        
-        #notif-panel {
-            position: fixed; top: 90px; right: 12px; left: 12px; 
-            background: #0a0a0a; border: 1px solid #222; border-radius: 12px;
-            padding: 18px; display: none; z-index: 2000; box-shadow: 0 30px 60px rgba(0,0,0,1);
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f1f1f; padding-bottom: 8px; margin-bottom: 8px; }
-        .notif-item { font-size: 9px; font-family: 'JetBrains Mono', monospace; padding: 8px 0; border-bottom: 1px solid #141414; color: #999; }
-        .clear-btn { background: #ff3e3e; color: #fff; border: none; padding: 3px 6px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
 
-        .pulse { animation: pulse-glow 1.8s infinite ease-in-out; }
-        @keyframes pulse-glow { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 12px;
+        }
+                header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
 
-        /* TRAVÃO BLINDADO PARA OS LOGOS NÃO EXPLODIREM O LAYOUT */
-        .coin-icon { 
-            width: 32px !important; 
-            height: 32px !important; 
-            max-width: 32px !important;
-            max-height: 32px !important;
+        .header-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-secondary);
+        }
+
+        .header-timer {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--green);
+        }
+
+        .metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 4px;
+            color: var(--yellow);
+        }
+
+        .coins-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .coin-card {
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .coin-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .coin-icon {
+            width: 28px;
+            height: 28px;
             object-fit: contain;
-            border-radius: 50%; 
-            background: #0d0d0d; 
-            border: 1px solid #222; 
-            padding: 2px; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            flex-shrink: 0;
-        }
-                .error-logger-box {
-            background: #040404;
-            border: 1px solid #331111;
-            border-radius: 10px;
-            margin: 10px 12px;
-            padding: 12px 15px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .el-title { font-size: 9px; font-weight: 900; color: var(--red-nitido); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-        .el-list { max-height: 80px; overflow-y: auto; font-size: 8px; color: #ff8888; display: flex; flex-direction: column; gap: 4px; }
-        .el-item { background: rgba(255, 62, 62, 0.05); padding: 4px 6px; border-left: 2px solid var(--red-nitido); border-radius: 2px; }
-
-        .nav { display: flex; border-bottom: 1px solid var(--border-dark); background: #030303; flex-wrap: wrap; }
-        .n-btn { flex: 1; min-width: 25%; padding: 12px; text-align: center; font-size: 8px; font-weight: 900; color: #444; background: none; border: none; letter-spacing: 1px; cursor: pointer; }
-        .n-btn.active { color: var(--green-nitido); border-bottom: 3px solid var(--green-nitido); background: rgba(0,255,136,0.02); }
-
-        .container { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
-        
-        .c-asset { 
-            background: linear-gradient(135deg, var(--card) 0%, #030303 100%);
-            border: 1px solid var(--border-dark);
-            border-radius: 12px; 
-            margin-bottom: 8px; 
-            padding: 14px 16px; 
-            display: flex; 
-            flex-direction: column; 
-            position: relative; 
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            cursor: pointer;
         }
 
-        .side-pill {
-            position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
-            background: #161616; transition: all 0.3s ease;
-            box-shadow: 2px 0 8px rgba(0,0,0,0.5);
+        .coin-name {
+            font-size: 16px;
+            font-weight: bold;
         }
 
-        .asset-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
-        .a-left { display: flex; align-items: center; gap: 12px; }
-        
-        .a-info { display: flex; flex-direction: column; }
-        .a-sym { font-size: 18px; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; line-height: 1; }
-        .a-subinfo { display: flex; gap: 6px; margin-top: 6px; align-items: center; flex-wrap: wrap; }
-        .a-pair { font-size: 8px; color: #666; font-weight: 900; font-family: 'JetBrains Mono', monospace; background: #0c0c0c; padding: 2px 5px; border-radius: 4px; border: 1px solid #171717; }
-        
-        .hft-tag { font-size: 8px; font-weight: 900; font-family: 'JetBrains Mono', monospace; padding: 2px 6px; border-radius: 4px; border: 1px solid transparent; }
-        .flow-buy { color: #00ff88; background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.2); }
-        .flow-sell { color: #ff3e3e; background: rgba(255,62,62,0.08); border-color: rgba(255,62,62,0.2); }
-        .rsi-tag { color: #f59e0b; background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.2); }
-
-        .a-right { text-align: right; }
-        .a-price { font-size: 18px; font-weight: 800; color: #ffffff; font-family: 'JetBrains Mono', monospace; }
-        
-        .status-box { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 5px; }
-        .a-pct { font-size: 11px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
-        
-        .flow-tag { 
-            font-size: 8px; font-weight: 900; padding: 2px 6px; 
-            border-radius: 4px; background: #090909; 
-            border: 1px solid #1f1f1f; color: #666; 
+        .coin-details {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
         }
 
-        .chart-box { display: none; width: 100%; height: 350px; margin-top: 14px; border-top: 1px solid var(--border-dark); padding-top: 8px; }
-        .c-asset.open .chart-box { display: block; }
+        .coin-price-box {
+            text-align: right;
+        }
 
-        .pos-bg { background: var(--green-nitido) !important; box-shadow: 0 0 12px rgba(0, 255, 136, 0.3); }
-        .neg-bg { background: var(--red-nitido) !important; box-shadow: 0 0 12px rgba(255, 62, 62, 0.3); }
-        .pos-txt { color: var(--green-nitido) !important; }
-        .neg-txt { color: var(--red-nitido) !important; }
+        .coin-price {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .coin-status {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        .status-entra {
+            background: rgba(14, 203, 129, 0.15);
+            color: var(--green);
+            border: 1px solid var(--green);
+        }
+
+        .status-pula {
+            background: rgba(246, 70, 93, 0.15);
+            color: var(--red);
+            border: 1px solid var(--red);
+        }
+
+        .status-lateral {
+            background: rgba(240, 185, 11, 0.15);
+            color: var(--yellow);
+            border: 1px solid var(--yellow);
+        }
     </style>
 </head>
 <body>
 
-<div class="st-bar" id="main-header">
-    <div class="st-top-row">
-        <div class="notif-bell" id="bell" onclick="toggleNotifs()">
-            <span id="last-alert">SENTINEL_V16 // 15 ATIVOS</span>
-            <div class="bell-dot" id="dot"></div>
-            <span style="font-size: 11px;">🔔</span>
-        </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <button onclick="location.reload(true)" style="background: #111; border: 1px solid #333; color: #00ff88; font-size: 8px; font-weight: 900; padding: 6px 8px; border-radius: 4px; cursor: pointer;">🔄 RECARREGAR</button>
-            <div class="clock-modern" id="clock">00:00:00</div>
-        </div>
-    </div>
-    <div class="st-metrics">
-        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">AUTO 15 ATIVOS</span></div>
-        <div class="stat-box"><span class="stat-label">Latência</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">Smart</span></div>
-        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">RSI AUTÓNOMO</span></div>
-        <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
-    </div>
-</div>
-<div class="error-logger-box">
-    <div class="el-title">
-        <span>🚨 MAPEADOR DE ERROS & FALHAS DO SISTEMA</span>
-        <button class="clear-btn" onclick="clearErrors()">LIMPAR ERROS</button>
-    </div>
-    <div class="el-list" id="error-list">
-        <div class="el-item">Nenhum erro detetado pelo sistema até ao momento.</div>
-    </div>
-</div>
+    <header>
+        <span class="header-title">SENTINEL // 14 ATIVOS</span>
+        <span class="header-timer" id="timer">00:00:00</span>
+    </header>
 
-<div id="notif-panel">
-    <div class="notif-header">
-        <span style="font-size: 10px; font-weight: 900;">REGISTRO DE EVENTOS (ENTRADA / SAÍDA)</span>
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <button class="clear-btn" onclick="clearAlerts()">LIMPAR</button>
-            <span onclick="toggleNotifs()" style="cursor:pointer; font-size: 14px;">✕</span>
+    <div class="metrics-bar">
+        <div class="metric-card">
+            <div class="metric-label">MODO</div>
+            <div class="metric-value">SMART</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">MÉTRICA</div>
+            <div class="metric-value">RSI AUTÓNOMO</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">ALVOS</div>
+            <div class="metric-value" id="total-alvos">0</div>
         </div>
     </div>
-    <div id="notif-list"></div>
-</div>
 
-<div class="nav">
-    <button class="n-btn active" id="btn-all" onclick="setFilter('ALL')">🔱 TODOS</button>
-    <button class="n-btn" id="btn-targets" onclick="setFilter('TARGETS')">⚡ EM ALVO</button>
-    <button class="n-btn" id="btn-top" onclick="setFilter('TOP')">📈 ALTAS</button>
-    <button class="n-btn" id="btn-spread" onclick="setFilter('SPREAD')">🚀 SPREAD</button>
-</div>
+    <div class="coins-container" id="lista-ativos">
+        <!-- Injetado dinamicamente via JS respeitando estritamente o backend -->
+    </div>
+        <script>
+        const iconesAtivos = {
+            "BTC": "https://assets.coincap.io/assets/icons/btc@2x.png",
+            "ETH": "https://assets.coincap.io/assets/icons/eth@2x.png",
+            "SOL": "https://assets.coincap.io/assets/icons/sol@2x.png",
+            "LINK": "https://assets.coincap.io/assets/icons/link@2x.png",
+            "NEAR": "https://assets.coincap.io/assets/icons/near@2x.png",
+            "RENDER": "https://assets.coincap.io/assets/icons/render-token@2x.png",
+            "DOT": "https://assets.coincap.io/assets/icons/dot@2x.png",
+            "STX": "https://assets.coincap.io/assets/icons/stx@2x.png",
+            "ADA": "https://assets.coincap.io/assets/icons/ada@2x.png",
+            "XRP": "https://assets.coincap.io/assets/icons/xrp@2x.png",
+            "AVAX": "https://assets.coincap.io/assets/icons/avax@2x.png",
+            "DOGE": "https://assets.coincap.io/assets/icons/doge@2x.png",
+            "POL": "https://assets.coincap.io/assets/icons/pol@2x.png",
+            "UNI": "https://assets.coincap.io/assets/icons/uni@2x.png"
+        };
 
-<div class="container" id="list"></div>
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-<script>
-    let systemErrors = JSON.parse(localStorage.getItem('sentinel_system_errors') || '[]');
+        let segundosDecorridos = 0;
+        setInterval(() => {
+            segundosDecorridos++;
+            let h = Math.floor(segundosDecorridos / 3600).toString().padStart(2, '0');
+            let m = Math.floor((segundosDecorridos % 3600) / 60).toString().padStart(2, '0');
+            let s = (segundosDecorridos % 60).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `${h}:${m}:${s}`;
+        }, 1000);
 
-    window.onerror = function(msg, url, lineNo, columnNo, error) {
-        let errorMsg = `[${new Date().toLocaleTimeString()}] Erro do Sistema: ${msg} (Linha: ${lineNo})`;
-        systemErrors.unshift(errorMsg);
-        if(systemErrors.length > 20) systemErrors.pop();
-        localStorage.setItem('sentinel_system_errors', JSON.stringify(systemErrors));
-        renderErrors();
-        return false;
-    };
+        async function atualizarDados() {
+            try {
+                let response = await fetch('/api/dados');
+                if (!response.ok) return;
+                let dados = await response.json();
 
-    function logErrorCustom(msg) {
-        let errorMsg = `[${new Date().toLocaleTimeString()}] Falha de Sistema: ${msg}`;
-        systemErrors.unshift(errorMsg);
-        if(systemErrors.length > 20) systemErrors.pop();
-        localStorage.setItem('sentinel_system_errors', JSON.stringify(systemErrors));
-        renderErrors();
-    }
+                let container = document.getElementById('lista-ativos');
+                container.innerHTML = '';
+                
+                let totalAlvos = 0;
 
-    function renderErrors() {
-        const errorListEl = document.getElementById('error-list');
-        if(errorListEl) {
-            errorListEl.innerHTML = systemErrors.length ? systemErrors.map(e => `<div class="el-item">${e}</div>`).join('') : '<div class="el-item">Nenhum erro detetado pelo sistema até ao momento.</div>';
-        }
-    }
-    renderErrors();
+                for (let simbolo in dados) {
+                    let info = dados[simbolo];
+                    let preco = info.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    let variacao = info.variacao;
+                    let rsi = info.rsi.toFixed(1);
+                    let estadoServidor = info.estado; 
 
-    function clearErrors() {
-        systemErrors = [];
-        localStorage.removeItem('sentinel_system_errors');
-        renderErrors();
-    }
-        const coinsData = [
-        { symbol: "BTC", name: "Bitcoin", pair: "BTCUSDT", spread: 0.30, logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png" },
-        { symbol: "ETH", name: "Ethereum", pair: "ETHUSDT", spread: 0.34, logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
-        { symbol: "SOL", name: "Solana", pair: "SOLUSDT", spread: 0.38, logo: "https://cryptologos.cc/logos/solana-sol-logo.png" },
-        { symbol: "LINK", name: "Chainlink", pair: "LINKUSDT", spread: 0.42, logo: "https://cryptologos.cc/logos/chainlink-link-logo.png" },
-        { symbol: "STX", name: "Stacks", pair: "STXUSDT", spread: 0.46, logo: "https://cryptologos.cc/logos/stacks-stx-logo.png" },
-        { symbol: "RENDER", name: "Render", pair: "RENDERUSDT", spread: 0.50, logo: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300ff88'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" },
-        { symbol: "ADA", name: "Cardano", pair: "ADAUSDT", spread: 0.32, logo: "https://cryptologos.cc/logos/cardano-ada-logo.png" },
-        { symbol: "XRP", name: "XRP", pair: "XRPUSDT", spread: 0.28, logo: "https://cryptologos.cc/logos/xrp-xrp-logo.png" },
-        { symbol: "AVAX", name: "Avalanche", pair: "AVAXUSDT", spread: 0.45, logo: "https://cryptologos.cc/logos/avalanche-avax-logo.png" },
-        { symbol: "DOGE", name: "Dogecoin", pair: "DOGEUSDT", spread: 0.55, logo: "https://cryptologos.cc/logos/dogecoin-doge-logo.png" },
-        { symbol: "NEAR", name: "NEAR Protocol", pair: "NEARUSDT", spread: 0.48, logo: "https://cryptologos.cc/logos/near-protocol-near-logo.png" },
-        { symbol: "POL", name: "Polygon", pair: "POLUSDT", spread: 0.40, logo: "https://cryptologos.cc/logos/polygon-matic-logo.png" },
-        { symbol: "DOT", name: "Polkadot", pair: "DOTUSDT", spread: 0.36, logo: "https://cryptologos.cc/logos/polkadot-new-dot-logo.png" },
-        { symbol: "UNI", name: "Uniswap", pair: "UNIUSDT", spread: 0.44, logo: "https://cryptologos.cc/logos/uniswap-uni-logo.png" },
-        { symbol: "ATOM", name: "Cosmos", pair: "ATOMUSDT", spread: 0.52, logo: "https://cryptologos.cc/logos/cosmos-atom-logo.png" }
-    ];
+                    if (estadoServidor.includes("ENTRA")) {
+                        totalAlvos++;
+                    }
 
-    let livePrices = {};
-    let previousPrices = {};
-    let activeStates = {}; 
-    let currentFilter = 'ALL';
-    let usdtBrlRate = 5.12; 
-    let activeTargetsCount = 0;
+                    let classeStatus = "status-lateral";
+                    if (estadoServidor.includes("ENTRA")) classeStatus = "status-entra";
+                    else if (estadoServidor.includes("PULA")) classeStatus = "status-pula";
 
-    function buildAssetList() {
-        try {
-            const listContainer = document.getElementById('list');
-            if(!listContainer) return;
-            let html = '';
-            coinsData.forEach(c => {
-                html += `
-                <div class="c-asset" id="card-${c.symbol}" onclick="toggleChart('${c.symbol}', '${c.pair}')">
-                    <div class="side-pill pos-bg" id="pill-${c.symbol}"></div>
-                    <div class="asset-row">
-                        <div class="a-left">
-                            <img class="coin-icon" src="${c.logo}" onerror="this.style.display='none'">
-                            <div class="a-info">
-                                <span class="a-sym">${c.symbol}</span>
-                                <div class="a-subinfo">
-                                    <span class="a-pair" id="spread-${c.symbol}">SPREAD: ${c.spread.toFixed(2)}%</span>
-                                    <span class="hft-tag flow-buy" id="flow-${c.symbol}">DELTA: +0.00</span>
-                                    <span class="hft-tag rsi-tag" id="rsi-${c.symbol}">RSI: 50.0</span>
+                    let varCor = variacao >= 0 ? "color: var(--green);" : "color: var(--red);";
+                    let varTexto = (variacao >= 0 ? "+" : "") + variacao.toFixed(2) + "%";
+
+                    let htmlCard = `
+                        <div class="coin-card">
+                            <div class="coin-info">
+                                <img src="${iconesAtivos[simbolo] || ''}" class="coin-icon" alt="${simbolo}">
+                                <div>
+                                    <div class="coin-name">${simbolo}</div>
+                                    <div class="coin-details">SPREAD: ${varTexto} | RSI: ${rsi}</div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="a-right">
-                            <div class="a-price" id="pr-${c.symbol}">R$ ...</div>
-                            <div class="status-box">
-                                <span class="flow-tag" id="tag-${c.symbol}">AGUARDA</span>
-                                <span class="a-pct pos-txt" id="pct-${c.symbol}">+0.00%</span>
+                            <div class="coin-price-box">
+                                <div class="coin-price">${preco}</div>
+                                <div class="coin-status ${classeStatus}">${estadoServidor}</div>
                             </div>
                         </div>
-                    </div>
-                    <div class="chart-box" id="tv-${c.symbol}" onclick="event.stopPropagation()"></div>
-                </div>`;
-            });
-            listContainer.innerHTML = html;
-        } catch(e) {
-            logErrorCustom("Erro ao construir lista de ativos: " + e.message);
-        }
-    }
-    
-    buildAssetList();
-
-    function toggleChart(symbol, pair) {
-        try {
-            const card = document.getElementById(`card-${symbol}`);
-            const chartBox = document.getElementById(`tv-${symbol}`);
-            if(!card || !chartBox) return;
-            let isOpen = card.classList.contains('open');
-            document.querySelectorAll('.c-asset').forEach(el => {
-                if(el.id !== `card-${symbol}`) {
-                    el.classList.remove('open');
-                    let sSym = el.id.replace('card-', '');
-                    let box = document.getElementById(`tv-${sSym}`);
-                    if(box) box.innerHTML = '';
+                    `;
+                    container.innerHTML += htmlCard;
                 }
-            });
-            if(!isOpen) {
-                card.classList.add('open');
-                activeStates[symbol] = true; 
-                chartBox.innerHTML = '';
-                new TradingView.widget({
-                    "width": "100%", "height": 330, "symbol": "BINANCE:" + pair,
-                    "interval": "1", "timezone": "Etc/UTC", "theme": "dark", "style": "1",
-                    "locale": "br", "toolbar_bg": "#f1f3f6", "enable_publishing": false,
-                    "hide_top_toolbar": false, "save_image": false, "container_id": `tv-${symbol}`
-                });
-            } else {
-                card.classList.remove('open');
-                activeStates[symbol] = false; 
-                chartBox.innerHTML = '';
+
+                document.getElementById('total-alvos').innerText = totalAlvos;
+
+            } catch (e) {
+                console.error("Erro ao sincronizar dados da API:", e);
             }
-        } catch(e) {
-            logErrorCustom("Erro ao abrir gráfico do ativo " + symbol + ": " + e.message);
         }
-    }
 
-    function setFilter(filter) {
-        currentFilter = filter;
-        document.getElementById('btn-all').classList.toggle('active', filter === 'ALL');
-        document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
-        document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
-        document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
-    }
-
-    function toggleNotifs() {
-        const panel = document.getElementById('notif-panel');
-        if(panel) {
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-            let dot = document.getElementById('dot');
-            if(dot) dot.style.display = 'none';
-        }
-    }
-
-    function clearAlerts() {
-        const notifList = document.getElementById('notif-list');
-        if(notifList) notifList.innerHTML = '<div class="notif-item">Nenhum evento recente registado.</div>';
-    }
-
-    async function syncPrices() {
-        try {
-            let now = new Date();
-            let clockEl = document.getElementById('clock');
-            if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0] + "." + Math.floor(now.getMilliseconds()/100);
-
-            let response = await fetch('https://api.binance.com/api/v3/ticker/price').catch(() => null);
-            if(!response || !response.ok) return;
-            let data = await response.json();
-            
-            let priceMap = {};
-            data.forEach(item => { priceMap[item.symbol] = parseFloat(item.price); });
-
-            activeTargetsCount = 0;
-
-            coinsData.forEach((c, index) => {
-                let priceInUSDT = priceMap[c.pair];
-                if(priceInUSDT) {
-                    let priceInBRL = priceInUSDT * usdtBrlRate;
-                    let oldPrice = previousPrices[c.symbol] || priceInBRL;
-                    previousPrices[c.symbol] = priceInBRL;
-                    livePrices[c.symbol] = priceInBRL;
-
-                    let diff = priceInBRL - oldPrice;
-                    let pct = oldPrice > 0 ? (diff / oldPrice) * 100 : 0;
-                    let deltaVal = (diff * 1000).toFixed(2);
-                    let rsiVal = 50 + (Math.sin(Date.now() / 3000 + index * 1.5) * 20);
-                    if(rsiVal > 95) rsiVal = 95;
-                    if(rsiVal < 10) rsiVal = 10;
-
-                    let priceEl = document.getElementById(`pr-${c.symbol}`);
-                    let pctEl = document.getElementById(`pct-${c.symbol}`);
-                    let tagEl = document.getElementById(`tag-${c.symbol}`);
-                    let pillEl = document.getElementById(`pill-${c.symbol}`);
-                    let deltaEl = document.getElementById(`flow-${c.symbol}`);
-                    let rsiEl = document.getElementById(`rsi-${c.symbol}`);
-
-                    if(priceEl) priceEl.innerText = "R$ " + priceInBRL.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                    if(pctEl) {
-                        pctEl.innerText = (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
-                        pctEl.className = "a-pct " + (pct >= 0 ? "pos-txt" : "neg-txt");
-                    }
-                    if(deltaEl) deltaEl.innerText = "DELTA: " + (deltaVal >= 0 ? "+" : "") + deltaVal;
-                    if(rsiEl) rsiEl.innerText = "RSI: " + rsiVal.toFixed(1);
-
-                    if(tagEl && pillEl) {
-                        let proposedTag = "AGUARDA";
-                        let pillClass = "pos-bg";
-                        if(rsiVal < 35 || pct > 0.15) {
-                            proposedTag = "ENTRA";
-                            pillClass = "pos-bg";
-                            activeTargetsCount++;
-                        } else if(rsiVal > 65 || pct < -0.15) {
-                            proposedTag = "PULA";
-                            pillClass = "neg-bg";
-                        }
-                        tagEl.innerText = proposedTag;
-                        pillEl.className = "side-pill " + pillClass;
-                    }
-                }
-            });
-
-            let targetCountEl = document.getElementById('target-count');
-            if(targetCountEl) targetCountEl.innerText = activeTargetsCount;
-
-        } catch(e) {
-            logErrorCustom("Erro na sincronização de preços: " + e.message);
-        }
-    }
-
-    setInterval(syncPrices, 3000);
-    syncPrices();
-</script>
+        setInterval(atualizarDados, 5000);
+        atualizarDados();
+    </script>
 </body>
 </html>
