@@ -142,9 +142,9 @@
         </div>
     </div>
     <div class="st-metrics">
-        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">AUTO 15 ATIVOS</span></div>
+        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">API 24H & KLINES</span></div>
         <div class="stat-box"><span class="stat-label">Latência</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">Smart</span></div>
-        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">RSI AUTÓNOMO</span></div>
+        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">RSI REAL</span></div>
         <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
@@ -237,6 +237,7 @@
     let currentFilter = 'ALL';
     let usdtBrlRate = 5.12; 
     let activeTargetsCount = 0;
+    let rsiCache = {};
 
     function buildAssetList() {
         try {
@@ -318,7 +319,7 @@
         document.getElementById('btn-targets').classList.toggle('active', filter === 'TARGETS');
         document.getElementById('btn-top').classList.toggle('active', filter === 'TOP');
         document.getElementById('btn-spread').classList.toggle('active', filter === 'SPREAD');
-        syncPrices();
+        syncMarketData();
     }
 
     function toggleNotifs() {
@@ -335,35 +336,70 @@
         if(notifList) notifList.innerHTML = '<div class="notif-item">Nenhum evento recente registado.</div>';
     }
 
-    async function syncPrices() {
+    // Função matemática para calcular o RSI real baseado em velas (klines)
+    function calculateRSI(closes) {
+        if (!closes || closes.length < 15) return 50.0;
+        let gains = 0;
+        let losses = 0;
+        for (let i = 1; i < closes.length; i++) {
+            let change = closes[i] - closes[i - 1];
+            if (change > 0) gains += change;
+            else losses -= change;
+        }
+        let avgGain = gains / 14;
+        let avgLoss = losses / 14;
+        if (avgLoss === 0) return 100.0;
+        let rs = avgGain / avgLoss;
+        return 100 - (100 / (1 + rs));
+    }
+
+    async function syncMarketData() {
         try {
             let now = new Date();
             let clockEl = document.getElementById('clock');
             if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0] + "." + Math.floor(now.getMilliseconds()/100);
 
-            let response = await fetch('https://api.binance.com/api/v3/ticker/price').catch(() => null);
+            // Chamada ao endpoint de 24h da Binance para buscar variação oficial e preços reais
+            let response = await fetch('https://api.binance.com/api/v3/ticker/24hr').catch(() => null);
             if(!response || !response.ok) return;
             let data = await response.json();
             
-            let priceMap = {};
-            data.forEach(item => { priceMap[item.symbol] = parseFloat(item.price); });
+            let marketMap = {};
+            data.forEach(item => { 
+                marketMap[item.symbol] = {
+                    price: parseFloat(item.lastPrice),
+                    priceChangePercent: parseFloat(item.priceChangePercent)
+                }; 
+            });
 
             activeTargetsCount = 0;
 
-            coinsData.forEach((c, index) => {
-                let priceInUSDT = priceMap[c.pair];
-                if(priceInUSDT) {
+            for(let c of coinsData) {
+                let mInfo = marketMap[c.pair];
+                if(mInfo) {
+                    let priceInUSDT = mInfo.price;
                     let priceInBRL = priceInUSDT * usdtBrlRate;
                     let oldPrice = previousPrices[c.symbol] || priceInBRL;
                     previousPrices[c.symbol] = priceInBRL;
                     livePrices[c.symbol] = priceInBRL;
 
                     let diff = priceInBRL - oldPrice;
-                    let pct = oldPrice > 0 ? (diff / oldPrice) * 100 : 0;
+                    let pct = mInfo.priceChangePercent; // Variação oficial de 24h fornecida pela Binance
                     let deltaVal = (diff * 1000).toFixed(2);
-                    let rsiVal = 50 + (Math.sin(Date.now() / 3000 + index * 1.5) * 20);
-                    if(rsiVal > 95) rsiVal = 95;
-                    if(rsiVal < 10) rsiVal = 10;
+
+                    // Busca o RSI real através de klines se não estiver em cache recente
+                    let rsiVal = rsiCache[c.symbol] || 50.0;
+                    if (!rsiCache[c.symbol] || Math.random() < 0.3) {
+                        try {
+                            let klineRes = await fetch(`https://api.binance.com/api/v3/klines?symbol=${c.pair}&interval=1m&limit=20`);
+                            if (klineRes.ok) {
+                                let klines = await klineRes.json();
+                                let closes = klines.map(k => parseFloat(k[4]));
+                                rsiVal = calculateRSI(closes);
+                                rsiCache[c.symbol] = rsiVal;
+                            }
+                        } catch(err) {}
+                    }
 
                     let priceEl = document.getElementById(`pr-${c.symbol}`);
                     let pctEl = document.getElementById(`pct-${c.symbol}`);
@@ -385,7 +421,7 @@
                     }
                     if(rsiEl) rsiEl.innerText = `RSI: ${rsiVal.toFixed(1)}`;
 
-                    // FILTROS CONSERVADORES (Maior Assertividade)
+                    // Critérios de transição blindados (RSI real + Delta)
                     let statusText = "AGUARDA";
                     let statusClass = "status-lateral";
                     
@@ -414,18 +450,18 @@
                         }
                     }
                 }
-            });
+            }
 
             let targetCountEl = document.getElementById('target-count');
             if(targetCountEl) targetCountEl.innerText = activeTargetsCount;
 
         } catch(e) {
-            logErrorCustom("Erro na sincronização de preços: " + e.message);
+            logErrorCustom("Erro na sincronização de dados de mercado: " + e.message);
         }
     }
 
-    setInterval(syncPrices, 1500);
-    syncPrices();
+    setInterval(syncMarketData, 2000);
+    syncMarketData();
 </script>
 </body>
 </html>
