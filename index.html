@@ -46,13 +46,8 @@
             padding: 18px; display: none; z-index: 2000; box-shadow: 0 30px 60px rgba(0,0,0,1);
         }
         .notif-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f1f1f; padding-bottom: 8px; margin-bottom: 8px; }
-        .notif-item { font-size: 9px; font-family: 'JetBrains Mono', monospace; padding: 8px 0; border-bottom: 1px solid #141414; color: #999; }
-        .clear-btn { background: #ff3e3e; color: #fff; border: none; padding: 3px 6px; font-size: 8px; font-weight: 900; border-radius: 4px; cursor: pointer; }
-
-        .pulse { animation: pulse-glow 1.8s infinite ease-in-out; }
-        @keyframes pulse-glow { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
-        .error-logger-box {
+        .notif-item { font-size: 9px; font-family: 'JetBrains Mono', monospace;
+                             .error-logger-box {
             background: #040404;
             border: 1px solid #331111;
             border-radius: 10px;
@@ -151,7 +146,6 @@
         <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
-
 <div class="error-logger-box">
     <div class="el-title">
         <span>🚨 MAPEADOR DE ERROS & FALHAS DO SISTEMA</span>
@@ -215,8 +209,7 @@
         localStorage.removeItem('sentinel_system_errors');
         renderErrors();
     }
-
-    const coinsData = [
+        const coinsData = [
         { symbol: "BTC", name: "Bitcoin", pair: "BTCUSDT", spread: 0.30, logo: "https://cryptologos.cc/logos/bitcoin-btc-logo.png" },
         { symbol: "ETH", name: "Ethereum", pair: "ETHUSDT", spread: 0.34, logo: "https://cryptologos.cc/logos/ethereum-eth-logo.png" },
         { symbol: "SOL", name: "Solana", pair: "SOLUSDT", spread: 0.38, logo: "https://cryptologos.cc/logos/solana-sol-logo.png" },
@@ -285,11 +278,8 @@
         try {
             const card = document.getElementById(`card-${symbol}`);
             const chartBox = document.getElementById(`tv-${symbol}`);
-            
             if(!card || !chartBox) return;
-
             let isOpen = card.classList.contains('open');
-            
             document.querySelectorAll('.c-asset').forEach(el => {
                 if(el.id !== `card-${symbol}`) {
                     el.classList.remove('open');
@@ -298,26 +288,15 @@
                     if(box) box.innerHTML = '';
                 }
             });
-
             if(!isOpen) {
                 card.classList.add('open');
                 activeStates[symbol] = true; 
-                
                 chartBox.innerHTML = '';
                 new TradingView.widget({
-                    "width": "100%",
-                    "height": 330,
-                    "symbol": "BINANCE:" + pair,
-                    "interval": "1",
-                    "timezone": "Etc/UTC",
-                    "theme": "dark",
-                    "style": "1",
-                    "locale": "br",
-                    "toolbar_bg": "#f1f3f6",
-                    "enable_publishing": false,
-                    "hide_top_toolbar": false,
-                    "save_image": false,
-                    "container_id": `tv-${symbol}`
+                    "width": "100%", "height": 330, "symbol": "BINANCE:" + pair,
+                    "interval": "1", "timezone": "Etc/UTC", "theme": "dark", "style": "1",
+                    "locale": "br", "toolbar_bg": "#f1f3f6", "enable_publishing": false,
+                    "hide_top_toolbar": false, "save_image": false, "container_id": `tv-${symbol}`
                 });
             } else {
                 card.classList.remove('open');
@@ -346,19 +325,23 @@
         }
     }
 
+    function clearAlerts() {
+        const notifList = document.getElementById('notif-list');
+        if(notifList) notifList.innerHTML = '<div class="notif-item">Nenhum evento recente registado.</div>';
+    }
+
     async function syncPrices() {
         try {
             let now = new Date();
             let clockEl = document.getElementById('clock');
             if(clockEl) clockEl.innerText = now.toTimeString().split(' ')[0] + "." + Math.floor(now.getMilliseconds()/100);
 
-            let response = await fetch('https://api.binance.com/api/v3/ticker/price');
+            let response = await fetch('https://api.binance.com/api/v3/ticker/price').catch(() => null);
+            if(!response || !response.ok) return;
             let data = await response.json();
             
             let priceMap = {};
-            data.forEach(item => {
-                priceMap[item.symbol] = parseFloat(item.price);
-            });
+            data.forEach(item => { priceMap[item.symbol] = parseFloat(item.price); });
 
             activeTargetsCount = 0;
 
@@ -373,52 +356,38 @@
                     let diff = priceInBRL - oldPrice;
                     let pct = oldPrice > 0 ? (diff / oldPrice) * 100 : 0;
                     let deltaVal = (diff * 1000).toFixed(2);
-
-                    let rsiVal = 50 + (Math.sin(Date.now() / 1500 + index * 1.5) * 28) + (pct * 15);
+                    let rsiVal = 50 + (Math.sin(Date.now() / 3000 + index * 1.5) * 20);
                     if(rsiVal > 95) rsiVal = 95;
                     if(rsiVal < 10) rsiVal = 10;
 
                     let priceEl = document.getElementById(`pr-${c.symbol}`);
-                    if(priceEl) {
-                        priceEl.innerText = "R$ " + priceInBRL.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                    }
-
                     let pctEl = document.getElementById(`pct-${c.symbol}`);
-                    let pillEl = document.getElementById(`pill-${c.symbol}`);
-                    let flowEl = document.getElementById(`flow-${c.symbol}`);
-                    let rsiEl = document.getElementById(`rsi-${c.symbol}`);
                     let tagEl = document.getElementById(`tag-${c.symbol}`);
+                    let pillEl = document.getElementById(`pill-${c.symbol}`);
+                    let deltaEl = document.getElementById(`flow-${c.symbol}`);
+                    let rsiEl = document.getElementById(`rsi-${c.symbol}`);
 
+                    if(priceEl) priceEl.innerText = "R$ " + priceInBRL.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                     if(pctEl) {
                         pctEl.innerText = (pct >= 0 ? "+" : "") + pct.toFixed(2) + "%";
                         pctEl.className = "a-pct " + (pct >= 0 ? "pos-txt" : "neg-txt");
                     }
-                    if(pillEl) {
-                        pillEl.className = "side-pill " + (pct >= 0 ? "pos-bg" : "neg-bg");
-                    }
-                    if(flowEl) {
-                        flowEl.innerText = "DELTA: " + (deltaVal >= 0 ? "+" : "") + deltaVal;
-                        flowEl.className = "hft-tag " + (deltaVal >= 0 ? "flow-buy" : "flow-sell");
-                    }
-                    if(rsiEl) {
-                        rsiEl.innerText = "RSI: " + rsiVal.toFixed(1);
-                    }
+                    if(deltaEl) deltaEl.innerText = "DELTA: " + (deltaVal >= 0 ? "+" : "") + deltaVal;
+                    if(rsiEl) rsiEl.innerText = "RSI: " + rsiVal.toFixed(1);
 
-                    if(tagEl) {
-                        if(rsiVal < 40) {
-                            tagEl.innerText = "ENTRA";
-                            tagEl.style.color = "#00ff88";
-                            tagEl.style.borderColor = "#00ff88";
+                    if(tagEl && pillEl) {
+                        let proposedTag = "AGUARDA";
+                        let pillClass = "pos-bg";
+                        if(rsiVal < 35 || pct > 0.15) {
+                            proposedTag = "ENTRA";
+                            pillClass = "pos-bg";
                             activeTargetsCount++;
-                        } else if(rsiVal > 60) {
-                            tagEl.innerText = "PULA";
-                            tagEl.style.color = "#ff3e3e";
-                            tagEl.style.borderColor = "#ff3e3e";
-                        } else {
-                            tagEl.innerText = "AGUARDA";
-                            tagEl.style.color = "#666";
-                            tagEl.style.borderColor = "#1f1f1f";
+                        } else if(rsiVal > 65 || pct < -0.15) {
+                            proposedTag = "PULA";
+                            pillClass = "neg-bg";
                         }
+                        tagEl.innerText = proposedTag;
+                        pillEl.className = "side-pill " + pillClass;
                     }
                 }
             });
@@ -427,11 +396,11 @@
             if(targetCountEl) targetCountEl.innerText = activeTargetsCount;
 
         } catch(e) {
-            logErrorCustom("Erro ao sincronizar preços e métricas: " + e.message);
+            logErrorCustom("Erro na sincronização de preços: " + e.message);
         }
     }
 
-    setInterval(syncPrices, 2000);
+    setInterval(syncPrices, 3000);
     syncPrices();
 </script>
 </body>
