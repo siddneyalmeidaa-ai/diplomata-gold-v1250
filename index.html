@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SENTINEL_V16 // AUTÓNOMO BLINDADO</title>
+    <title>SENTINEL_V16 // AGRESSÃO REAL & FLUXO</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Inter:wght@900&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -142,9 +142,9 @@
         </div>
     </div>
     <div class="st-metrics">
-        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">DELTA SUAVIZADO</span></div>
+        <div class="stat-box"><span class="stat-label">Modo</span><span class="stat-val pulse" id="mkt-status">AGRESSÃO REAL</span></div>
         <div class="stat-box"><span class="stat-label">Latência</span><span class="stat-val" id="latency-val" style="color: var(--green-nitido);">Smart</span></div>
-        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">HISTERESE ATIVA</span></div>
+        <div class="stat-box"><span class="stat-label">Métrica</span><span class="stat-val" id="stake-mode-label" style="color: #f59e0b;">FLUXO BLINDADO</span></div>
         <div class="stat-box"><span class="stat-label">Alvos</span><span class="stat-val" id="target-count" style="color: var(--green-nitido);">0</span></div>
     </div>
 </div>
@@ -231,10 +231,10 @@
         { symbol: "UNI", name: "Uniswap", pair: "UNIUSDT", spread: 0.44, logo: "https://cryptologos.cc/logos/uniswap-uni-logo.png" },
         { symbol: "ATOM", name: "Cosmos", pair: "ATOMUSDT", spread: 0.52, logo: "https://cryptologos.cc/logos/cosmos-atom-logo.png" }
     ];
-        let livePrices = {};
+                let livePrices = {};
     let previousPrices = {};
-    let deltaHistory = {}; // Histórico para suavização do Delta
-    let assetStates = {};  // Armazena o estado atual com histerese
+    let deltaHistory = {}; 
+    let assetStates = {};  
     let currentFilter = 'ALL';
     let usdtBrlRate = 5.12; 
     let activeTargetsCount = 0;
@@ -383,19 +383,21 @@
                     let diff = priceInBRL - oldPrice;
                     let rawDelta = diff * 1000;
 
-                    // Suavização do Delta (Média Móvel de 3 ciclos para eliminar ruído instantâneo)
-                    if (!deltaHistory[c.symbol]) deltaHistory[c.symbol] = [rawDelta, rawDelta, rawDelta];
+                    // Média móvel de Delta mais longa (5 ciclos) para medir agressão real continuada
+                    if (!deltaHistory[c.symbol]) deltaHistory[c.symbol] = [0, 0, 0, 0, 0];
                     deltaHistory[c.symbol].shift();
                     deltaHistory[c.symbol].push(rawDelta);
-                    let smoothedDelta = deltaHistory[c.symbol].reduce((a, b) => a + b, 0) / 3;
+                    let smoothedDelta = deltaHistory[c.symbol].reduce((a, b) => a + b, 0) / 5;
                     let deltaVal = smoothedDelta.toFixed(2);
+                    let numDelta = parseFloat(deltaVal);
 
                     let pct = mInfo.priceChangePercent;
 
+                    // RSI obtido por klines de 5m (velas mais estáveis para evitar ruído segundo a segundo)
                     let rsiVal = rsiCache[c.symbol] || 50.0;
-                    if (!rsiCache[c.symbol] || Math.random() < 0.3) {
+                    if (!rsiCache[c.symbol] || Math.random() < 0.2) {
                         try {
-                            let klineRes = await fetch(`https://api.binance.com/api/v3/klines?symbol=${c.pair}&interval=1m&limit=20`);
+                            let klineRes = await fetch(`https://api.binance.com/api/v3/klines?symbol=${c.pair}&interval=5m&limit=25`);
                             if (klineRes.ok) {
                                 let klines = await klineRes.json();
                                 let closes = klines.map(k => parseFloat(k[4]));
@@ -405,26 +407,25 @@
                         } catch(err) {}
                     }
 
-                    // Sistema de Histerese para Estabilidade de Estados (Elimina o piscar)
+                    // Sistema de Estado Baseado em Agressão Real & Histerese Rígida
                     let currentState = assetStates[c.symbol] || "AGUARDA";
                     let newStatusText = currentState;
-                    let numDelta = parseFloat(deltaVal);
 
                     if (currentState === "AGUARDA") {
-                        // Gatilhos de Entrada rigorosos
-                        if (rsiVal < 28 || numDelta > 7.0) {
+                        // Só entra se houver agressão compradora forte (Delta > 8.0 com suporte de RSI)
+                        if (numDelta > 8.0 && rsiVal < 45) {
                             newStatusText = "⚡ ENTRA";
-                        } else if (rsiVal > 72 || numDelta < -7.0) {
+                        } else if (numDelta < -8.0 && rsiVal > 55) {
                             newStatusText = "⛔ PULA";
                         }
                     } else if (currentState === "⚡ ENTRA") {
-                        // Histerese de saída: só sai se o RSI recuperar acima de 34 ou o Delta recuar abaixo de 3.0
-                        if (rsiVal > 35 && numDelta < 3.0) {
+                        // Só sai do alvo se a agressão compradora morrer por completo (Delta < 2.0)
+                        if (numDelta < 2.0) {
                             newStatusText = "AGUARDA";
                         }
                     } else if (currentState === "⛔ PULA") {
-                        // Histerese de saída para Pula: só sai se o RSI recuar abaixo de 65 ou o Delta subir acima de -3.0
-                        if (rsiVal < 65 && numDelta > -3.0) {
+                        // Só sai do pula se a pressão vendedora acalmar (Delta > -2.0)
+                        if (numDelta > -2.0) {
                             newStatusText = "AGUARDA";
                         }
                     }
@@ -484,7 +485,7 @@
         }
     }
 
-    setInterval(syncMarketData, 2000);
+    setInterval(syncMarketData, 2500);
     syncMarketData();
 </script>
 </body>
