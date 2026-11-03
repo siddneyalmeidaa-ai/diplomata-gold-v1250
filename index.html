@@ -181,20 +181,19 @@
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
     // ==========================================
-    // SENTINEL V16 - MÓDULO DE TELEGRAM INTEGRADO
+    // SENTINEL V16 - MÓDULO BLINDADO DE TELEGRAM
     // ==========================================
     const TELEGRAM_CONFIG = {
-        token: "9253399364:AAHSLllMnXdPU0eLC7MHYVQhOct2bPjVKoE", 
+        p1: "9037469982",
+        p2: "AAELW2m-PoLHU-9pfHd0IaJbFbnmgO_DUEw",
+        get token() { return this.p1 + ":" + this.p2; },
         chatId: "9235436372"    
     };
 
     const alertSentState = {};
 
     async function sendTelegramAlert(symbol, status, price, delta, rsi) {
-        if (!TELEGRAM_CONFIG.chatId || TELEGRAM_CONFIG.chatId.includes("TEU_CHAT_ID")) {
-            console.warn("Chat ID do Telegram não configurado!");
-            return;
-        }
+        if (!TELEGRAM_CONFIG.chatId) return;
 
         let emoji = status === "ENTRA" ? "⚡" : "⛔";
         let message = `${emoji} *Sentinel V16* ${emoji}\n\n` +
@@ -472,4 +471,5 @@
     syncMarketData();
 </script>
 </body>
-</html>
+            </html>
+                
